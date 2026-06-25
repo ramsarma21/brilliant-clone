@@ -86,7 +86,7 @@ export function CircuitsSim({ state, onChange }: SimProps) {
 
       <div className="sim__readouts">
         <Readout label="Current" value={`${round(result.current, 2)} A`} />
-        <Readout label="Total R" value={Number.isFinite(result.totalResistance) ? `${round(result.totalResistance, 1)} Ω` : '— Ω'} />
+        <Readout label="Total R" value={Number.isFinite(result.totalResistance) ? `${round(result.totalResistance, 1)} Ω` : '– Ω'} />
         <Readout label="Bulb" value={result.lit ? 'Lit' : 'Off'} />
       </div>
 

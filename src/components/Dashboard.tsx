@@ -1,16 +1,36 @@
 import { useApp } from '../state/AppState'
 import { LESSONS, UNITS, UNIT_THEME } from '../content/lessons'
-import type { UnitStatus } from '../types'
+import type { UnitStatus, UserProgress } from '../types'
 
 const STATUS_LABEL: Record<UnitStatus, string> = {
   locked: 'Locked',
-  available: 'Start',
+  available: 'Play',
   in_progress: 'In progress',
-  mastered: 'Mastered',
+  mastered: 'Completed',
 }
 
 function lessonSubtitle(lessonId: string, fallback: string): string {
   return LESSONS[lessonId].title.split(': ')[1] ?? fallback
+}
+
+// How many of the 3 mastery gates a unit has cleared (kept in sync with the
+// AppState mastery model so the dashboard never disagrees with the lesson).
+function unitChecksDone(lessonId: string, progress: UserProgress): number {
+  const lp = progress.lessonState[lessonId]
+  if (!lp) return 0
+  if (lessonId === 'lesson-projectile') {
+    const lessonDone = Boolean(lp.completedAt)
+    const samplesAndSim =
+      Boolean(lp.masteryChecksCorrect['proj-prediction']) &&
+      Boolean(lp.masteryChecksCorrect['proj-numeric']) &&
+      Boolean(lp.masteryChecksCorrect['proj-challenge']) &&
+      lp.manipulationChallengeComplete
+    const quiz = Boolean(lp.masteryChecksCorrect['proj-quiz'])
+    return [lessonDone, samplesAndSim, quiz].filter(Boolean).length
+  }
+  return LESSONS[lessonId].steps.filter(
+    (s) => 'conceptTags' in s && lp.masteryChecksCorrect[s.id],
+  ).length
 }
 
 export function Dashboard({ onOpenLesson }: { onOpenLesson: (lessonId: string) => void }) {
@@ -23,7 +43,7 @@ export function Dashboard({ onOpenLesson }: { onOpenLesson: (lessonId: string) =
   const nextUnit = UNITS.find((u) => progress.unitStatus[u.id] !== 'mastered') ?? UNITS[0]
   const nextTheme = UNIT_THEME[nextUnit.id]
 
-  const R = 30
+  const R = 52
   const circ = 2 * Math.PI * R
   const dash = (pct / 100) * circ
 
@@ -47,39 +67,47 @@ export function Dashboard({ onOpenLesson }: { onOpenLesson: (lessonId: string) =
       </header>
 
       <section className="hero-card">
+        <span className="hero-card__blob hero-card__blob--a" aria-hidden>⚽</span>
+        <span className="hero-card__blob hero-card__blob--b" aria-hidden>⚡</span>
+        <span className="hero-card__blob hero-card__blob--c" aria-hidden>📈</span>
+        <span className="hero-card__blob hero-card__blob--d" aria-hidden>🎯</span>
         <div className="hero-card__text">
-          <span className="eyebrow">Intro Physics I · Course</span>
-          <h1>Welcome back, {profile.displayName.split(' ')[0]}.</h1>
-          <p>Algebra-based introductory college physics — learn by doing, not watching.</p>
+          <span className="eyebrow">Intro Physics I</span>
+          <h1>Welcome back, {profile.displayName.split(' ')[0]}!</h1>
+          <p>{courseComplete ? 'You mastered every unit. Legend.' : 'Pick up where you left off and beat the next level.'}</p>
         </div>
-        <div className="hero-card__ring" aria-label={`${pct}% mastered`}>
-          <svg viewBox="0 0 80 80" width="92" height="92">
-            <circle cx="40" cy="40" r={R} className="ring__track" />
-            <circle
-              cx="40"
-              cy="40"
-              r={R}
-              className="ring__value"
-              strokeDasharray={`${dash} ${circ}`}
-              transform="rotate(-90 40 40)"
-            />
+        <div className="hero-card__ring" aria-label={`${pct}% complete`}>
+          <svg viewBox="0 0 120 120" width="128" height="128">
+            <circle cx="60" cy="60" r={R} className="ring__track" />
+            {pct > 0 && (
+              <circle
+                cx="60"
+                cy="60"
+                r={R}
+                className="ring__value"
+                strokeDasharray={`${dash} ${circ}`}
+                transform="rotate(-90 60 60)"
+              />
+            )}
           </svg>
           <div className="ring__label">
             <strong>{pct}%</strong>
-            <span>{masteredCount}/{UNITS.length}</span>
+            <span>{masteredCount}/{UNITS.length} units</span>
           </div>
         </div>
       </section>
 
-      {courseComplete ? (
+      {courseComplete && (
         <section className="card banner banner--success">
           <div className="banner__burst">🎓</div>
           <div>
-            <h2>Course mastered!</h2>
-            <p>You completed all five Physics I units with full mastery. Your progress stays saved across refresh and login.</p>
+            <h2>Course mastered</h2>
+            <p>All five units complete. Nice work.</p>
           </div>
         </section>
-      ) : (
+      )}
+
+      {!courseComplete && (
         <button
           className="next-card"
           style={{ '--unit-accent': nextTheme.accent } as React.CSSProperties}
@@ -91,7 +119,7 @@ export function Dashboard({ onOpenLesson }: { onOpenLesson: (lessonId: string) =
             <strong>{nextUnit.name}: {lessonSubtitle(nextUnit.lessonId, nextUnit.blurb)}</strong>
           </span>
           <span className="next-card__cta">
-            {progress.unitStatus[nextUnit.id] === 'in_progress' ? 'Resume' : 'Start'} →
+            {progress.unitStatus[nextUnit.id] === 'in_progress' ? 'Resume' : 'Play'} →
           </span>
         </button>
       )}
@@ -101,10 +129,9 @@ export function Dashboard({ onOpenLesson }: { onOpenLesson: (lessonId: string) =
         {UNITS.map((unit, i) => {
           const status = progress.unitStatus[unit.id]
           const locked = status === 'locked'
+          const mastered = status === 'mastered'
           const theme = UNIT_THEME[unit.id]
-          const checks = LESSONS[unit.lessonId].steps.filter(
-            (s) => 'conceptTags' in s && progress.lessonState[unit.lessonId]?.masteryChecksCorrect[s.id],
-          ).length
+          const checks = unitChecksDone(unit.lessonId, progress)
           return (
             <li
               key={unit.id}
@@ -112,14 +139,15 @@ export function Dashboard({ onOpenLesson }: { onOpenLesson: (lessonId: string) =
               style={{ '--unit-accent': theme.accent } as React.CSSProperties}
             >
               {i < UNITS.length - 1 && <span className="path__connector" />}
+              <span className="path__index">{mastered ? '★' : i + 1}</span>
               <button className="unit-card" disabled={locked} onClick={() => onOpenLesson(unit.lessonId)}>
                 <span className="unit-card__icon">
-                  {status === 'mastered' ? '✓' : locked ? '🔒' : theme.icon}
+                  {mastered ? '✓' : locked ? '🔒' : theme.icon}
                 </span>
                 <span className="unit-card__body">
                   <strong>{unit.name}</strong>
                   <span className="muted">{lessonSubtitle(unit.lessonId, unit.blurb)}</span>
-                  {status !== 'mastered' && status !== 'locked' && checks > 0 && (
+                  {!mastered && !locked && checks > 0 && (
                     <span className="unit-card__mini">{checks}/3 mastery checks</span>
                   )}
                 </span>

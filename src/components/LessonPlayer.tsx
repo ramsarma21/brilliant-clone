@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useApp } from '../state/AppState'
-import { LESSONS, UNITS } from '../content/lessons'
+import { LESSONS, UNITS, UNIT_THEME } from '../content/lessons'
 import { Sim } from './sims/Sim'
+import { Calculator } from './sims/Calculator'
+import { KinematicsIntro } from './KinematicsIntro'
+import { KinematicsQuiz } from './KinematicsQuiz'
+import { MotionGraphsIntro } from './MotionGraphsIntro'
+import { MotionGraphsQuiz } from './MotionGraphsQuiz'
 import { Modal } from './ui/Modal'
 import { Feedback, type FeedbackKind } from './Feedback'
 import type {
@@ -120,6 +125,8 @@ function StepView(props: StepViewProps) {
       return <NumericView {...props} step={step} />
     case 'challenge':
       return <ChallengeView {...props} step={step} />
+    case 'quiz':
+      return <QuizView {...props} />
     case 'summary':
       return <SummaryView {...props} body={step.body} prompt={step.prompt} />
     default:
@@ -167,12 +174,12 @@ function SandboxPeek({
   return (
     <>
       <button type="button" className="sandbox-peek" onClick={() => setOpen(true)}>
-        🧪 Try it in the sandbox
+        Open sandbox
       </button>
       <Modal
         open={open}
         title="Sandbox"
-        subtitle="Experiment freely — your changes carry over. Close when you’re ready to try again."
+        subtitle="Experiment freely. Your changes carry over."
         onClose={() => setOpen(false)}
       >
         <p className="modal__prompt">{prompt}</p>
@@ -182,19 +189,68 @@ function SandboxPeek({
   )
 }
 
-function ConceptView(props: StepViewProps & { body: string; prompt: string }) {
+function lessonTheme(lessonId: string) {
+  return UNIT_THEME[LESSONS[lessonId].unitId]
+}
+
+function QuizView(props: StepViewProps) {
+  const theme = lessonTheme(props.lessonId)
+  const Quiz = LESSONS[props.lessonId].unitId === 'motion-graphs' ? MotionGraphsQuiz : KinematicsQuiz
   return (
-    <div className="card step">
-      <span className="step__kind">Concept</span>
-      <h2>{props.prompt}</h2>
-      <p className="step__body">{props.body}</p>
-      <NavButtons onPrev={props.onPrev} canPrev={props.canPrev} onNext={props.onNext} />
+    <Quiz
+      accent={theme.accent}
+      onPrev={props.onPrev}
+      canPrev={props.canPrev}
+      onNext={props.onNext}
+      lessonId={props.lessonId}
+      stepId={props.step.id}
+      onRecord={props.onRecord}
+    />
+  )
+}
+
+function ConceptView(props: StepViewProps & { body: string; prompt: string }) {
+  const theme = lessonTheme(props.lessonId)
+  // The soccer-skill units open with an animated, multi-slide interactive intro
+  // instead of a single static concept card.
+  if (props.simKey === 'soccer') {
+    return (
+      <KinematicsIntro
+        accent={theme.accent}
+        onPrev={props.onPrev}
+        canPrev={props.canPrev}
+        onNext={props.onNext}
+      />
+    )
+  }
+  if (props.simKey === 'passing') {
+    return (
+      <MotionGraphsIntro
+        accent={theme.accent}
+        onPrev={props.onPrev}
+        canPrev={props.canPrev}
+        onNext={props.onNext}
+      />
+    )
+  }
+  return (
+    <div className="card step step--split" style={{ '--unit-accent': theme.accent } as React.CSSProperties}>
+      <aside className="step__aside">
+        <span className="step__aside-icon">{theme.icon}</span>
+        <span className="step__aside-tag">Concept</span>
+        <span className="step__aside-note">{theme.tagline}</span>
+      </aside>
+      <div className="step__main">
+        <h2>{props.prompt}</h2>
+        <p className="step__body">{props.body}</p>
+        <NavButtons onPrev={props.onPrev} canPrev={props.canPrev} onNext={props.onNext} />
+      </div>
     </div>
   )
 }
 
 function SandboxView(props: StepViewProps & { body: string; prompt: string }) {
-  // First run: score once to move on (shows the "Goals 0/1" pill, auto-advances).
+  // First run: score/connect once to move on.
   const [done, setDone] = useState(false)
   function onGoalScored() {
     if (done) return
@@ -203,10 +259,7 @@ function SandboxView(props: StepViewProps & { body: string; prompt: string }) {
   }
   return (
     <div className="card step step--sim">
-      <span className="step__kind">Sandbox</span>
-      <h2>{props.prompt}</h2>
       <Sim sim={props.simKey} state={props.sandbox} onChange={props.setSandbox} showGoal onGoal={onGoalScored} />
-      <p className="step__body">{props.body}</p>
       <NavButtons onPrev={props.onPrev} canPrev={props.canPrev} onNext={props.onNext} />
     </div>
   )
@@ -223,7 +276,7 @@ function PredictionView(props: StepViewProps & { step: PredictionStep }) {
     const correct = selected === step.correctOptionId
     const message = correct
       ? step.feedbackCorrect
-      : step.feedbackByOption[selected] ?? 'Not quite — review the concept and try again.'
+      : step.feedbackByOption[selected] ?? 'Not quite. Review the concept and try again.'
     setFb({ kind: correct ? 'correct' : 'incorrect', message })
     if (correct) setSolved(true)
     props.onRecord({
@@ -240,7 +293,7 @@ function PredictionView(props: StepViewProps & { step: PredictionStep }) {
   const showHint = !fb && props.attempts >= 2 && step.hint
 
   return (
-    <div className="card step">
+    <div className="card step step--check">
       <span className="step__kind step__kind--check">Mastery check</span>
       <h2>{step.prompt}</h2>
       <div className="options">
@@ -284,6 +337,7 @@ function NumericView(props: StepViewProps & { step: NumericStep }) {
   const [input, setInput] = useState('')
   const [fb, setFb] = useState<{ kind: FeedbackKind; message: string } | null>(null)
   const [solved, setSolved] = useState(props.masteryDone)
+  const [showCalc, setShowCalc] = useState(false)
 
   function submit() {
     const value = Number.parseFloat(input)
@@ -316,7 +370,7 @@ function NumericView(props: StepViewProps & { step: NumericStep }) {
   const showHint = !fb && props.attempts >= 2 && step.hint
 
   return (
-    <div className="card step">
+    <div className="card step step--check">
       <span className="step__kind step__kind--check">Mastery check</span>
       <h2>{step.prompt}</h2>
       <div className="numeric-input">
@@ -332,19 +386,15 @@ function NumericView(props: StepViewProps & { step: NumericStep }) {
       </div>
       {showHint && <Feedback kind="hint" message={step.hint!} />}
       {fb && <Feedback kind={fb.kind} message={fb.message} />}
-      {fb && fb.kind !== 'correct' && (
-        <SandboxPeek
-          simKey={props.simKey}
-          sandbox={props.sandbox}
-          setSandbox={props.setSandbox}
-          prompt={step.prompt}
-        />
-      )}
       <div className="step__actions">
         <button className="btn btn--secondary" onClick={submit}>
           Check answer
         </button>
+        <button type="button" className="btn btn--ghost" onClick={() => setShowCalc((open) => !open)}>
+          🧮 {showCalc ? 'Hide calculator' : 'Calculator'}
+        </button>
       </div>
+      {showCalc && <Calculator onClose={() => setShowCalc(false)} />}
       <NavButtons
         onPrev={props.onPrev}
         canPrev={props.canPrev}
@@ -359,11 +409,9 @@ function ChallengeView(props: StepViewProps & { step: ChallengeStep }) {
   const { step } = props
   const [fb, setFb] = useState<{ kind: FeedbackKind; message: string } | null>(null)
   const [solved, setSolved] = useState(props.masteryDone)
+  const isSoccerChallenge = props.simKey === 'soccer' || props.simKey === 'passing' || props.simKey === 'forces'
 
-  function check() {
-    const correct = props.challengeGoal(props.sandbox)
-    const message = correct ? step.feedbackCorrect : step.feedbackIncorrect
-    setFb({ kind: correct ? 'correct' : 'incorrect', message })
+  function recordChallenge(correct: boolean, message: string) {
     if (correct) setSolved(true)
     props.onRecord({
       lessonId: props.lessonId,
@@ -377,21 +425,32 @@ function ChallengeView(props: StepViewProps & { step: ChallengeStep }) {
     })
   }
 
+  function check() {
+    const correct = props.challengeGoal(props.sandbox)
+    const message = correct ? step.feedbackCorrect : step.feedbackIncorrect
+    setFb({ kind: correct ? 'correct' : 'incorrect', message })
+    recordChallenge(correct, message)
+  }
+
+  function onGoalScored() {
+    if (solved) return
+    recordChallenge(true, step.feedbackCorrect)
+  }
+
   const showHint = !solved && props.attempts >= 2 && step.hint
 
   return (
     <div className="card step step--sim">
-      <span className="step__kind step__kind--check">Challenge</span>
-      <h2>{step.prompt}</h2>
-      <p className="goal-banner">🎯 {step.goalDescription}</p>
-      <Sim sim={props.simKey} state={props.sandbox} onChange={props.setSandbox} />
-      {showHint && <Feedback kind="hint" message={step.hint!} />}
-      {fb && <Feedback kind={fb.kind} message={fb.message} />}
-      <div className="step__actions">
-        <button className="btn btn--secondary" onClick={check}>
-          Check goal
-        </button>
-      </div>
+      <Sim sim={props.simKey} state={props.sandbox} onChange={props.setSandbox} onGoal={isSoccerChallenge ? onGoalScored : undefined} />
+      {!isSoccerChallenge && showHint && <Feedback kind="hint" message={step.hint!} />}
+      {!isSoccerChallenge && fb && <Feedback kind={fb.kind} message={fb.message} />}
+      {!isSoccerChallenge && (
+        <div className="step__actions">
+          <button className="btn btn--secondary" onClick={check}>
+            Check goal
+          </button>
+        </div>
+      )}
       <NavButtons
         onPrev={props.onPrev}
         canPrev={props.canPrev}
@@ -418,16 +477,40 @@ function SummaryView(props: StepViewProps & { body: string; prompt: string }) {
   const currentUnitIndex = UNITS.findIndex((u) => u.lessonId === props.lessonId)
   const nextUnit = UNITS[currentUnitIndex + 1]
 
+  const theme = lessonTheme(props.lessonId)
+  const lp = progress.lessonState[props.lessonId]
+  const masteryChecksPassed = props.lessonId === 'lesson-projectile'
+    ? [
+        Boolean(lp?.completedAt) || props.step.kind === 'summary',
+        Boolean(lp?.masteryChecksCorrect['proj-prediction']) &&
+          Boolean(lp?.masteryChecksCorrect['proj-numeric']) &&
+          Boolean(lp?.masteryChecksCorrect['proj-challenge']),
+        Boolean(lp?.masteryChecksCorrect['proj-quiz']),
+      ].filter(Boolean).length
+    : props.lessonId === 'lesson-motion-graphs'
+    ? [
+        Boolean(lp?.masteryChecksCorrect['mg-prediction']),
+        Boolean(lp?.masteryChecksCorrect['mg-numeric']) &&
+          Boolean(lp?.masteryChecksCorrect['mg-challenge']),
+        Boolean(lp?.masteryChecksCorrect['mg-quiz']),
+      ].filter(Boolean).length
+    : lesson.steps.filter((s) => 'conceptTags' in s && lp?.masteryChecksCorrect[s.id]).length
+
   return (
-    <div className="card step step--summary">
-      <span className="step__kind">{mastered ? 'Mastered' : 'Almost there'}</span>
-      <h2>{mastered ? '🎉 ' : ''}{props.prompt}</h2>
+    <div className="card step step--split step--summary" style={{ '--unit-accent': theme.accent } as React.CSSProperties}>
+      <aside className="step__aside">
+        <span className="step__aside-icon">{mastered ? '🏆' : theme.icon}</span>
+        <span className="step__aside-tag">{mastered ? 'Mastered' : 'Almost there'}</span>
+        <span className="step__aside-note">{theme.tagline}</span>
+      </aside>
+      <div className="step__main">
+      <h2>{props.prompt}</h2>
       <p className="step__body">{props.body}</p>
 
       {!mastered && (
         <Feedback
           kind="hint"
-          message="You haven’t passed all 3 mastery checks yet. Go back and get the prediction, numerical, and challenge steps correct to master this unit."
+          message="Pass all 3 mastery checks to master this unit."
         />
       )}
 
@@ -439,7 +522,7 @@ function SummaryView(props: StepViewProps & { body: string; prompt: string }) {
         <div className="summary-card">
           <span className="muted">Mastery checks</span>
           <strong>
-            {lesson.steps.filter((s) => 'conceptTags' in s && progress.lessonState[props.lessonId]?.masteryChecksCorrect[s.id]).length}
+            {masteryChecksPassed}
             {' / 3'}
           </strong>
         </div>
@@ -472,6 +555,7 @@ function SummaryView(props: StepViewProps & { body: string; prompt: string }) {
             Back to course
           </button>
         )}
+      </div>
       </div>
     </div>
   )

@@ -4,30 +4,31 @@ import type { SimProps } from './types'
 import { Calculator } from './Calculator'
 
 // ============================================================================
-// Forces unit — soccer skill = PASSING (the ground pass / first touch).
+// Motion-Graphs unit — soccer skill = PASSING (the through-ball).
 //
-// This is MotionSim's sibling, rendered in the SAME first-person pseudo-3D world
-// and with the SAME structure (Madden meter → solve → fly → result, an in-game
-// calculator with a time drain, difficulty-scaled hints, a defender who sprints
-// in to cut out a mis-weighted pass, and an animated post-miss teaching lesson +
-// "try for yourself" sandbox). Where MotionSim is a CONSTANT-VELOCITY lead-the-
-// runner problem, this is a FRICTION-DECELERATED ground pass — the heart of the
-// Forces unit (friction a = μ·g, v² = v₀² − 2·a·s).
+// This is the penalty game's sibling, rendered in the SAME first-person pseudo-3D
+// world (shared camera/projection + render style as KinematicsSim). Where the
+// penalty is a projectile-into-a-ring problem, this is a CONSTANT-VELOCITY,
+// lead-the-runner problem — the heart of Motion Graphs (slope = velocity,
+// x = x₀ + v·t).
 //
-// Madden-meter solve structure:
-//   • The meter LOCKS one target, alternating each run:
-//       – 'pace' run: meter locks the ARRIVAL PACE v* the receiver wants.
-//       – 'dead' run: meter locks the STOP DISTANCE s* (roll it dead in a space).
-//   • In BOTH the player solves the KICK SPEED v₀ that controls the ball, and
-//     there is EXACTLY ONE right answer:
-//       – pace:  v₀ = √(v*² + 2·a·d)   (reach his feet at distance d with pace v*)
-//       – dead:  v₀ = √(2·a·s*)        (come to rest exactly at s*)
+// It mirrors the penalty's full structure: a difficulty-scaled solve countdown,
+// an in-game Calculator (with a 1.25× time drain while open), difficulty-scaled
+// progressive hints, a DEFENDER who sprints in to intercept a mis-weighted pass
+// (the keeper-save analogue), and an animated post-miss teaching lesson followed
+// by a "try for yourself" sandbox — all swapped to the passing/graph content.
 //
-// The ball visibly DECELERATES (a slow pass crawls and dies short, a fast one
-// zips and overruns), so the chosen kick speed is always reflected on screen.
+// Madden-meter solve structure (identical to the penalty):
+//   • The meter LOCKS one variable, alternating each run:
+//       – 'speed' run: meter locks the RELEASE TIMING t_d; you solve PASS SPEED v_b.
+//       – 'time'  run: meter locks the PASS SPEED v_b;     you solve RELEASE TIMING t_d.
+//   • The OTHER variable has EXACTLY ONE answer: the ball must reach the centre of
+//     the space (X*) at the instant the runner arrives there (t_meet).
+//
+// Everything is deterministic — a correctly weighted pass always threads through.
 // ============================================================================
 
-// ---- Camera / canvas (identical feel to MotionSim) ----
+// ---- Camera / canvas (identical feel to KinematicsSim) ----
 const W = 900
 const H = 560
 const HORIZON = H * 0.4
@@ -37,29 +38,36 @@ const FOCAL = 560
 // ---- World (metres) ----
 const RELEASE = { y: 0.12, z: 0.8 } // ground ball resting at your feet
 const BALL_R = 0.13
-const ZONE_HALF = 1.7 // half-width of the catchable space, in metres ALONG the lane
+const ZONE_HALF = 1.7 // half-width of the catchable space, in metres ALONG the channel
 const LANE_HALF = 1.25 // half-width of the drawn passing channel
-const POS_MAX = 40 // metres of lane the world can show
+const POS_MAX = 40 // metres of channel shown on the graph
+const T_MAX = 7 // seconds shown on the graph
 
-// ---- Friction physics ----
-const G = 10                  // clean gravity for tidy numbers
-const PACE_TOL = 0.7          // m/s tolerance on the arrival pace (pace mode)
-const DEAD_TOL = ZONE_HALF    // m tolerance on the resting spot (dead mode)
-
-// ---- UNIFIED RISK/REWARD AXIS (reused verbatim from MotionSim) ----
+// ---- UNIFIED RISK/REWARD AXIS ----
 // `diff` (0 = easy … 1 = hard) comes from where the player LOCKS the meter and
-// drives EVERYTHING, so a safe lock and an ambitious lock feel genuinely
-// different: easy locks get the most solve time + the fullest hint scaffold, but
-// a safe pass is predictable and easy to read (HIGH cut-out chance); a hard lock
-// gets little time + no help but gets through far more often (LOW cut-out).
+// drives EVERYTHING, so a safe lock and an ambitious lock feel genuinely different:
+//   • TIME       — easy locks get the most solve time, hard locks the least.
+//   • STRICTNESS — easy → full plugged-in scaffold; hard → recall nudge only,
+//                  and the calculator's time bleed bites harder.
+//   • INTERCEPTION — easy/safe passes are predictable and easy to cut out (HIGH
+//                  prob); ambitious/hard passes get through far more often (LOW).
+// Net: a safe pass = lots of time + help but likely cut out; a hard pass = little
+// time + no help but a much higher success rate. That's the gamble.
 const SOLVE_MS_EASY = 40000   // diff = 0 (safest lock): a generous 40 s
 const SOLVE_MS_MIN = 18000    // diff = 1 (hardest lock): a tight 18 s
 const SOLVE_WARN_MS = 10000   // last 10 s get an urgent red countdown
 const solveMsForDiff = (diff: number) => Math.round(lerp(SOLVE_MS_EASY, SOLVE_MS_MIN, clamp(diff, 0, 1)))
+
+// The calculator's time drain is lenient on easy locks, punishing on hard ones.
 const calcDrainForDiff = (diff: number) => lerp(1.12, 1.6, clamp(diff, 0, 1))
+
+// Defender interception probability (the keeper-save analogue), INVERTED: a safe,
+// easy pass is predictable and easy to read (HIGH cut-out chance); an ambitious,
+// hard pass succeeds far more often (LOW cut-out chance). Rolled once at strike on
+// practice/unlimited runs only — the first lesson run + the sandbox thread cleanly.
 const interceptProbFor = (diff: number) => clamp(0.85 - 0.72 * diff, 0.08, 0.9)
 
-const BEST_KEY = 'physics-forces-best'
+const BEST_KEY = 'physics-passing-best'
 
 type P2 = { sx: number; sy: number; scale: number }
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v))
@@ -70,77 +78,60 @@ const easeInOut = (u: number) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u 
 const parseNum = (s: string): number => { const v = parseFloat(s); return Number.isFinite(v) ? v : 0 }
 
 type Phase = 'aim' | 'meter' | 'solve' | 'fly' | 'result'
-type SolveFor = 'pace' | 'dead'
-type Outcome = 'connected' | 'short' | 'over'
+type SolveFor = 'speed' | 'time'
+type Outcome = 'connected' | 'early' | 'late' | 'soft'
 
 type Play = {
-  mu: number       // friction coefficient (0.2 / 0.3 / 0.4)
-  a: number        // friction deceleration = μ·g (2 / 3 / 4 m/s²)
-  d: number        // receiver distance down the lane (pace mode target / default space)
-  dir: number      // lane bearing this round (rad off straight-ahead), randomised
-  side: 1 | -1     // which side the lane leans toward (drives the defender offset)
-  ux: number       // unit lane direction (lateral)
-  uz: number       // unit lane direction (forward/depth)
-  defOff: number   // defender's loiter offset to the side of the lane
+  x0: number       // runner's head start ahead of you (m along the channel)
+  vr: number       // runner's constant speed (m/s) = slope of his line
+  tMeet: number    // the instant the runner reaches the centre of the space (s)
+  target: number   // X* = x0 + vr·tMeet, centre of the space (m along the channel)
+  vbMin: number    // slowest pass that still reaches X* by t_meet (= target / tMeet)
+  dir: number      // run bearing this round (rad off straight-ahead), randomised
+  side: 1 | -1     // which side the run leans toward (drives the defender offset)
+  ux: number       // unit channel direction (lateral)
+  uz: number       // unit channel direction (forward/depth)
+  defS: number     // a defender loiters at this channel position
+  defOff: number   // ...offset to the side of the lane
 }
 
 function makePlay(prevDir: number): Play {
-  const mu = [0.2, 0.3, 0.4][Math.floor(Math.random() * 3)]
-  const a = round1(mu * G) // 2 / 3 / 4
-  const d = [6, 8, 10, 12][Math.floor(Math.random() * 4)]
-  // Fresh lane on a RANDOM bearing every round (kept inside a forward cone so the
-  // pass stays on-screen). No pitch lines/markers — just the space + the players.
+  const vr = [3, 4, 5][Math.floor(Math.random() * 3)]
+  const x0 = [6, 8, 10][Math.floor(Math.random() * 3)]
+  const tMeet = [3, 4][Math.floor(Math.random() * 2)]
+  const target = x0 + vr * tMeet
+  // The teammate makes a fresh run on a RANDOM bearing every round (kept inside a
+  // forward cone so the run stays on-screen and the lead-the-runner geometry holds).
   let ang = (Math.random() * 2 - 1) * 0.5            // ≈ ±29° off straight-ahead
-  if (Math.abs(ang - prevDir) < 0.25) ang += (ang >= prevDir ? 1 : -1) * 0.28 // vary vs last run
+  if (Math.abs(ang - prevDir) < 0.25) ang += (ang >= prevDir ? 1 : -1) * 0.28 // vary it vs last run
   ang = clamp(ang, -0.55, 0.55)
   const ux = Math.sin(ang), uz = Math.cos(ang)
   const side: 1 | -1 = ux >= 0 ? 1 : -1
-  return { mu, a, d, dir: ang, side, ux, uz, defOff: -side * 2.2 }
-}
-
-// Meter (t∈[0,1]) → the LOCKED target, for each mode. Friendly integers so the
-// answer stays cleanly derivable; a slower lock = a gentler/safer target (easy),
-// a faster lock = a firmer/longer one (hard).
-const meterToVstar = (t: number) => [2, 3, 4][clamp(Math.floor(t * 3), 0, 2)]
-const meterToSstar = (t: number) => [4, 6, 8, 10][clamp(Math.floor(t * 4), 0, 3)]
-
-// ---- friction relations ----
-const stopDist = (v0: number, a: number) => (v0 * v0) / (2 * a)            // rest distance
-const stopTime = (v0: number, a: number) => v0 / a                          // time to rest
-const paceAt = (v0: number, a: number, s: number) => Math.sqrt(Math.max(0, v0 * v0 - 2 * a * s))
-const posAt = (v0: number, a: number, t: number) => (t >= v0 / a ? (v0 * v0) / (2 * a) : v0 * t - 0.5 * a * t * t)
-// time the (still-moving) ball reaches lane position s; clamps to rest if s ≥ stopDist.
-const timeTo = (v0: number, a: number, s: number) => {
-  const ss = stopDist(v0, a)
-  if (s >= ss) return v0 / a
-  return (v0 - Math.sqrt(Math.max(0, v0 * v0 - 2 * a * s))) / a
-}
-
-// The single correct kick speed, given the locked target.
-const answerPace = (a: number, d: number, vStar: number) => Math.sqrt(vStar * vStar + 2 * a * d)
-const answerDead = (a: number, sStar: number) => Math.sqrt(2 * a * sStar)
-
-type Grade = { outcome: Outcome; sStop: number; vArr: number; reach: number }
-// The single source of truth for grading a kick — used by fire(), the live
-// preview, the lesson distractor guard and the sandbox verdict. `zone` is the
-// centre of the space (= d in pace mode, = s* in dead mode); `lockVal` is the
-// locked target (v* in pace mode, s* in dead mode).
-function grade(v0: number, solveFor: SolveFor, a: number, zone: number, lockVal: number): Grade {
-  const ss = stopDist(v0, a)
-  if (solveFor === 'pace') {
-    const reached = ss >= zone - 1e-9
-    const arr = paceAt(v0, a, zone)
-    let outcome: Outcome
-    if (reached && Math.abs(arr - lockVal) <= PACE_TOL) outcome = 'connected'
-    else if (!reached || arr < lockVal) outcome = 'short'
-    else outcome = 'over'
-    return { outcome, sStop: ss, vArr: arr, reach: reached ? zone : ss }
+  return {
+    x0, vr, tMeet, target,
+    vbMin: target / tMeet,
+    dir: ang, side, ux, uz,
+    defS: target * 0.6, defOff: -side * 2.2,
   }
-  const outcome: Outcome = Math.abs(ss - lockVal) <= DEAD_TOL ? 'connected' : ss < lockVal ? 'short' : 'over'
-  return { outcome, sStop: ss, vArr: 0, reach: ss }
 }
 
-// ---- minimal sound (same toolkit as MotionSim) ----
+// Meter (t∈[0,1]) → the LOCKED value, for each mode.
+const meterToTd = (t: number, p: Play) => round1(t * 0.45 * p.tMeet)
+const meterToVb = (t: number, p: Play) => round1(p.vbMin * (1.2 + t * 0.8))
+
+// The one correct answer, given the locked value.
+const answerSpeed = (p: Play, td: number) => p.target / (p.tMeet - td) // v_b = X* / (t_meet − t_d)
+const answerTime = (p: Play, vb: number) => p.tMeet - p.target / vb     // t_d = t_meet − X* / v_b
+
+// Where a chosen pass crosses the runner's line, or null if too slow to ever catch him.
+function crossing(vb: number, td: number, p: Play): { t: number; s: number } | null {
+  if (vb <= p.vr + 0.001) return null
+  const t = (p.x0 + vb * td) / (vb - p.vr)
+  if (t < td) return null
+  return { t, s: vb * (t - td) }
+}
+
+// ---- minimal sound (same toolkit as the penalty) ----
 class Sfx {
   ctx: AudioContext | null = null
   noise: AudioBuffer | null = null
@@ -187,26 +178,26 @@ type Game = {
   solveFor: SolveFor
   meterT: number
   meterDir: 1 | -1
-  lockedVstar: number  // set on a 'pace' run (meter result)
-  lockedS: number      // set on a 'dead' run (meter result)
-  zone: number         // centre of the space (d in pace, s* in dead)
-  diff: number         // 0..1 difficulty from the meter lock
+  lockedTd: number   // set on a 'speed' run (meter result)
+  lockedVb: number   // set on a 'time' run (meter result)
+  diff: number       // 0..1 difficulty from the meter lock (drives the hint scaffold)
   solveMs: number
-  solveElapsedMs: number // accrues 1× normally, faster while the calculator is open
-  v0: number           // the kick speed actually played
-  t: number            // fly clock
+  solveElapsedMs: number // accrues 1× normally, 1.25× while the calculator is open
+  vb: number         // the pass speed actually played
+  td: number         // the release delay actually played
+  t: number          // fly clock
   released: boolean
-  // Outcome decided ONCE at strike (deterministic), applied by the fly loop.
+  // Outcome decided ONCE at strike (like the penalty's shotKind), applied by the fly loop.
   outcome: Outcome | null
-  sStop: number        // where the ball would come to rest
-  vArr: number         // pace as it reaches the space (pace mode)
-  reach: number        // lane position the ball is collected / rests at on a clean pass
-  reachT: number       // time of that clean collection / rest
-  // Defender interception (the keeper-save analogue).
+  crossT: number     // time the ball catches the runner (Infinity if never)
+  crossS: number     // channel position of the catch
+  // Defender interception (the keeper-save analogue) — set when a miss is struck.
+  // `luckFail` = a perfectly-weighted pass that the defender still reads & cuts out
+  // (the "unlucky save" analogue), rolled once at strike on practice/unlimited runs.
   interceptS: number
   interceptT: number
   defRunDur: number
-  luckFail: boolean    // a correct kick the defender still read & cut out
+  luckFail: boolean
   resolved: boolean
   scored: boolean
   celebrate: number
@@ -219,17 +210,17 @@ type Game = {
 const newGame = (play: Play, solveFor: SolveFor): Game => ({
   phase: 'aim', play, solveFor,
   meterT: 0, meterDir: 1,
-  lockedVstar: 0, lockedS: 0, zone: play.d, diff: 0, solveMs: SOLVE_MS_EASY, solveElapsedMs: 0,
-  v0: 0, t: 0, released: false,
-  outcome: null, sStop: 0, vArr: 0, reach: 0, reachT: 0,
-  interceptS: NaN, interceptT: Infinity, defRunDur: 0.9, luckFail: false,
+  lockedTd: 0, lockedVb: 0, diff: 0, solveMs: SOLVE_MS_EASY, solveElapsedMs: 0,
+  vb: 0, td: 0, t: 0, released: false,
+  outcome: null, crossT: Infinity, crossS: 0,
+  interceptS: NaN, interceptT: Infinity, defRunDur: 0.75, luckFail: false,
   resolved: false, scored: false, celebrate: 0, particles: [],
   sandbox: false, sandboxResetAt: 0,
 })
 
-type MissData = { play: Play; solveFor: SolveFor; lockedVstar: number; lockedS: number; zone: number; used: number; diff: number }
+type MissData = { play: Play; solveFor: SolveFor; lockedTd: number; lockedVb: number; used: number; diff: number }
 
-export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
+export function MotionSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [phase, setPhase] = useState<Phase>('aim')
   const [answerStr, setAnswerStr] = useState('')
@@ -238,20 +229,21 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const [sound, setSound] = useState(true)
   const [showCalc, setShowCalc] = useState(false)
   const [missData, setMissData] = useState<MissData | null>(null)
-  // A correct kick the defender still read & cut out (the unlucky-save case):
-  // no score, no teaching lesson — just a quick "play on" retry.
+  // A correct pass that the defender still read & cut out (the unlucky-save case):
+  // no score, no teaching lesson — just a quick "play on" retry, like the penalty.
   const [unlucky, setUnlucky] = useState(false)
   const [sandboxBusy, setSandboxBusy] = useState(false)
   const [sandboxResult, setSandboxResult] = useState<{ kind: 'goal' | 'miss'; text: string } | null>(null)
+  // Re-render tick so the React side-panel graph follows the live game state.
   const [, force] = useState(0)
   const rerender = useCallback(() => force((n) => n + 1), [])
 
   const sfx = useRef(new Sfx())
   const soundRef = useRef(sound); soundRef.current = sound
   const showCalcRef = useRef(showCalc); showCalcRef.current = showCalc
-  const solveModeRef = useRef<SolveFor>('pace')
+  const solveModeRef = useRef<SolveFor>('speed')
   const prevDirRef = useRef<number>(0)
-  const gameRef = useRef<Game>(newGame(makePlay(0), 'pace'))
+  const gameRef = useRef<Game>(newGame(makePlay(0), 'speed'))
   const rafRef = useRef<number | null>(null)
   const bgRef = useRef<HTMLCanvasElement | null>(null)
   const gradRef = useRef<{ grass: CanvasGradient; vignette: CanvasGradient } | null>(null)
@@ -262,7 +254,7 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const streakRef = useRef(streak); streakRef.current = streak
   const bestRef = useRef(best); bestRef.current = best
   // Try-for-yourself preview: when active, the draw loop renders a live candidate
-  // decelerating roll for `value` (the kick speed) instead of the frozen scene.
+  // pass line for `value` (the variable being solved) instead of the frozen scene.
   const previewRef = useRef<{ active: boolean; value: number }>({ active: false, value: 0 })
   const setPreview = useCallback((p: { active: boolean; value: number } | null) => {
     previewRef.current = p ?? { active: false, value: 0 }
@@ -290,15 +282,6 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
     return project(gx, y, gz)
   }, [project])
 
-  // Live centre of the space to render: fixed at d in pace mode; in dead mode it
-  // follows the meter while sweeping, then freezes at the locked s*.
-  const zoneCenterNow = useCallback((g: Game): number => {
-    if (g.solveFor === 'pace') return g.play.d
-    if (g.lockedS > 0) return g.lockedS
-    if (g.phase === 'meter') return meterToSstar(g.meterT)
-    return g.play.d
-  }, [])
-
   // ===== Actions =====
   const nextRun = useCallback(() => {
     previewRef.current = { active: false, value: 0 }
@@ -315,7 +298,7 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
     const g = gameRef.current
     if (g.phase !== 'aim') return
     g.solveFor = solveModeRef.current
-    solveModeRef.current = g.solveFor === 'pace' ? 'dead' : 'pace'
+    solveModeRef.current = g.solveFor === 'speed' ? 'time' : 'speed'
     g.phase = 'meter'; g.meterT = 0; g.meterDir = 1
     if (soundRef.current) sfx.current.ensure()
     setPhase('meter')
@@ -324,8 +307,8 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const lockMeter = useCallback(() => {
     const g = gameRef.current
     if (g.phase !== 'meter') return
-    if (g.solveFor === 'pace') { g.lockedVstar = meterToVstar(g.meterT); g.zone = g.play.d }
-    else { g.lockedS = meterToSstar(g.meterT); g.zone = g.lockedS }
+    if (g.solveFor === 'speed') g.lockedTd = meterToTd(g.meterT, g.play)
+    else g.lockedVb = meterToVb(g.meterT, g.play)
     g.diff = clamp(g.meterT, 0, 1)
     g.solveMs = solveMsForDiff(g.diff) // easy lock = more time, hard lock = less
     g.phase = 'solve'; g.solveElapsedMs = 0
@@ -336,35 +319,42 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
 
   // Shared strike core. Decides the outcome ONCE (deterministic) and, on a miss,
   // sets up the defender's interception run. `sandbox` shots never score.
-  const fire = useCallback((v0: number, sandbox: boolean) => {
+  const fire = useCallback((vb: number, td: number, sandbox: boolean) => {
     const g = gameRef.current
     const p = g.play
-    g.v0 = v0; g.sandbox = sandbox
-    const zone = g.zone
-    const lockVal = g.solveFor === 'pace' ? g.lockedVstar : g.lockedS
-    const gr = grade(v0, g.solveFor, p.a, zone, lockVal)
-    g.outcome = gr.outcome; g.sStop = gr.sStop; g.vArr = gr.vArr; g.reach = gr.reach
-    g.reachT = g.solveFor === 'pace' ? timeTo(v0, p.a, zone) : stopTime(v0, p.a)
+    g.vb = vb; g.td = td; g.sandbox = sandbox
+    const cr = crossing(vb, td, p)
+    let outcome: Outcome
+    if (!cr) outcome = 'soft'
+    else if (cr.s < p.target - ZONE_HALF) outcome = 'early'
+    else if (cr.s > p.target + ZONE_HALF) outcome = 'late'
+    else outcome = 'connected'
+    g.outcome = outcome
+    g.crossT = cr ? cr.t : Infinity
+    g.crossS = cr ? cr.s : 0
     // Keeper-save analogue: a correctly weighted pass threads cleanly on the first
-    // lesson run (showGoal) and in the sandbox; on practice/unlimited runs we roll
-    // once — safer (easier) locks are more likely to be read & cut out.
+    // lesson run (showGoal) and in the try-yourself sandbox; on practice/unlimited
+    // runs we roll once — harder locks are more likely to be read & cut out.
     const firstRun = !!sceneRef.current.showGoal
-    g.luckFail = gr.outcome === 'connected' && !sandbox && !firstRun && Math.random() < interceptProbFor(g.diff)
-    const cleanThread = gr.outcome === 'connected' && !g.luckFail
+    g.luckFail = outcome === 'connected' && !sandbox && !firstRun && Math.random() < interceptProbFor(g.diff)
+    const cleanThread = outcome === 'connected' && !g.luckFail
     if (cleanThread) { g.interceptS = NaN; g.interceptT = Infinity }
     else {
-      // The defender lunges from his loiter spot and cuts the ball, at min(loiter,
-      // where the ball ends): a short pass is poked off near where it dies, an
-      // over-hit is read and cut in front of the space.
-      const defLoiter = zone * 0.6
-      const missReach = Math.max(0.7, gr.sStop)
-      g.interceptS = clamp(Math.min(defLoiter, missReach - 0.5), 1.2, POS_MAX)
-      g.interceptT = timeTo(v0, p.a, g.interceptS)
+      const reach = cr ? cr.s : POS_MAX
+      if (vb > 0.05) { g.interceptS = clamp(Math.min(p.defS, reach - 0.5), 1.5, POS_MAX); g.interceptT = td + g.interceptS / vb }
+      else { g.interceptS = 0.7; g.interceptT = td + 1.0 }
     }
     g.defRunDur = 0.9
-    g.t = 0; g.released = true; g.resolved = false; g.scored = false; g.celebrate = 0
+    // Both real and sandbox shots run on the SAME t=0 timebase: the runner sets off
+    // from x₀, the ball is held until the release timing t_d, then flies at v_b.
+    // Keeping one clock means the chosen pass speed AND the chosen release timing are
+    // visibly reflected (a slow pass crawls, a fast pass zips, a later release leaves
+    // later) and the crossing/intercept end conditions line up with the drawn motion.
+    g.t = 0; g.released = false; g.resolved = false; g.scored = false; g.celebrate = 0
     g.phase = 'fly'
     if (soundRef.current) { sfx.current.ensure(); sfx.current.pass() }
+    // Sandbox shots keep the React phase on 'result' so the try-view stays mounted;
+    // only the gameRef phase flips. Real shots advance the React phase.
     if (!sandbox) setPhase('fly')
   }, [])
 
@@ -372,7 +362,8 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
     const g = gameRef.current
     if (g.phase !== 'solve') return
     const ans = parseNum(answerRef.current)
-    fire(clamp(ans, 0, 20), false)
+    if (g.solveFor === 'speed') fire(clamp(ans, 0, 30), g.lockedTd, false)
+    else fire(g.lockedVb, clamp(ans, 0, g.play.tMeet), false)
   }, [fire])
 
   const sandboxShoot = useCallback((value: number) => {
@@ -380,7 +371,8 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
     if (g.sandbox && g.phase === 'fly') return
     previewRef.current = { active: false, value }
     setSandboxBusy(true); setSandboxResult(null)
-    fire(clamp(value, 0, 20), true)
+    if (g.solveFor === 'speed') fire(clamp(value, 0, 30), g.lockedTd, true)
+    else fire(g.lockedVb, clamp(value, 0, g.play.tMeet), true)
   }, [fire])
 
   const resolve = useCallback(() => {
@@ -393,10 +385,10 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
     g.phase = 'result'
     if (cleanThread) {
       g.scored = true; g.celebrate = 1
-      spawnConfetti(g, atS(p, g.zone, 1.0))
+      spawnConfetti(g, atS(p, p.target, 1.0))
       if (soundRef.current) { sfx.current.pass(); sfx.current.cheer() }
       if (g.sandbox) {
-        setSandboxResult({ kind: 'goal', text: 'Perfect weight, right into the space past the defender!' })
+        setSandboxResult({ kind: 'goal', text: 'Perfect weight — threaded straight past the defender!' })
         setSandboxBusy(false)
       } else {
         const s = streakRef.current + 1
@@ -422,7 +414,7 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
         g.sandboxResetAt = (performance.now?.() ?? 0) + 1200
       } else {
         setStreak(0)
-        setMissData({ play: p, solveFor: g.solveFor, lockedVstar: g.lockedVstar, lockedS: g.lockedS, zone: g.zone, used: g.v0, diff: g.diff })
+        setMissData({ play: p, solveFor: g.solveFor, lockedTd: g.lockedTd, lockedVb: g.lockedVb, used: g.solveFor === 'speed' ? g.vb : g.td, diff: g.diff })
       }
     }
     setPhase('result')
@@ -492,49 +484,50 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
       ctx.beginPath(); ctx.moveTo(a2.sx, a2.sy); ctx.lineTo(b2.sx, b2.sy); ctx.lineTo(c2.sx, c2.sy); ctx.lineTo(d2.sx, d2.sy); ctx.closePath(); ctx.fill()
     }
 
-    const zone = zoneCenterNow(g)
-    drawSpace(ctx, atS, p, zone, g.solveFor === 'dead', now)
+    drawChannel(ctx, atS, p, now)
 
     const t = g.t
-    const running = false // the receiver waits in the space
+    const sRun = p.x0 + p.vr * t
+    const running = g.phase === 'fly' && !preview
 
     // ---- defender (sprints in to cut out a mis-weighted OR unlucky-read pass) ----
     const cleanThread = g.outcome === 'connected' && !g.luckFail
     const cutOut = !!g.outcome && !cleanThread
-    const defLoiter = zone * 0.6
-    let defS = defLoiter, defLat = p.defOff, defRunning = false, defHasBall = false
+    let defS = p.defS, defLat = p.defOff, defRunning = false, defHasBall = false
     if (!preview && (g.phase === 'fly' || g.phase === 'result') && cutOut) {
+      // Smooth accel→decel lunge into the lane, finishing exactly as the ball arrives.
       const tp = clamp((t - (g.interceptT - g.defRunDur)) / g.defRunDur, 0, 1)
       const e = easeInOut(tp)
-      defS = lerp(defLoiter, g.interceptS, e)
+      defS = lerp(p.defS, g.interceptS, e)
       defLat = lerp(p.defOff, 0, e)
       defRunning = tp > 0.02 && tp < 0.98
       defHasBall = t >= g.interceptT
     } else if (!preview && (g.phase === 'fly' || g.phase === 'result') && cleanThread) {
       // beaten: a smooth half-step toward the lane, but the ball is already gone
-      const tp = easeInOut(clamp((t - (g.reachT - 0.6)) / 0.6, 0, 1))
+      const tp = easeInOut(clamp((t - (g.crossT - 0.6)) / 0.6, 0, 1))
       defLat = lerp(p.defOff, p.defOff * 0.45, tp)
       defRunning = tp > 0.02 && tp < 0.7
     }
     drawPlayer(ctx, atS, p, defS, defLat, FOE_KIT, now, defRunning, defHasBall)
 
-    // ---- receiver (teammate) waiting in the space ----
-    drawPlayer(ctx, atS, p, zone, 0, TEAM_KIT, now, running, false)
+    // ---- runner (teammate) ----
+    const runnerS = (g.phase === 'fly' || g.phase === 'result') && !preview ? Math.min(sRun, POS_MAX) : p.x0
+    drawPlayer(ctx, atS, p, runnerS, 0, TEAM_KIT, now, running, false)
 
-    // ---- try-for-yourself live preview roll ----
+    // ---- try-for-yourself live preview line ----
     if (preview) {
-      const lockVal = g.solveFor === 'pace' ? g.lockedVstar : g.lockedS
-      drawPreviewRoll(ctx, atS, p, previewRef.current.value, g.solveFor, zone, lockVal, now)
+      const vb = g.solveFor === 'speed' ? previewRef.current.value : g.lockedVb
+      const td = g.solveFor === 'speed' ? g.lockedTd : previewRef.current.value
+      drawPreviewLane(ctx, atS, p, vb, td, now)
     }
 
-    // ---- ball (visibly decelerating) ----
+    // ---- ball ----
     if (!preview && ((g.phase === 'fly' && g.released) || (g.phase === 'result' && !defHasBall && cleanThread))) {
-      let bs = posAt(g.v0, p.a, t)
-      if (cleanThread) bs = Math.min(bs, g.reach)
+      let bs = Math.max(0, g.vb * (t - g.td))
+      if (cleanThread) bs = Math.min(bs, g.crossS)
       else bs = Math.min(bs, g.interceptS)
-      bs = Math.min(bs, POS_MAX)
-      const bp = atS(p, bs, BALL_R)
-      const shadow = atS(p, bs, 0.01)
+      const bp = atS(p, Math.min(bs, POS_MAX), BALL_R)
+      const shadow = atS(p, Math.min(bs, POS_MAX), 0.01)
       ctx.fillStyle = 'rgba(0,0,0,0.28)'
       ctx.beginPath(); ctx.ellipse(shadow.sx, shadow.sy, BALL_R * shadow.scale * 1.3, BALL_R * shadow.scale * 0.5, 0, 0, Math.PI * 2); ctx.fill()
       drawBall(ctx, bp.sx, bp.sy, Math.max(4, BALL_R * bp.scale), bs * 2.2, 0)
@@ -568,27 +561,27 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
       ctx.fillText(`🏆 Best: ${bestRef.current}`, W - 138, 38)
     }
     if (g.phase === 'meter') {
-      const isPace = g.solveFor === 'pace'
-      const val = isPace ? meterToVstar(g.meterT) : meterToSstar(g.meterT)
+      const setsTime = g.solveFor === 'speed'
+      const val = setsTime ? meterToTd(g.meterT, p) : meterToVb(g.meterT, p)
       drawMeter(ctx, g.meterT,
-        isPace ? `RECEIVER PACE: v* = ${val} m/s` : `DEAD TARGET: s* = ${val} m`,
-        isPace ? '#ff9e4d' : '#7ec8ff')
+        setsTime ? `RELEASE TIMING: t_d = ${val.toFixed(1)} s` : `PASS POWER: v_b = ${val.toFixed(1)} m/s`,
+        setsTime ? '#7ec8ff' : '#ff9e4d')
     }
     if (g.phase === 'aim') {
-      drawTopLabel(ctx, 'Read the pass', `Next you'll lock the ${g.solveFor === 'pace' ? 'pace he wants' : 'stop distance'}. SPACE / click to start the meter.`)
+      drawTopLabel(ctx, 'Read the run', `Next you'll lock the ${g.solveFor === 'speed' ? 'release timing' : 'pass power'}. SPACE / click to start the meter.`)
     }
     if (g.phase === 'solve') {
       const total = g.solveMs / 1000
       const left = Math.max(0, (g.solveMs - g.solveElapsedMs) / 1000)
       const warn = left <= SOLVE_WARN_MS / 1000
       const calcLabel = showCalcRef.current ? ` (calc: ${calcDrainForDiff(g.diff).toFixed(2)}× drain)` : ''
-      const label = 'Solve kick speed v₀: SPACE to play' + calcLabel
+      const label = (g.solveFor === 'speed' ? 'Solve pass speed v_b: SPACE to play' : 'Solve release t_d: SPACE to play') + calcLabel
       drawTimer(ctx, left, total, warn ? `Hurry! ${Math.ceil(left)}s left` : label, warn ? '#ff3b5f' : '#7ec8ff', warn)
     }
     if (g.phase === 'fly' && !preview && cutOut && g.t >= g.interceptT) {
-      drawTopLabel(ctx, 'Intercepted! 🧤', g.luckFail ? 'Well weighted, but the defender read it and cut it out.' : 'The defender read the pass and cut it out.')
+      drawTopLabel(ctx, 'Intercepted! 🧤', g.luckFail ? 'Well-weighted, but the defender read it and cut it out.' : 'The defender read the pass and cut it out.')
     }
-  }, [project, atS, zoneCenterNow])
+  }, [project, atS])
 
   // ===== Loop =====
   useEffect(() => {
@@ -607,8 +600,10 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
       }
       if (g.phase === 'fly') {
         g.t += dt
-        const cleanThread = g.outcome === 'connected' && !g.luckFail
-        const end = cleanThread ? g.reachT + 0.5 : g.interceptT + 0.45
+        if (g.t >= g.td) g.released = true
+        const end = (g.outcome === 'connected' && !g.luckFail)
+          ? (Number.isFinite(g.crossT) ? g.crossT + 0.25 : T_MAX)
+          : g.interceptT + 0.45
         if (g.t >= end) act.resolve()
       }
       if (g.celebrate > 0) g.celebrate = Math.max(0, g.celebrate - dt)
@@ -616,6 +611,7 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
         for (const pt of g.particles) { pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.vy += 760 * dt; pt.life -= dt; pt.rot += pt.vr * dt }
         g.particles = g.particles.filter((pt) => pt.life > 0)
       }
+      // Sandbox miss: after the steal, clear it and return to the try-aim view.
       if (g.sandbox && g.sandboxResetAt > 0 && now >= g.sandboxResetAt) {
         g.sandboxResetAt = 0; g.scored = false; g.resolved = false; g.particles = []
         g.phase = 'result'
@@ -642,9 +638,9 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const p = g.play
   const outcome = g.outcome
   const canClickContinue = phase === 'result' && outcome === 'connected' && !missData
+  // Difficulty-scaled hint scaffold: easy lock → full plugged-in formula,
+  // medium → bare formula, hard → no formula (recall nudge only).
   const scaffold: 'full' | 'partial' | 'none' = g.diff < 0.33 ? 'full' : g.diff <= 0.66 ? 'partial' : 'none'
-  const isPace = g.solveFor === 'pace'
-  const placeholder = (isPace ? answerPace(p.a, p.d, g.lockedVstar) : answerDead(p.a, g.lockedS)).toFixed(1)
 
   return (
     <div
@@ -667,22 +663,20 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
 
         {phase === 'aim' && (
           <div className="soccer__prompt">
-            {isPace
-              ? <><strong>Ground pass!</strong> A teammate waits in the green space and a defender is lurking. Weight your kick so it reaches his feet at the pace he wants. Click or press <kbd>Space</kbd> to start the power meter.</>
-              : <><strong>Dead pass!</strong> Roll the ball to rest in the open space before the defender can read it. Click or press <kbd>Space</kbd> to start the power meter.</>}
+            <strong>Through-ball!</strong> A teammate is sprinting into the green space and a defender is lurking. Lead the runner so your pass threads past the defender into the space. Click or press <kbd>Space</kbd> to start the power meter.
           </div>
         )}
         {phase === 'meter' && (
           <div className="soccer__prompt">
-            Meter sweeps SLOW → FAST, then rebounds once. <kbd>Space</kbd> or click to lock {isPace ? 'the pace he wants' : 'the stop distance'}; then solve the kick speed.
+            Meter sweeps SLOW → FAST, then rebounds once. <kbd>Space</kbd> or click to lock {g.solveFor === 'speed' ? 'your release timing' : 'your pass power'}; then solve for the rest.
           </div>
         )}
-        {phase === 'fly' && <div className="soccer__prompt">Pass is on…</div>}
+        {phase === 'fly' && <div className="soccer__prompt">{g.released ? 'Pass is on…' : 'Hold it… timing the run…'}</div>}
 
         {phase === 'result' && outcome === 'connected' && !unlucky && !missData && (
           <div className="soccer__banner soccer__banner--goal">
-            <strong>PERFECT WEIGHT!</strong>
-            <span>Right into the space. Click anywhere to continue.</span>
+            <strong>CONNECTED!</strong>
+            <span>Threaded. Click anywhere to continue.</span>
           </div>
         )}
 
@@ -693,8 +687,14 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
           </div>
         )}
 
+        {/* In-game calculator overlay during solve (same placement as the penalty). */}
         {phase === 'solve' && showCalc && <Calculator onClose={() => setShowCalc(false)} />}
 
+        {/* Animated post-miss teaching lesson + try-for-yourself sandbox.
+            Gated on `missData` alone — it is set ONLY on a real mis-weighted pass
+            (never on a clean thread or the unlucky-but-correct read), so the lesson
+            appears only when the answer was actually wrong, and it STAYS mounted
+            through a sandbox shot even when that shot momentarily connects. */}
         {phase === 'result' && missData && (
           <Remediation
             data={missData}
@@ -711,43 +711,44 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
         {phase === 'solve' && (
           <>
             <div className="soccer__givens">
-              {isPace
-                ? <>
-                    <div className="is-key"><span>Pass to his feet at</span><strong>d = {p.d} m</strong></div>
-                    <div className="is-key"><span>Receiver wants pace (locked)</span><strong>v* = {g.lockedVstar} m/s</strong></div>
-                  </>
-                : <div className="is-key"><span>Roll it to rest at (locked)</span><strong>s* = {g.lockedS} m</strong></div>}
-              <div><span>Friction</span><strong>μ = {p.mu}</strong></div>
-              <div><span>Deceleration</span><strong>a = μg = {p.a} m/s²</strong></div>
+              <div className="is-key"><span>Hit the space at</span><strong>X* = {p.target} m</strong></div>
+              <div className="is-key"><span>Runner reaches it at</span><strong>t = {p.tMeet} s</strong></div>
+              {g.solveFor === 'speed'
+                ? <div className="is-key"><span>Your release (locked)</span><strong>t_d = {g.lockedTd.toFixed(1)} s</strong></div>
+                : <div className="is-key"><span>Your power (locked)</span><strong>v_b = {g.lockedVb.toFixed(1)} m/s</strong></div>}
+              <div><span>Head start</span><strong>x₀ = {p.x0} m</strong></div>
+              <div><span>Runner speed</span><strong>v_r = {p.vr} m/s</strong></div>
             </div>
             <div className="soccer__method">
               <div className="soccer__method-head">
-                <span>Solve for the kick speed v₀</span>
+                <span>{g.solveFor === 'speed' ? 'Solve for the pass speed v_b' : 'Solve for the release timing t_d'}</span>
                 <button type="button" className="soccer__calc-toggle" onClick={() => setShowCalc((v) => !v)}>🧮 {showCalc ? 'Hide' : 'Calc'}</button>
               </div>
               {scaffold === 'full' && (
                 <div className="soccer__steps">
-                  {isPace
-                    ? <code>v₀ = √(v*² + 2·a·d) = √({g.lockedVstar}² + 2·{p.a}·{p.d})</code>
-                    : <code>v₀ = √(2·a·s*) = √(2·{p.a}·{g.lockedS})</code>}
+                  {g.solveFor === 'speed'
+                    ? <code>v_b = X* / (t − t_d) = {p.target} / ({p.tMeet} − {g.lockedTd.toFixed(1)})</code>
+                    : <code>t_d = t − X* / v_b = {p.tMeet} − {p.target} / {g.lockedVb.toFixed(1)}</code>}
                 </div>
               )}
               {scaffold === 'partial' && (
                 <div className="soccer__steps">
-                  {isPace ? <code>v₀ = √(v*² + 2·a·d)</code> : <code>v₀ = √(2·a·s*)</code>}
+                  {g.solveFor === 'speed'
+                    ? <code>v_b = X* / (t − t_d)</code>
+                    : <code>t_d = t − X* / v_b</code>}
                 </div>
               )}
               {scaffold === 'none' && (
-                <p className="soccer__tip">Recall v² = v₀² − 2·a·s with a = μg — use the calculator if you need it.</p>
+                <p className="soccer__tip">Recall: x = x₀ + v·t — use the calculator if you need it.</p>
               )}
               <div className="soccer__inputs">
                 <label className="soccer__field">
-                  <span>Kick speed v₀ (m/s)</span>
+                  <span>{g.solveFor === 'speed' ? 'Pass speed v_b (m/s)' : 'Release timing t_d (s)'}</span>
                   <input
                     type="text"
                     inputMode="decimal"
                     value={answerStr}
-                    placeholder={placeholder}
+                    placeholder={(g.solveFor === 'speed' ? answerSpeed(p, g.lockedTd) : answerTime(p, g.lockedVb)).toFixed(1)}
                     onChange={(e) => setAnswerStr(e.target.value)}
                   />
                 </label>
@@ -757,7 +758,7 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
         )}
 
         {phase === 'result' && outcome === 'connected' && !unlucky && !missData && (
-          <p className="soccer__tip">Weighted it perfectly: {isPace ? 'on his stride at the right pace' : 'dead in the open space'}. <b>Streak {streak}</b> · best {best}.</p>
+          <p className="soccer__tip">Threaded it: your pass line crossed the runner's right in the space. <b>Streak {streak}</b> · best {best}.</p>
         )}
 
         <div className="sim__controls">
@@ -776,18 +777,17 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
 }
 
 function interceptText(outcome: Outcome | null, solveFor: SolveFor): string {
-  if (solveFor === 'pace') {
-    if (outcome === 'over') return 'Too much weight, it ran through the space. Ease off the kick.'
-    return 'Underhit, it pulled up short of his run. Put more on it.'
-  }
-  if (outcome === 'over') return 'Too firm, it skidded past the open space. Ease off.'
-  return 'Too soft, it died before the space. Give it more.'
+  if (outcome === 'early') return solveFor === 'speed' ? 'Too much pace — it reached him before the space, easy to read. Ease off.' : 'Released too early — it met him before the space. Hold it a touch longer.'
+  if (outcome === 'late') return solveFor === 'speed' ? 'Too little pace — it rolled in behind the run. Add more.' : 'Released too late — it rolled in behind the run. Let it go sooner.'
+  return 'Underhit — far too slow, the defender just stepped across it.'
 }
 
 // ============================================================================
 // Post-miss remediation — an animated, fill-the-blank teaching lesson followed
-// by a "try for yourself" sandbox. Ported 1:1 from MotionSim's Remediation, with
-// the physics swapped to friction-decelerated passing (v² = v₀² − 2·a·s).
+// by a "try for yourself" sandbox. Ported 1:1 from the penalty's Remediation
+// structure (paced step reveal, MCQ gates, worked-solution reveal, learn-time
+// bar, calculator, then a slider-driven live preview + sandbox shot), with the
+// physics swapped to the passing / lead-the-runner content.
 // ============================================================================
 type Opt = { label: string; correct: boolean }
 type LStep = { n: string; cmp?: boolean; prompt: string; options: Opt[]; gate: 'check' | 'correct'; card: (blank: ReactNode) => ReactNode; solution: ReactNode }
@@ -802,15 +802,18 @@ function Remediation({
   sandboxBusy: boolean
   sandboxResult: { kind: 'goal' | 'miss'; text: string } | null
 }) {
-  const { play, solveFor, lockedVstar, lockedS, zone, used } = data
-  const isPace = solveFor === 'pace'
-  const lockVal = isPace ? lockedVstar : lockedS
-  const correct = isPace ? answerPace(play.a, play.d, lockedVstar) : answerDead(play.a, lockedS)
-  const unit = 'm/s'
-  const varName = 'kick speed v₀'
+  const { play, solveFor, lockedTd, lockedVb, used } = data
+  const correct = solveFor === 'speed' ? answerSpeed(play, lockedTd) : answerTime(play, lockedVb)
+  const unit = solveFor === 'speed' ? 'm/s' : 's'
+  const varName = solveFor === 'speed' ? 'pass speed v_b' : 'release timing t_d'
+  // Same difficulty scaffold as the in-solve panel: harder locks reveal less.
   const lessonScaffold: 'full' | 'partial' | 'none' = data.diff < 0.33 ? 'full' : data.diff <= 0.66 ? 'partial' : 'none'
 
-  const predict = (value: number) => grade(value, solveFor, play.a, zone, lockVal)
+  const predict = (value: number) => {
+    const vb = solveFor === 'speed' ? value : lockedVb
+    const td = solveFor === 'speed' ? lockedTd : value
+    return crossing(vb, td, play)
+  }
 
   const [view, setView] = useState<'lesson' | 'try'>('lesson')
   const [stepIdx, setStepIdx] = useState(0)
@@ -823,19 +826,19 @@ function Remediation({
   const slots = useMemo(() => Array.from({ length: 4 }, () => Math.floor(Math.random() * 3)), [])
   useEffect(() => { setPick(null); setChecked(false); setRevealed(false) }, [stepIdx])
 
-  const liveGrade = predict(val)
-  const inZone = liveGrade.outcome === 'connected'
+  const liveCross = predict(val)
+  const inZone = !!liveCross && Math.abs(liveCross.s - play.target) <= ZONE_HALF
 
   // "What went wrong" verdict about the player's actual mis-weighted pass.
-  const missGrade = predict(used)
-  const verdict = isPace
-    ? (missGrade.sStop < play.d
-        ? `Your kick died at ${missGrade.sStop.toFixed(1)} m, short of his run at ${play.d} m.`
-        : `It reached him at ${missGrade.vArr.toFixed(1)} m/s, off the ${lockedVstar} m/s he wanted.`)
-    : (missGrade.sStop < lockedS
-        ? `Your pass came to rest at ${missGrade.sStop.toFixed(1)} m, short of the ${lockedS} m space.`
-        : `Your pass overran to ${missGrade.sStop.toFixed(1)} m, past the ${lockedS} m space.`)
+  const missCross = predict(used)
+  const verdict = !missCross
+    ? 'Your pass was too slow to ever catch the run — it never crossed his line.'
+    : missCross.s < play.target
+      ? `Your pass met the runner at ${missCross.s.toFixed(1)} m — before the ${play.target} m space, at his feet.`
+      : `Your pass met the runner at ${missCross.s.toFixed(1)} m — beyond the ${play.target} m space, behind the run.`
 
+  // "Time spent learning" — counts up across both views; running out in the try
+  // view auto-skips the run.
   const LEARN_LIMIT = 120
   const [elapsed, setElapsed] = useState(0)
   useEffect(() => {
@@ -848,8 +851,8 @@ function Remediation({
   const barPct = Math.min(100, (elapsed / LEARN_LIMIT) * 100)
   const timedOutSoon = view === 'try' && elapsed >= LEARN_LIMIT - 10
 
-  const sliderMin = 2
-  const sliderMax = 16
+  const sliderMin = solveFor === 'speed' ? 3 : 0
+  const sliderMax = solveFor === 'speed' ? 22 : play.tMeet
 
   const enterTry = () => { setView('try'); setPreview({ active: true, value: val }) }
   const backToLesson = () => { setView('lesson'); setPreview({ active: false, value: val }) }
@@ -863,30 +866,27 @@ function Remediation({
     </div>
   )
 
-  // ---- Try-for-yourself HUD over the live scene + preview roll ----
+  // ---- Try-for-yourself HUD over the live scene + preview line ----
   if (view === 'try') {
     const scored = sandboxResult?.kind === 'goal'
     const lastShot = sandboxResult && sandboxResult.kind !== 'goal' ? sandboxResult : null
-    const liveTxt = sandboxBusy
-      ? '⚽ Pass on its way…'
-      : inZone
-        ? '✓ Lands right in the space, play it!'
-        : isPace
-          ? (liveGrade.sStop < play.d ? `dies at ${liveGrade.sStop.toFixed(1)} m · need ${play.d} m` : `arrives ${liveGrade.vArr.toFixed(1)} m/s · want ${lockedVstar}`)
-          : `rests at ${liveGrade.sStop.toFixed(1)} m · want ${lockedS} m`
     return (
       <div className="soccer__try">
         <div className="soccer__try-givens">
-          <span>μ = {play.mu}</span>
-          <span>a = {play.a} m/s²</span>
-          {isPace
-            ? <><span>d = {play.d} m</span><span>wants v* = {lockedVstar} m/s (fixed)</span></>
-            : <span>target s* = {lockedS} m (fixed)</span>}
+          <span>X* = {play.target} m</span>
+          <span>t_meet = {play.tMeet} s</span>
+          <span>{solveFor === 'speed' ? `t_d = ${lockedTd.toFixed(1)} s (fixed)` : `v_b = ${lockedVb.toFixed(1)} m/s (fixed)`}</span>
         </div>
         <div className="soccer__try-bar">
           <div className="soccer__try-top">
             <strong>🎯 Try for yourself: drag your {varName}, then play it</strong>
-            <span className={`soccer__try-verdict${inZone ? ' is-good' : ''}`}>{liveTxt}</span>
+            <span className={`soccer__try-verdict${inZone ? ' is-good' : ''}`}>
+              {sandboxBusy
+                ? '⚽ Pass on its way…'
+                : inZone
+                  ? '✓ Line crosses in the space, play it!'
+                  : !liveCross ? 'Too slow — never catches the run' : `crosses at ${liveCross.s.toFixed(1)} m · need ${play.target} m`}
+            </span>
           </div>
           {lastShot && (
             <div className="soccer__try-last soccer__try-last--miss">
@@ -912,7 +912,7 @@ function Remediation({
           <div className="soccer__try-congrats" onClick={onDone}>
             <div className="soccer__try-congrats-card" onClick={(e) => e.stopPropagation()}>
               <div className="soccer__try-congrats-emoji">🎉</div>
-              <h2>PERFECT WEIGHT!</h2>
+              <h2>THREADED IT!</h2>
               <p>{sandboxResult?.text}</p>
               <button type="button" className="btn btn--primary soccer__try-btn" onClick={onDone}>Play a fresh run →</button>
               <span className="soccer__try-congrats-hint">click anywhere to start a new run</span>
@@ -923,23 +923,36 @@ function Remediation({
     )
   }
 
-  // ---- Worked walkthrough built from the CORRECT kick ----
+  // ---- Worked walkthrough built from the CORRECT, threading pass ----
   const r1 = (x: number) => Math.round(x * 10) / 10
-  const a = play.a
-  const twoAD = 2 * a * play.d           // pace: velocity² to overcome friction over d
-  const vStarSq = lockedVstar * lockedVstar
-  const v0sqPace = vStarSq + twoAD       // pace: required v₀²
-  const v0sqDead = 2 * a * lockedS       // dead: required v₀²
-  const finalSpeed = isPace ? r1(answerPace(a, play.d, lockedVstar)) : r1(answerDead(a, lockedS))
+  const r2 = (x: number) => Math.round(x * 100) / 100
+  const runDist = play.vr * play.tMeet
+  const X = play.target
+  const avail = r1(play.tMeet - lockedTd)          // speed mode: time the pass has
+  const ballTime = r2(X / lockedVb)                // time mode: time ball needs at v_b
+  // The lesson's correct answer is the SAME value the sim grades against — the
+  // exact solution rounded for display — so the "recommended" option provably
+  // threads the pass when played. (answerSpeed/answerTime ARE the sim's solve.)
+  const finalSpeed = r1(answerSpeed(play, lockedTd))
+  const finalTime = r1(answerTime(play, lockedVb))
 
-  const ac = (x: number) => `${x.toFixed(1)} m/s²`
-  const sq = (x: number) => `${x.toFixed(1)} m²/s²`
+  const m = (x: number) => `${x.toFixed(1)} m`
+  const sFmt = (x: number) => `${x.toFixed(1)} s`
   const sp = (x: number) => `${x.toFixed(1)} m/s`
 
-  // The sim's own grader: would this candidate kick connect? Used to reject any
-  // distractor that would ALSO succeed, so the final step has one right answer.
-  const threadsV0 = (v: number) => grade(clamp(v, 0, 20), solveFor, a, zone, lockVal).outcome === 'connected'
+  // The sim's own pass grader: would this candidate value thread the run? Mirrors
+  // fire()'s outcome test (the pass line must cross the run within ±ZONE_HALF of
+  // X*). Used to reject any distractor that would ALSO connect, so the final step
+  // has exactly one right answer.
+  const threadsSpeed = (v: number) => { const cr = crossing(clamp(v, 0, 30), lockedTd, play); return !!cr && Math.abs(cr.s - play.target) <= ZONE_HALF }
+  const threadsTime = (v: number) => { const cr = crossing(lockedVb, clamp(v, 0, play.tMeet), play); return !!cr && Math.abs(cr.s - play.target) <= ZONE_HALF }
 
+  // Build a step's MCQ options. Guarantees EXACTLY ONE right answer:
+  //  • the correct value is the only option flagged `correct`, and
+  //  • each distractor is rejected (then nudged away) if it reads the same as the
+  //    correct answer at display precision (dedupe by numeric value, not just the
+  //    string label) OR — when `threads` is supplied for the final answer step —
+  //    if it would itself thread the pass (which would make it a 2nd right answer).
   const mkOpts = (
     correctVal: number,
     distractors: number[],
@@ -962,96 +975,106 @@ function Remediation({
   }
 
   if (import.meta.env.DEV) {
-    const near = (x: number, y: number, tol: number) => Math.abs(x - y) <= tol
-    const grader = isPace ? answerPace(a, play.d, lockedVstar) : answerDead(a, lockedS)
-    console.assert(near(finalSpeed, grader, 0.6), `forces lesson: shown answer ${finalSpeed} far from grader ${grader.toFixed(2)}`)
-    console.assert(grade(grader, solveFor, a, zone, lockVal).outcome === 'connected', 'forces lesson: graded answer does not connect')
+    const near = (a: number, b: number, tol: number) => Math.abs(a - b) <= tol
+    const grader = solveFor === 'speed' ? answerSpeed(play, lockedTd) : answerTime(play, lockedVb)
+    const shown = solveFor === 'speed' ? finalSpeed : finalTime
+    console.assert(near(shown, grader, 0.6), `passing lesson: shown answer ${shown} far from grader ${grader.toFixed(2)}`)
+    console.assert(near(play.x0 + runDist, X, 1e-6), 'passing lesson: x0 + v_r·t != X*')
   }
 
-  const steps: LStep[] = isPace
+  const steps: LStep[] = solveFor === 'speed'
     ? [
         {
-          n: '1', prompt: 'First, how hard does friction brake the ball? a = μ·g',
-          options: mkOpts(a, [play.mu, a + 2], ac, slots[0]), gate: 'check',
+          n: '1', prompt: 'How far does the runner cover by the time he reaches the space?',
+          options: mkOpts(runDist, [play.x0, runDist + play.x0], m, slots[0]), gate: 'check',
           card: (blank) => (<>
-            <div className="soccer__step-formula">a = μ · g</div>
-            <div className="soccer__step-plug">= {play.mu} · {G} = {blank}</div>
+            <div className="soccer__step-formula">Distance run = v_r · t_meet</div>
+            <div className="soccer__step-plug">= {play.vr} · {play.tMeet} = {blank}</div>
           </>),
-          solution: <>a = μ · g = {play.mu} · {G} = <b>{ac(a)}</b></>,
+          solution: <>v_r · t_meet = {play.vr} · {play.tMeet} = <b>{m(runDist)}</b></>,
         },
         {
-          n: '2', prompt: `How much speed² does friction strip over the ${play.d} m to him? (2·a·d)`,
-          options: mkOpts(twoAD, [a * play.d, 4 * a * play.d], sq, slots[1]), gate: 'check',
+          n: '2', prompt: 'So where is the centre of the space, X* (his position then)?',
+          options: mkOpts(X, [runDist, X + play.vr], m, slots[1]), gate: 'check',
           card: (blank) => (<>
-            <div className="soccer__step-formula">loss = 2 · a · d</div>
-            <div className="soccer__step-plug">= 2 · {a} · {play.d} = {blank}</div>
+            <div className="soccer__step-formula">x = x₀ + v_r · t_meet</div>
+            <div className="soccer__step-plug">= {play.x0} + {runDist} = {blank}</div>
           </>),
-          solution: <>2 · a · d = 2 · {a} · {play.d} = <b>{sq(twoAD)}</b></>,
+          solution: <>x₀ + v_r·t_meet = {play.x0} + {runDist} = <b>{m(X)}</b></>,
         },
         {
-          n: '3', prompt: `He wants it arriving at v* = ${lockedVstar} m/s, so what must v₀² be?`,
-          options: mkOpts(v0sqPace, [twoAD, vStarSq], sq, slots[2]), gate: 'check',
+          n: '3', prompt: 'You release at t_d, so how long does your pass have to reach X*?',
+          options: mkOpts(avail, [play.tMeet, lockedTd], sFmt, slots[2]), gate: 'check',
           card: (blank) => (<>
-            <div className="soccer__step-formula">v₀² = v*² + 2·a·d</div>
-            <div className="soccer__step-plug">= {vStarSq} + {twoAD} = {blank}</div>
+            <div className="soccer__step-formula">Pass travel time = t_meet − t_d</div>
+            <div className="soccer__step-plug">= {play.tMeet} − {lockedTd.toFixed(1)} = {blank}</div>
           </>),
-          solution: <>v*² + 2·a·d = {vStarSq} + {twoAD} = <b>{sq(v0sqPace)}</b></>,
+          solution: <>t_meet − t_d = {play.tMeet} − {lockedTd.toFixed(1)} = <b>{sFmt(avail)}</b></>,
         },
         {
-          n: '★', cmp: true, prompt: 'Now produce the answer: which kick speed v₀ threads it?',
-          options: mkOpts(finalSpeed, [used, r1(Math.sqrt(twoAD))], sp, slots[3], threadsV0), gate: 'correct',
+          n: '★', cmp: true, prompt: 'Now produce the answer: which pass speed v_b threads it through?',
+          options: mkOpts(finalSpeed, [used, r1(X / play.tMeet)], sp, slots[3], threadsSpeed), gate: 'correct',
           card: (blank) => (<>
-            {lessonScaffold !== 'none' && <div className="soccer__step-formula">v₀ = √(v*² + 2·a·d)</div>}
+            {lessonScaffold !== 'none' && <div className="soccer__step-formula">v_b = X* / (t_meet − t_d)</div>}
             {lessonScaffold === 'full' && (
               <div className="soccer__step-recap">
                 <span className="soccer__recap-lead">Work it out:</span>
-                <div className="soccer__recap-eq">1) v*² = {vStarSq}</div>
-                <div className="soccer__recap-eq">2) 2·a·d = {twoAD}</div>
-                <div className="soccer__recap-eq soccer__recap-eq--final">3) v₀ = √{v0sqPace} = ?</div>
+                <div className="soccer__recap-eq">1) X* = {m(X)}</div>
+                <div className="soccer__recap-eq">2) time available = {sFmt(avail)}</div>
+                <div className="soccer__recap-eq soccer__recap-eq--final">3) v_b = {X} ÷ {avail.toFixed(1)} = ?</div>
               </div>
             )}
-            {lessonScaffold === 'none' && <div className="soccer__step-recap"><span className="soccer__recap-lead">Recall v² = v₀² − 2·a·s and rearrange it yourself — the calculator is below.</span></div>}
-            <div className="soccer__step-plug">v₀ = {blank}</div>
+            {lessonScaffold === 'none' && <div className="soccer__step-recap"><span className="soccer__recap-lead">Recall x = x₀ + v·t and rearrange it yourself — the calculator is below.</span></div>}
+            <div className="soccer__step-plug">v_b = {blank}</div>
           </>),
-          solution: <>v₀ = √(v*² + 2·a·d) = √{v0sqPace} = <b>{sp(finalSpeed)}</b></>,
+          solution: <>v_b = X* / (t_meet − t_d) = {X} ÷ {avail.toFixed(1)} = <b>{sp(finalSpeed)}</b></>,
         },
       ]
     : [
         {
-          n: '1', prompt: 'First, how hard does friction brake the ball? a = μ·g',
-          options: mkOpts(a, [play.mu, a + 2], ac, slots[0]), gate: 'check',
+          n: '1', prompt: 'How far does the runner cover by the time he reaches the space?',
+          options: mkOpts(runDist, [play.x0, runDist + play.x0], m, slots[0]), gate: 'check',
           card: (blank) => (<>
-            <div className="soccer__step-formula">a = μ · g</div>
-            <div className="soccer__step-plug">= {play.mu} · {G} = {blank}</div>
+            <div className="soccer__step-formula">Distance run = v_r · t_meet</div>
+            <div className="soccer__step-plug">= {play.vr} · {play.tMeet} = {blank}</div>
           </>),
-          solution: <>a = μ · g = {play.mu} · {G} = <b>{ac(a)}</b></>,
+          solution: <>v_r · t_meet = {play.vr} · {play.tMeet} = <b>{m(runDist)}</b></>,
         },
         {
-          n: '2', prompt: `To stop dead at s* = ${lockedS} m, what must v₀² be? (2·a·s*)`,
-          options: mkOpts(v0sqDead, [a * lockedS, 4 * a * lockedS], sq, slots[1]), gate: 'check',
+          n: '2', prompt: 'So where is the centre of the space, X* (his position then)?',
+          options: mkOpts(X, [runDist, X + play.vr], m, slots[1]), gate: 'check',
           card: (blank) => (<>
-            <div className="soccer__step-formula">v₀² = 2 · a · s*</div>
-            <div className="soccer__step-plug">= 2 · {a} · {lockedS} = {blank}</div>
+            <div className="soccer__step-formula">x = x₀ + v_r · t_meet</div>
+            <div className="soccer__step-plug">= {play.x0} + {runDist} = {blank}</div>
           </>),
-          solution: <>2 · a · s* = 2 · {a} · {lockedS} = <b>{sq(v0sqDead)}</b></>,
+          solution: <>x₀ + v_r·t_meet = {play.x0} + {runDist} = <b>{m(X)}</b></>,
         },
         {
-          n: '★', cmp: true, prompt: 'Now produce the answer: which kick speed v₀ dies in the space?',
-          options: mkOpts(finalSpeed, [used, r1(Math.sqrt(a * lockedS))], sp, slots[2], threadsV0), gate: 'correct',
+          n: '3', prompt: 'At your locked speed v_b, how long does the ball take to reach X*?',
+          options: mkOpts(ballTime, [play.tMeet, r2(X / (lockedVb * 2))], sFmt, slots[2]), gate: 'check',
           card: (blank) => (<>
-            {lessonScaffold !== 'none' && <div className="soccer__step-formula">v₀ = √(2·a·s*)</div>}
+            <div className="soccer__step-formula">Ball time = X* / v_b</div>
+            <div className="soccer__step-plug">= {X} / {lockedVb.toFixed(1)} = {blank}</div>
+          </>),
+          solution: <>X* / v_b = {X} / {lockedVb.toFixed(1)} = <b>{sFmt(ballTime)}</b></>,
+        },
+        {
+          n: '★', cmp: true, prompt: 'Now produce the answer: when do you release (t_d) so it arrives as he does?',
+          options: mkOpts(finalTime, [used, play.tMeet], sFmt, slots[3], threadsTime), gate: 'correct',
+          card: (blank) => (<>
+            {lessonScaffold !== 'none' && <div className="soccer__step-formula">t_d = t_meet − X* / v_b</div>}
             {lessonScaffold === 'full' && (
               <div className="soccer__step-recap">
                 <span className="soccer__recap-lead">Work it out:</span>
-                <div className="soccer__recap-eq">1) a = {ac(a)}</div>
-                <div className="soccer__recap-eq">2) 2·a·s* = {v0sqDead}</div>
-                <div className="soccer__recap-eq soccer__recap-eq--final">3) v₀ = √{v0sqDead} = ?</div>
+                <div className="soccer__recap-eq">1) ball needs {sFmt(ballTime)} to reach X*</div>
+                <div className="soccer__recap-eq">2) he arrives at t_meet = {sFmt(play.tMeet)}</div>
+                <div className="soccer__recap-eq soccer__recap-eq--final">3) t_d = {play.tMeet} − {ballTime.toFixed(1)} = ?</div>
               </div>
             )}
-            {lessonScaffold === 'none' && <div className="soccer__step-recap"><span className="soccer__recap-lead">Recall a stopping ball loses v₀² over 2·a·s — rearrange it yourself, the calculator is below.</span></div>}
-            <div className="soccer__step-plug">v₀ = {blank}</div>
+            {lessonScaffold === 'none' && <div className="soccer__step-recap"><span className="soccer__recap-lead">Recall x = x₀ + v·t and rearrange it yourself — the calculator is below.</span></div>}
+            <div className="soccer__step-plug">t_d = {blank}</div>
           </>),
-          solution: <>v₀ = √(2·a·s*) = √{v0sqDead} = <b>{sp(finalSpeed)}</b></>,
+          solution: <>t_d = t_meet − X* / v_b = {play.tMeet} − {ballTime.toFixed(1)} = <b>{sFmt(finalTime)}</b></>,
         },
       ]
 
@@ -1066,8 +1089,8 @@ function Remediation({
   const checkAnswer = () => {
     if (pick === null || stepDone) return
     setChecked(true)
-    if (pickedCorrect) setAnswered((aa) => { const b = [...aa]; b[stepIdx] = true; return b })
-    else if (cur.gate === 'check') { setRevealed(true); setAnswered((aa) => { const b = [...aa]; b[stepIdx] = true; return b }) }
+    if (pickedCorrect) setAnswered((a) => { const b = [...a]; b[stepIdx] = true; return b })
+    else if (cur.gate === 'check') { setRevealed(true); setAnswered((a) => { const b = [...a]; b[stepIdx] = true; return b }) }
   }
   const blankSlot: ReactNode = pick === null
     ? <span className="soccer__blank">?</span>
@@ -1086,14 +1109,13 @@ function Remediation({
         </div>
 
         <div className="soccer__lesson-chips">
-          <div className="chip"><span>friction</span><strong>μ = {play.mu}</strong></div>
-          <div className="chip"><span>deceleration</span><strong>a = {play.a} m/s²</strong></div>
-          {isPace
-            ? <div className="chip"><span>his space</span><strong>d = {play.d} m</strong></div>
-            : null}
+          <div className="chip"><span>head start</span><strong>x₀ = {play.x0} m</strong></div>
+          <div className="chip"><span>runner speed</span><strong>v_r = {play.vr} m/s</strong></div>
+          <div className="chip"><span>the space</span><strong>X* = {play.target} m</strong></div>
+          <div className="chip"><span>reaches it at</span><strong>t = {play.tMeet} s</strong></div>
           <div className="chip chip--lock">
-            <span>{isPace ? 'wants pace' : 'dead target'}</span>
-            <strong>{isPace ? `v* = ${lockedVstar} m/s` : `s* = ${lockedS} m`}</strong>
+            <span>{solveFor === 'speed' ? 'locked release' : 'locked power'}</span>
+            <strong>{solveFor === 'speed' ? `t_d = ${lockedTd.toFixed(1)} s` : `v_b = ${lockedVb.toFixed(1)} m/s`}</strong>
           </div>
         </div>
 
@@ -1177,10 +1199,13 @@ function Remediation({
 }
 
 // ============================================================================
-// Canvas drawing helpers (shared render kit with MotionSim / KinematicsSim)
+// Canvas drawing helpers (adapted from KinematicsSim's render kit)
 // ============================================================================
 type AtSFn = (p: Play, s: number, y: number, lateral?: number) => P2
 
+// Full team kits (restored from the archived jersey rendering): a coordinated
+// jersey + shorts + socks with a collar, shirt number and sock bands, so the
+// teammate (blue) and the defender (red) read as real kitted players.
 const TEAM_KIT = {
   jersey: '#2f6df0', jerseyDark: '#1f4ec2', jerseyHi: '#6c9bff', collar: '#0d2f7a',
   shorts: '#13234d', shortsDark: '#0c1834', sock: '#2f6df0', sockBand: '#ffffff',
@@ -1193,6 +1218,7 @@ const FOE_KIT = {
 }
 type Kit = typeof TEAM_KIT
 
+// A few stylised hair styles (from the archive), flat fills only so it's cheap.
 function drawHair(ctx: CanvasRenderingContext2D, cx: number, headY: number, headR: number, style: number, color: string) {
   ctx.fillStyle = color
   if (style === 1) {
@@ -1224,13 +1250,13 @@ function spawnConfetti(g: Game, at: P2) {
   }
 }
 
-function drawSpace(ctx: CanvasRenderingContext2D, atS: AtSFn, p: Play, zone: number, dead: boolean, now: number) {
-  // No lane lines or distance markers — just the live "space" the ball should
-  // reach (pace) or die in (dead). The lane bearing changes every round.
+function drawChannel(ctx: CanvasRenderingContext2D, atS: AtSFn, p: Play, now: number) {
+  // No lane lines or distance markers — just the live "space" the teammate is
+  // sprinting into. The run bearing changes every round, so the pitch stays clean.
   const pulse = 1 + Math.sin(now / 260) * 0.08
-  const za = atS(p, zone - ZONE_HALF, 0.01, LANE_HALF), zb = atS(p, zone - ZONE_HALF, 0.01, -LANE_HALF)
-  const zc = atS(p, zone + ZONE_HALF, 0.01, -LANE_HALF), zd = atS(p, zone + ZONE_HALF, 0.01, LANE_HALF)
-  const ctr = atS(p, zone, 0.01)
+  const za = atS(p, p.target - ZONE_HALF, 0.01, LANE_HALF), zb = atS(p, p.target - ZONE_HALF, 0.01, -LANE_HALF)
+  const zc = atS(p, p.target + ZONE_HALF, 0.01, -LANE_HALF), zd = atS(p, p.target + ZONE_HALF, 0.01, LANE_HALF)
+  const ctr = atS(p, p.target, 0.01)
   const glowR = Math.max(20, LANE_HALF * ctr.scale * 1.4) * pulse
   const glow = ctx.createRadialGradient(ctr.sx, ctr.sy, 4, ctr.sx, ctr.sy, glowR)
   glow.addColorStop(0, 'rgba(54,224,127,0.5)'); glow.addColorStop(0.6, 'rgba(54,224,127,0.18)'); glow.addColorStop(1, 'rgba(54,224,127,0)')
@@ -1238,9 +1264,9 @@ function drawSpace(ctx: CanvasRenderingContext2D, atS: AtSFn, p: Play, zone: num
   ctx.fillStyle = 'rgba(54,224,127,0.22)'
   ctx.beginPath(); ctx.moveTo(za.sx, za.sy); ctx.lineTo(zb.sx, zb.sy); ctx.lineTo(zc.sx, zc.sy); ctx.lineTo(zd.sx, zd.sy); ctx.closePath(); ctx.fill()
   ctx.strokeStyle = 'rgba(54,224,127,0.9)'; ctx.lineWidth = 2.5; ctx.stroke()
-  const lbl = atS(p, zone, 1.4)
+  const lbl = atS(p, p.target, 1.4)
   ctx.fillStyle = '#eafff2'; ctx.font = '800 13px Plus Jakarta Sans, sans-serif'; ctx.textAlign = 'center'
-  ctx.fillText(dead ? 'open space' : 'the space', lbl.sx, lbl.sy)
+  ctx.fillText('the space', lbl.sx, lbl.sy)
   ctx.textAlign = 'left'
 }
 
@@ -1261,10 +1287,12 @@ function drawPlayer(ctx: CanvasRenderingContext2D, atS: AtSFn, p: Play, s: numbe
   const headR = Math.max(3.5, 0.17 * scale)
   const torsoH = hipY - shoulderY + 2
 
+  // ground shadow
   ctx.fillStyle = 'rgba(0,0,0,0.26)'
   ctx.beginPath(); ctx.ellipse(cx, feet.sy + 1, wBody * 0.95, wBody * 0.32, 0, 0, Math.PI * 2); ctx.fill()
 
   ctx.lineCap = 'round'
+  // --- legs: team-colour socks down each shin, a white sock band, then boots ---
   const swing = running ? Math.sin(ph) * 0.28 * scale : wBody * 0.4
   const lift = running ? Math.max(0, Math.cos(ph)) * 0.15 * scale : 0
   const footLx = cx - swing, footLy = footY - lift
@@ -1279,14 +1307,17 @@ function drawPlayer(ctx: CanvasRenderingContext2D, atS: AtSFn, p: Play, s: numbe
   ctx.beginPath(); ctx.ellipse(footRx, footRy, lw * 0.8, lw * 0.45, 0, 0, Math.PI * 2); ctx.fill()
   ctx.beginPath(); ctx.ellipse(footLx, footLy, lw * 0.8, lw * 0.45, 0, 0, Math.PI * 2); ctx.fill()
 
+  // --- shorts: a rounded band across the hips with a darker side panel ---
   const shortsH = Math.max(3, torsoH * 0.32)
   ctx.fillStyle = kit.shorts; roundRect(ctx, cx - wBody / 2, hipY - shortsH * 0.55, wBody, shortsH, Math.max(2, wBody * 0.18)); ctx.fill()
   ctx.fillStyle = kit.shortsDark; ctx.fillRect(cx + wBody * 0.14, hipY - shortsH * 0.55, wBody * 0.36, shortsH)
 
+  // --- torso jersey (flat team colour) with side shade + light edge ---
   ctx.fillStyle = kit.jersey; roundRect(ctx, cx - wBody / 2, shoulderY, wBody, torsoH, Math.max(2, wBody * 0.3)); ctx.fill()
   ctx.fillStyle = kit.jerseyDark; ctx.fillRect(cx + wBody * 0.16, shoulderY + 2, wBody * 0.34, torsoH - 2)
   ctx.fillStyle = kit.jerseyHi; ctx.fillRect(cx - wBody * 0.4, shoulderY + torsoH * 0.12, wBody * 0.12, torsoH * 0.6)
 
+  // --- arms swing opposite the legs; short jersey sleeves over the shoulders ---
   const armW = Math.max(2, 0.1 * scale)
   const armSwing = running ? Math.sin(ph + Math.PI) * 0.18 * scale : 0
   const handY = hasBall ? shoulderY + torsoH * 0.55 : shoulderY + wBody * 0.85
@@ -1298,6 +1329,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, atS: AtSFn, p: Play, s: numbe
   ctx.beginPath(); ctx.moveTo(cx - wBody * 0.5, shoulderY + 3); ctx.lineTo(cx - wBody * 0.66, shoulderY + wBody * 0.34); ctx.stroke()
   ctx.beginPath(); ctx.moveTo(cx + wBody * 0.5, shoulderY + 3); ctx.lineTo(cx + wBody * 0.66, shoulderY + wBody * 0.34); ctx.stroke()
 
+  // --- collar + shirt number ---
   ctx.fillStyle = kit.collar; ctx.fillRect(cx - wBody * 0.2, shoulderY, wBody * 0.4, Math.max(1.5, torsoH * 0.1))
   if (wBody > 9 && !hasBall) {
     ctx.fillStyle = kit.number
@@ -1309,6 +1341,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, atS: AtSFn, p: Play, s: numbe
 
   if (hasBall) drawBall(ctx, cx, handY + wBody * 0.1, Math.max(4, BALL_R * scale * 0.9), now / 200, 0)
 
+  // --- head, skin tone + seed-driven hair ---
   ctx.fillStyle = kit.skin; ctx.beginPath(); ctx.arc(cx, headY, headR, 0, Math.PI * 2); ctx.fill()
   drawHair(ctx, cx, headY, headR, kit.hairStyle, kit.hair)
   ctx.lineCap = 'butt'
@@ -1339,12 +1372,11 @@ function drawBall(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: numb
   ctx.restore()
 }
 
-// Live candidate roll on the lane during the try-for-yourself sandbox: a real
-// decelerating path traced to where the ball would come to rest (or be collected).
-function drawPreviewRoll(ctx: CanvasRenderingContext2D, atS: AtSFn, p: Play, v0: number, solveFor: SolveFor, zone: number, lockVal: number, now: number) {
-  const gr = grade(v0, solveFor, p.a, zone, lockVal)
-  const reach = Math.min(gr.sStop, POS_MAX)
-  const inZone = gr.outcome === 'connected'
+// Live candidate pass line on the lane during the try-for-yourself sandbox.
+function drawPreviewLane(ctx: CanvasRenderingContext2D, atS: AtSFn, p: Play, vb: number, td: number, now: number) {
+  const cr = crossing(vb, td, p)
+  const reach = cr ? Math.min(cr.s, POS_MAX) : POS_MAX
+  const inZone = !!cr && Math.abs(cr.s - p.target) <= ZONE_HALF
   const color = inZone ? '#3ef08a' : '#ff8fcf'
   const N = 40
   ctx.lineCap = 'round'
@@ -1355,22 +1387,18 @@ function drawPreviewRoll(ctx: CanvasRenderingContext2D, atS: AtSFn, p: Play, v0:
   ctx.strokeStyle = inZone ? 'rgba(62,240,138,0.25)' : 'rgba(255,143,207,0.22)'; ctx.lineWidth = 11; trace(); ctx.stroke()
   ctx.strokeStyle = color; ctx.lineWidth = 4; trace(); ctx.stroke()
   for (let i = 2; i < N; i += 5) { const pt = atS(p, (i / N) * reach, BALL_R); ctx.fillStyle = color; ctx.beginPath(); ctx.arc(pt.sx, pt.sy, 2.6, 0, Math.PI * 2); ctx.fill() }
-  // marker at the receiver / target distance (pace mode shows d)
-  if (solveFor === 'pace') {
-    const dp = atS(p, Math.min(zone, POS_MAX), BALL_R)
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 2
-    ctx.beginPath(); ctx.arc(dp.sx, dp.sy, 7, 0, Math.PI * 2); ctx.stroke()
-  }
-  const ep = atS(p, reach, BALL_R)
-  const pulse = 1 + Math.sin(now / 180) * 0.18
-  ctx.strokeStyle = color; ctx.lineWidth = 3
-  ctx.beginPath(); ctx.arc(ep.sx, ep.sy, 9 * pulse, 0, Math.PI * 2); ctx.stroke()
-  ctx.fillStyle = color; ctx.beginPath(); ctx.arc(ep.sx, ep.sy, 4, 0, Math.PI * 2); ctx.fill()
-  if (inZone) {
-    ctx.textAlign = 'center'
-    ctx.fillStyle = '#0b3a22'; ctx.font = '800 24px "Baloo 2", "Plus Jakarta Sans", sans-serif'; ctx.fillText('PERFECT!', ep.sx + 1, ep.sy - 19)
-    ctx.fillStyle = '#5dffa6'; ctx.fillText('PERFECT!', ep.sx, ep.sy - 20)
-    ctx.textAlign = 'left'
+  if (cr) {
+    const ep = atS(p, reach, BALL_R)
+    const pulse = 1 + Math.sin(now / 180) * 0.18
+    ctx.strokeStyle = color; ctx.lineWidth = 3
+    ctx.beginPath(); ctx.arc(ep.sx, ep.sy, 9 * pulse, 0, Math.PI * 2); ctx.stroke()
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(ep.sx, ep.sy, 4, 0, Math.PI * 2); ctx.fill()
+    if (inZone) {
+      ctx.textAlign = 'center'
+      ctx.fillStyle = '#0b3a22'; ctx.font = '800 24px "Baloo 2", "Plus Jakarta Sans", sans-serif'; ctx.fillText('THREADED!', ep.sx + 1, ep.sy - 19)
+      ctx.fillStyle = '#5dffa6'; ctx.fillText('THREADED!', ep.sx, ep.sy - 20)
+      ctx.textAlign = 'left'
+    }
   }
   ctx.lineCap = 'butt'
 }

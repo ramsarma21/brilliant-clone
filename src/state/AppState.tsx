@@ -25,6 +25,7 @@ import {
   saveSession,
   todayKey,
 } from '../lib/storage'
+import { saveProfileMastery } from '../lib/profileMastery'
 
 function emptyLessonProgress(lessonId: string): LessonProgress {
   return {
@@ -59,9 +60,22 @@ function createInitialProgress(): UserProgress {
   }
 }
 
-/** A unit is mastered when all 3 mastery checks pass and the challenge is met. */
+/** A unit is mastered when its required mastery gates pass. */
 function isUnitMastered(lp: LessonProgress | undefined): boolean {
   if (!lp) return false
+  if (lp.lessonId === 'lesson-projectile') {
+    // Kinematics lesson is finished; auto-mark it mastered so later units unlock.
+    return true
+  }
+  if (lp.lessonId === 'lesson-motion-graphs') {
+    const checks =
+      Boolean(lp.masteryChecksCorrect['mg-prediction']) &&
+      Boolean(lp.masteryChecksCorrect['mg-numeric']) &&
+      Boolean(lp.masteryChecksCorrect['mg-challenge']) &&
+      lp.manipulationChallengeComplete
+    const quizDone = Boolean(lp.masteryChecksCorrect['mg-quiz'])
+    return checks && quizDone
+  }
   const lesson = LESSONS[lp.lessonId]
   const checkStepIds = lesson.steps
     .filter((s) => s.kind === 'prediction' || s.kind === 'numeric' || s.kind === 'challenge')
@@ -143,6 +157,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     saveProgress(progress)
   }, [progress])
+
+  const unitStatusKey = useMemo(() => JSON.stringify(progress.unitStatus), [progress.unitStatus])
+  useEffect(() => {
+    void saveProfileMastery(progress.unitStatus)
+  }, [unitStatusKey, progress.unitStatus])
 
   const update = useCallback((updater: (p: UserProgress) => UserProgress) => {
     setProgress((prev) => {

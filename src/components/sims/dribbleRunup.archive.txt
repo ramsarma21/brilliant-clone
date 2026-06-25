@@ -1,0 +1,348 @@
+Archived dribble/run-up + defender mechanic from the kinematics sim.
+Preserved for the future Dribbling unit. Not compiled/used.
+
+This file captures the run-up / dribble / defender / keeper-rush-out logic that
+used to front the free-kick solve in SoccerSim.tsx, before that sim was reworked
+into a fixed-distance PENALTY SHOOTOUT. None of this is imported or type-checked;
+it is reference text only. When the Dribbling unit is built, lift these pieces back
+into a (new) sim component and re-wire them to the shared physics/projection.
+
+================================================================================
+1) GAMEPLAY CONSTANTS (run-up + defenders + keeper rush-out)
+================================================================================
+
+const RUN_SPEED = 3.0          // forward dribble speed (m/s) — distance closes over time
+const CLOSE_SPEED = 6.6        // speed defenders close toward the camera
+const LANE_SPEED = 5.2         // player lateral dodge speed (← / →)
+const GOALIE_DIST = 6.5        // m — dribble inside this and the keeper rushes out to steal
+const DEFENDER_DODGE_Z = 2.2   // within this depth, a beaten defender ducks/steps aside
+const TOTAL_DEFENDERS = 3
+const SPAWN_MS = 1500
+const START_DIST = 34          // run-up starts this far from goal
+
+// Keeper rush-out timing.
+const RUSH_MS = 1300           // total dispossession animation
+const RUSH_GRAB = 0.46         // fraction of the rush at which the keeper reaches the ball
+
+// Shoot from ANYWHERE: a CORRECT shot only beats the keeper by a distance/position
+// CHANCE rolled once at shoot time. `beaten` = defenders dribbled past, `dist` = distance
+// to goal at shoot time.
+const GUARANTEED_DIST = 13 // m — at or closer than this, a correct shot always scores
+const scoreChanceFor = (beaten: number, dist: number): number => {
+  if (dist <= GUARANTEED_DIST) return 1 // 13 m or closer → guaranteed
+  if (beaten >= 3) return 0.9           // past all 3 defenders, but still farther than 13 m
+  if (beaten >= 2) return 0.8           // past the 2nd defender (not the 3rd)
+  if (beaten >= 1) return 0.7           // past the 1st defender (not the 2nd)
+  return 0.6                            // before the 1st defender (farthest out)
+}
+
+================================================================================
+2) DEFENDER TYPE + TEAM KIT / PLAYER-VARIETY PALETTES
+================================================================================
+
+// A defender carries a deterministic per-figure seed plus the varied appearance it
+// drives (skin tone, hair style/colour, shirt number). The kit colours are shared
+// team-wide (see TEAM_KIT) so they read as one coordinated opposing side.
+type Defender = { z: number; x: number; ph: number; seed: number; skin: string; hair: string; hairStyle: number; num: number; dodge: number; dodgeDir: number }
+
+// The whole outfield side shares ONE kit so they look like a real team; only the
+// hair, skin and number vary between players.
+const TEAM_KIT = {
+  jersey: '#2f6df0', jerseyDark: '#1f4ec2', jerseyHi: '#6c9bff',
+  collar: '#0d2f7a', shorts: '#13234d', shortsDark: '#0c1834',
+  sock: '#2f6df0', sockBand: '#ffffff', boot: '#15171f', number: '#ffffff',
+}
+const SKIN_TONES = ['#f4cda0', '#e8b48a', '#d49a6a', '#b87a4c', '#8a5a36', '#6b4326']
+const HAIR_COLORS = ['#241a12', '#13100c', '#5a3618', '#7a4a22', '#caa24a', '#9aa0a8', '#1c1c1c']
+const HAIR_STYLES = 4 // 0 short, 1 buzz, 2 top-knot/tuft, 3 longer
+// Build a defender's varied look deterministically from a single seed.
+function makeLook(seed: number): Pick<Defender, 'skin' | 'hair' | 'hairStyle' | 'num'> {
+  const pick = (mul: number, n: number) => Math.floor(((seed * mul) % 1) * n)
+  return {
+    skin: SKIN_TONES[pick(7.13, SKIN_TONES.length)],
+    hair: HAIR_COLORS[pick(13.77, HAIR_COLORS.length)],
+    hairStyle: pick(31.91, HAIR_STYLES),
+    num: 2 + pick(53.3, 30),
+  }
+}
+
+================================================================================
+3) RUN / RUSH GAME STATE (fields that lived on the Game object)
+================================================================================
+
+// On the Game type:
+//   distToGoal: number          // closes over time during the run-up
+//   playerX: number             // lateral dodge position
+//   defenders: Defender[]
+//   spawned: number
+//   beaten: number              // defenders dribbled past
+//   canShoot: boolean           // first attempt gate (beat all 3 first)
+//   nextSpawnAt: number
+//   keys: { left: boolean; right: boolean }
+//   rush: { start: number; z0: number; t: number; grabbed: boolean } | null
+
+// Phase type included: 'run' (dribble in) and 'rush' (keeper rush-out steal).
+
+================================================================================
+4) ACTIONS: enterAim gate, fail, startRush
+================================================================================
+
+const fail = useCallback((text: string) => {
+  const g = gameRef.current
+  if (g.phase === 'result') return
+  g.phase = 'result'; g.resolved = true
+  if (soundRef.current) sfx.current.steal()
+  setMessage({ kind: 'miss', text }); setPhase('result')
+}, [])
+
+// The player dribbled into the keeper's zone: kick off the rush-out animation.
+const startRush = useCallback(() => {
+  const g = gameRef.current
+  if (g.phase !== 'run') return
+  g.phase = 'rush'
+  g.goalZ = g.distToGoal // freeze the goal here so the result frame doesn't jump
+  g.rush = { start: performance.now(), z0: g.distToGoal, t: 0, grabbed: false }
+  if (soundRef.current) sfx.current.whistle()
+  setPhase('rush')
+}, [])
+
+const enterAim = useCallback(() => {
+  const g = gameRef.current
+  if (g.phase !== 'run') return
+  // First attempt: must beat ALL defenders first (g.canShoot). Unlimited sim: shoot
+  // from anywhere. Blocks both the button and Space until allowed.
+  if (sceneRef.current.showGoal && !g.canShoot) return
+  if (soundRef.current) sfx.current.ensure()
+  g.phase = 'aim'; g.aimStart = performance.now(); g.shotDist = g.distToGoal
+  g.cross = { x: g.playerX, y: 1.3 }
+  setPhase('aim')
+}, [])
+
+// In shoot(): the distance/position luck roll for a correct shot.
+//   if (impKind === 'goal' && !sceneRef.current.showGoal) {
+//     const chance = scoreChanceFor(g.beaten, g.shotDist)
+//     g.luckFail = !(Math.random() < chance)
+//   }
+
+================================================================================
+5) RUN + RUSH UPDATE LOGIC (from the main update() loop)
+================================================================================
+
+if (g.phase === 'run') {
+  if (g.keys.left) g.playerX -= LANE_SPEED * dt
+  if (g.keys.right) g.playerX += LANE_SPEED * dt
+  g.playerX = clamp(g.playerX, -GOAL_W_HALF - 1, GOAL_W_HALF + 1)
+  g.distToGoal -= RUN_SPEED * dt
+
+  if (g.spawned < TOTAL_DEFENDERS && now >= g.nextSpawnAt) {
+    const seed = Math.random() * 997 + 3
+    g.defenders.push({ z: Math.min(g.distToGoal - 3, 15), x: (Math.random() * 2 - 1) * 3, ph: Math.random() * 6.28, seed, dodge: 0, dodgeDir: 0, ...makeLook(seed) })
+    g.spawned++; g.nextSpawnAt = now + SPAWN_MS
+  }
+  for (const d of g.defenders) {
+    d.z -= CLOSE_SPEED * dt
+    const lateral = d.x - g.playerX
+    const committed = d.dodge > 0.15
+    // Close AND clearly out of the player's lane (or already committed) → duck and
+    // step aside so the player/ball passes cleanly with no clipping. Otherwise keep
+    // the mild homing challenge, so tackle difficulty is unchanged until this range.
+    if (d.z < DEFENDER_DODGE_Z && (committed || Math.abs(lateral) >= 0.95)) {
+      if (d.dodgeDir === 0) d.dodgeDir = lateral >= 0 ? 1 : -1
+      d.dodge = clamp(d.dodge + dt / 0.3, 0, 1)
+      d.x += d.dodgeDir * 1.7 * dt // a small extra sidestep clear of the lane
+    } else {
+      d.x += clamp(g.playerX - d.x, -1, 1) * 0.7 * dt // mild homing
+      if (d.dodge > 0) d.dodge = clamp(d.dodge - dt / 0.3, 0, 1)
+    }
+  }
+  const survivors: Defender[] = []
+  for (const d of g.defenders) {
+    if (d.z <= 0.9) {
+      if (Math.abs(d.x - g.playerX) < 0.95) { act.fail('Tackled! Dodge with ← → next time.'); return }
+      g.beaten++
+    } else survivors.push(d)
+  }
+  g.defenders = survivors
+  if (g.beaten >= TOTAL_DEFENDERS && !g.canShoot) { g.canShoot = true; setReady(true) }
+  if (g.distToGoal <= GOALIE_DIST) { act.startRush(); return }
+}
+
+// Keeper rush-out: animate the dispossession, then fail with the simple card.
+if (g.phase === 'rush' && g.rush) {
+  const p = (now - g.rush.start) / RUSH_MS
+  g.rush.t = clamp(p, 0, 1)
+  g.rush.grabbed = p >= RUSH_GRAB
+  if (p >= 1) { act.fail('The keeper raced off his line and grabbed the ball!'); return }
+}
+
+================================================================================
+6) RUSH RENDER (from draw(), feeds the keeper's rush param)
+================================================================================
+
+let rushRender: { x: number; z: number; carrying: boolean; intensity: number } | null = null
+if (g.phase === 'rush' && g.rush) {
+  const t = g.rush.t
+  // Smooth accel→decel on BOTH legs of the trip so the dash out and the jog back
+  // read as one fluid motion (no linear snap at the start/turn/finish).
+  const easeInOut = (u: number) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2)
+  const out = clamp(t / RUSH_GRAB, 0, 1)                          // sprint to the ball
+  const back = clamp((t - RUSH_GRAB) / (1 - RUSH_GRAB), 0, 1)     // jog back with it
+  const eo = easeInOut(out)
+  const eb = easeInOut(back)
+  const zBall = RELEASE.z + 0.4, xBall = g.playerX
+  const kz = back > 0 ? zBall + (g.rush.z0 - zBall) * eb : g.rush.z0 + (zBall - g.rush.z0) * eo
+  const kx = back > 0 ? xBall * (1 - eb) : xBall * eo
+  // Legs pump hardest mid-stride and settle as he reaches the ball / his line.
+  const intensity = Math.sin(clamp(t, 0, 1) * Math.PI)
+  rushRender = { x: kx, z: kz, carrying: g.rush.grabbed, intensity }
+}
+drawKeeper(ctx, rel, goalZ - 0.2, preview ? null : g.dive, now, rushRender)
+
+// ---- Defenders (sorted far→near, with a running cycle) ----
+const defs = [...g.defenders].sort((a, b) => b.z - a.z)
+for (const d of defs) drawRunner(ctx, rel, d, now / 90 + d.ph)
+
+// Run-phase HUD:
+//   ctx.fillText(`Distance: ${g.distToGoal.toFixed(0)} m`, 24, 84)
+//   ctx.fillText(`Defenders passed: ${Math.min(g.beaten, TOTAL_DEFENDERS)} / ${TOTAL_DEFENDERS}`, 24, 106)
+
+// Run-phase first-person head-bob (in draw, inside ctx.save()):
+//   if (g.phase === 'run') {
+//     const moving = g.keys.left || g.keys.right
+//     ctx.translate(Math.sin(now / 130) * (moving ? 4 : 2), Math.abs(Math.sin(now / 160)) * 4)
+//   }
+
+// Run-phase first-person dribble ball (the else branch in the ball draw):
+//   } else if (!(g.phase === 'rush' && g.rush?.grabbed)) {
+//     const dribble = g.phase === 'run'
+//     const beat = Math.abs(Math.sin(now / 150))
+//     const groundY = H - 36, vr = 40
+//     const cxs = W / 2 + (dribble ? Math.sin(now / 125) * 30 : 0)
+//     const cys = groundY - (dribble ? beat * 78 : 6)
+//     const sw = 1.15 - (dribble ? beat * 0.45 : 0)
+//     ctx.fillStyle = `rgba(0,0,0,${0.32 - (dribble ? beat * 0.16 : 0)})`
+//     ctx.beginPath(); ctx.ellipse(cxs, groundY + 8, vr * sw, vr * 0.34 * sw, 0, 0, Math.PI * 2); ctx.fill()
+//     const squash = dribble ? Math.max(0, (1 - beat) * 0.22) : 0
+//     const spin = dribble ? now / 65 : now / 400
+//     drawBall(ctx, cxs, cys, vr, spin, squash)
+//   }
+
+================================================================================
+7) drawHair + drawRunner (defender figure rendering)
+================================================================================
+
+// A few stylised hair styles, selected per-defender by seed. Flat fills only (no
+// gradients) so a whole team of these stays cheap to redraw every frame.
+function drawHair(ctx: CanvasRenderingContext2D, cx: number, headY: number, headR: number, style: number, color: string) {
+  ctx.fillStyle = color
+  if (style === 1) {
+    // buzz cut — thin layer hugging the scalp
+    ctx.beginPath(); ctx.arc(cx, headY - headR * 0.06, headR * 0.92, Math.PI * 1.02, Math.PI * 1.98); ctx.fill()
+  } else if (style === 2) {
+    // tuft / top-knot — short cap plus a little bun on top
+    ctx.beginPath(); ctx.arc(cx, headY - headR * 0.18, headR, Math.PI * 1.05, Math.PI * 1.95); ctx.fill()
+    ctx.beginPath(); ctx.arc(cx, headY - headR * 1.05, headR * 0.42, 0, Math.PI * 2); ctx.fill()
+  } else if (style === 3) {
+    // longer — cap that frames the face down past the ears
+    ctx.beginPath(); ctx.arc(cx, headY - headR * 0.12, headR * 1.06, Math.PI * 0.92, Math.PI * 2.08); ctx.fill()
+    ctx.fillRect(cx - headR * 1.02, headY - headR * 0.2, headR * 0.34, headR * 1.1)
+    ctx.fillRect(cx + headR * 0.68, headY - headR * 0.2, headR * 0.34, headR * 1.1)
+  } else {
+    // short, neat cap
+    ctx.beginPath(); ctx.arc(cx, headY - headR * 0.18, headR, Math.PI * 1.04, Math.PI * 1.96); ctx.fill()
+  }
+}
+
+// A defender running toward the camera. The whole side shares TEAM_KIT (jersey,
+// shorts, socks) so they read as a coordinated team; skin, hair and shirt number
+// vary per player. Flat fills + a couple of shading rects keep it fast at any depth.
+function drawRunner(ctx: CanvasRenderingContext2D, rel: RelFn, d: Defender, phase: number) {
+  const feet0 = rel(d.x, 0, d.z)
+  const head0 = rel(d.x, 1.84, d.z)
+  const scale = feet0.scale
+  const bob = Math.abs(Math.sin(phase)) * 0.055 * scale
+  const cx = feet0.sx
+  const footY = feet0.sy - bob
+  const headY = head0.sy - bob
+  const hipY = headY + (footY - headY) * 0.52
+  const shoulderY = headY + (footY - headY) * 0.30
+  const wBody = Math.max(5, 0.36 * scale)
+  const swing = Math.sin(phase) * 0.27 * scale
+  const lift = Math.max(0, Math.cos(phase)) * 0.15 * scale
+  const lw = Math.max(3, 0.14 * scale)
+  const headR = Math.max(3.5, 0.17 * scale)
+  const torsoH = hipY - shoulderY + 2
+
+  // ground shadow (stays flat on the turf even while the body ducks/leans)
+  ctx.fillStyle = 'rgba(0,0,0,0.24)'
+  ctx.beginPath(); ctx.ellipse(cx, feet0.sy + 1, wBody * 0.95, wBody * 0.32, 0, 0, Math.PI * 2); ctx.fill()
+
+  // Dodge: when the player has beaten this defender, they duck and lean aside. We pivot
+  // the whole body about the hips (lean) and squash vertically (crouch) so it reads as a
+  // smooth, intentional "get out of the way" rather than the ball clipping through them.
+  const duck = d.dodge > 0 ? 1 - Math.pow(1 - d.dodge, 3) : 0
+  const ducking = duck > 0.001
+  if (ducking) {
+    ctx.save()
+    ctx.translate(cx, hipY)
+    ctx.rotate((d.dodgeDir || 1) * duck * 0.5)
+    ctx.scale(1, 1 - duck * 0.3)
+    ctx.translate(-cx, -hipY)
+  }
+
+  ctx.lineCap = 'round'
+  // --- legs: socks (team colour) down each shin, then a rounded boot ---
+  const footLx = cx - swing, footLy = footY - lift
+  const footRx = cx + swing, footRy = footY
+  const kneeLy = hipY + (footLy - hipY) * 0.5, kneeRy = hipY + (footRy - hipY) * 0.5
+  ctx.strokeStyle = TEAM_KIT.sock; ctx.lineWidth = lw
+  ctx.beginPath(); ctx.moveTo(cx, hipY); ctx.lineTo(footLx, footLy); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(cx, hipY); ctx.lineTo(footRx, footRy); ctx.stroke()
+  // white sock band just below the knee
+  ctx.strokeStyle = TEAM_KIT.sockBand; ctx.lineWidth = lw * 0.95
+  ctx.beginPath(); ctx.moveTo(cx + (footLx - cx) * 0.42, kneeLy); ctx.lineTo(cx + (footLx - cx) * 0.58, hipY + (footLy - hipY) * 0.62); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(cx + (footRx - cx) * 0.42, kneeRy); ctx.lineTo(cx + (footRx - cx) * 0.58, hipY + (footRy - hipY) * 0.62); ctx.stroke()
+  // boots
+  ctx.fillStyle = TEAM_KIT.boot
+  ctx.beginPath(); ctx.ellipse(footRx, footRy, lw * 0.8, lw * 0.45, 0, 0, Math.PI * 2); ctx.fill()
+  ctx.beginPath(); ctx.ellipse(footLx, footLy, lw * 0.8, lw * 0.45, 0, 0, Math.PI * 2); ctx.fill()
+
+  // --- shorts: a rounded band across the hips over the tops of the legs ---
+  const shortsH = Math.max(3, torsoH * 0.32)
+  ctx.fillStyle = TEAM_KIT.shorts
+  roundRect(ctx, cx - wBody / 2, hipY - shortsH * 0.55, wBody, shortsH, Math.max(2, wBody * 0.18)); ctx.fill()
+  ctx.fillStyle = TEAM_KIT.shortsDark
+  ctx.fillRect(cx + wBody * 0.14, hipY - shortsH * 0.55, wBody * 0.36, shortsH)
+
+  // --- torso jersey (flat team colour) with side shade + light edge ---
+  ctx.fillStyle = TEAM_KIT.jersey
+  roundRect(ctx, cx - wBody / 2, shoulderY, wBody, torsoH, Math.max(2, wBody * 0.3)); ctx.fill()
+  ctx.fillStyle = TEAM_KIT.jerseyDark; ctx.fillRect(cx + wBody * 0.16, shoulderY + 2, wBody * 0.34, torsoH - 2)
+  ctx.fillStyle = TEAM_KIT.jerseyHi; ctx.fillRect(cx - wBody * 0.4, shoulderY + torsoH * 0.12, wBody * 0.12, torsoH * 0.6)
+
+  // --- arms swing opposite the legs; short jersey sleeves over the shoulders ---
+  const armW = Math.max(2, 0.095 * scale)
+  ctx.strokeStyle = d.skin; ctx.lineWidth = armW
+  ctx.beginPath(); ctx.moveTo(cx - wBody / 2, shoulderY + 2); ctx.lineTo(cx - wBody * 0.62 - swing * 0.6, shoulderY + wBody * 0.85); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(cx + wBody / 2, shoulderY + 2); ctx.lineTo(cx + wBody * 0.62 + swing * 0.6, shoulderY + wBody * 0.85); ctx.stroke()
+  ctx.strokeStyle = TEAM_KIT.jerseyDark; ctx.lineWidth = armW * 1.5
+  ctx.beginPath(); ctx.moveTo(cx - wBody * 0.5, shoulderY + 3); ctx.lineTo(cx - wBody * 0.66, shoulderY + wBody * 0.34); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(cx + wBody * 0.5, shoulderY + 3); ctx.lineTo(cx + wBody * 0.66, shoulderY + wBody * 0.34); ctx.stroke()
+
+  // --- collar + shirt number ---
+  ctx.fillStyle = TEAM_KIT.collar
+  ctx.fillRect(cx - wBody * 0.2, shoulderY, wBody * 0.4, Math.max(1.5, torsoH * 0.1))
+  if (wBody > 9) {
+    ctx.fillStyle = TEAM_KIT.number
+    ctx.font = `800 ${Math.round(wBody * 0.5)}px Plus Jakarta Sans, sans-serif`
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+    ctx.fillText(String(d.num), cx, shoulderY + torsoH * 0.52)
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'
+  }
+
+  // --- head, skin tone + seed-driven hair ---
+  ctx.fillStyle = d.skin; ctx.beginPath(); ctx.arc(cx, headY, headR, 0, Math.PI * 2); ctx.fill()
+  drawHair(ctx, cx, headY, headR, d.hairStyle, d.hair)
+  if (ducking) ctx.restore()
+  ctx.lineCap = 'butt'
+}

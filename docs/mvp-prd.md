@@ -6,6 +6,112 @@ Build a Brilliant-style learning app for one subject: algebra-based introductory
 
 The product is not a video course, textbook, or quiz bank. The core experience is: predict, manipulate, observe, answer, get specific feedback, and try again. Each unit should feel like a polished Brilliant lesson with a small physics sandbox, not a static worksheet.
 
+> **Product evolution (active direction):** The MVP units below remain the foundation, but the product is evolving into **Soccer Mode** — every physics unit becomes a soccer skill, and a full match against the CPU is where the learner proves it. The lessons are the training camp; the match is the game. See [Product Evolution: Soccer Mode](#product-evolution-soccer-mode--train-then-play-the-match) for the full spec, mapping, match loop, difficulty rules, and phased build plan.
+
+## Product Evolution: Soccer Mode — Train, then Play the Match
+
+### Vision and hook
+
+Soccer Mode reframes the entire course around a single, fresh idea: **your brain is the controller.** You do not push a button to shoot — you *solve the physics* of the shot under a countdown, and the better/faster you solve it, the better your team plays. This sidesteps FIFA entirely: nobody else makes a soccer game where the input is physical reasoning.
+
+Two layers, tightly coupled:
+
+1. **Training (the lesson):** Each unit teaches one soccer skill in calm, no-pressure conditions using the existing lesson engine and simulation. This is where the concept is introduced and the mechanic is learned.
+2. **The Match (the payoff):** A fast sequence of game situations vs. a CPU opponent. At each decision point the learner picks an action (the *strategy*), then must *execute* it by solving a physics question of that skill's type before a countdown expires. Solve it well → the action fires with the values the learner chose. Fail or run out of time → heavy touch, weak attempt, or turnover.
+
+The progression — **learn the skill in calm, then demand it under fire** — is the whole hook.
+
+### Unit → soccer skill → match action mapping
+
+| Unit (physics) | Soccer skill | In-match action | What the learner actually solves |
+| --- | --- | --- | --- |
+| **Kinematics** (projectile) | Shooting / free kicks | Take a shot | Angle + power so the ball lands in the target zone under the bar *(already built — `KinematicsSim.tsx`)* |
+| **Motion Graphs** (velocity = slope) | Passing (leading a runner) | Through-ball to a moving teammate | Pass speed + timing so the ball *meets* the run (two motion lines intersect) |
+| **Forces** (friction) | Pass weight / first touch | Ground pass at the right pace | Initial force so friction leaves the ball at the right arrival speed |
+| **Energy** (conservation, √2gh) | Chip / lob / header | Chip the keeper or win a header | Launch height/energy to clear the keeper and drop it in |
+| **Momentum / Collisions** (replaces Circuits) | Defense / tackling | Time a tackle or interception | Close the gap and time the intercept; momentum & collision reasoning |
+
+**Circuits → Momentum swap:** Circuits → soccer is a forced fit. Defense/tackling is really momentum and collisions (closing distance, timing the intercept, what happens on contact). Swapping the Circuits unit for a **Momentum / Collisions** unit makes defense map cleanly while staying core algebra-based physics. Circuits content can be retired or parked for a non-soccer track.
+
+### Training → Match progression
+
+- A unit's lesson stays structured as today (concept → sandbox → prediction → numeric → manipulation challenge → summary) and teaches the skill in isolation.
+- Mastering a unit **unlocks that skill in the Match.** Before a skill is unlocked, the CPU/match simply won't present decision points that require it (or auto-resolves them weakly for the player).
+- The Match is the unifying meta-layer that sits above the course path: as more units are mastered, the learner's in-match toolkit grows from "only shooting" to the full set of actions.
+
+### The full-match loop (vs. CPU)
+
+1. A match is a fast sequence of **game situations**: you have the ball, a teammate makes a run, a defender closes, you're in the box, the opponent attacks, etc.
+2. At each **decision point**, the learner chooses an **action**: pass / through-ball / dribble / shoot / chip / tackle. *Choosing is the strategy.*
+3. Executing the chosen action triggers a **question of that skill's type** with a **countdown timer**.
+   - Answer correctly in time → the action fires using the physics values the learner set (e.g., the chosen angle/power/lead).
+   - Wrong answer or time-out → degraded outcome: heavy touch, turnover, weak/blocked attempt, or a foul.
+4. The **CPU defends and attacks on its own.** The learner is racing both the clock on each decision and the scoreline.
+5. Outcomes feed back into match state (possession, position, score) and the next situation is generated.
+
+### Risk → difficulty / time scaling
+
+Ambition costs you under pressure. The **risk of the chosen action scales the question**:
+
+| Action ambition | Question difficulty | Countdown | Reward |
+| --- | --- | --- | --- |
+| Safe (e.g., square pass) | Easy | Long | Low risk, retains possession |
+| Medium (e.g., diagonal through-ball) | Medium | Medium | Territory / chance creation |
+| High (e.g., 40-yard killer ball, top-corner volley) | Hard | Short | High reward, high turnover risk |
+
+This is the difficulty / time / gambling axis: the learner constantly trades safety for upside, and harder physics is the price of a higher-reward play. This single mechanic is what turns "answer questions" into "play a game."
+
+### Per-skill question design (one per unit)
+
+Each skill reuses its unit's existing simulation as the in-match question surface, so the match feels continuous with the training.
+
+- **Shooting (Kinematics):** Set angle + power; ball must land in the target zone under the bar. *Already implemented in `KinematicsSim.tsx` (Madden-style meter + solve phase).*
+- **Through-ball (Motion Graphs):** A teammate runs at a shown velocity. Pick pass speed/timing so the two motion lines intersect at the meeting point. Wrong slope/timing = pass behind or ahead of the runner.
+- **Ground pass / first touch (Forces):** Choose initial force; friction decelerates the ball. Target an arrival speed (too hard = overruns the receiver, too soft = intercepted).
+- **Chip / header (Energy):** Choose launch energy/height to clear the keeper using √(2gh)-style reasoning and drop the ball behind them.
+- **Tackle / intercept (Momentum):** Time the closing run and contact so you meet the ball/carrier with the right momentum to win it cleanly without fouling.
+
+### Scoring and win conditions (match)
+
+- Match length: short, time-boxed periods suitable for a demo session (e.g., a few minutes of in-match clock).
+- Goals scored vs. conceded determine the result.
+- Per-decision feedback still uses the existing instant-feedback model (correct / incorrect / near-miss / hint), but framed as commentary.
+- Track a **match high score / record** (extends the existing high-score persistence used by the soccer sim).
+
+### Data model additions (sketch)
+
+- Skill unlock state derived from `unitStatus` (a skill is available in-match when its unit is `mastered`).
+- Match record: result, goals for/against, decisions attempted, accuracy, fastest correct solve, longest streak of successful actions.
+- Persist alongside existing local progress and the Supabase `profiles` high-score fields.
+
+### Phased build plan
+
+**Phase A — Vertical slice (proof it's fun):**
+1. Build the **match shell**: situation generator, decision-point UI, action picker, countdown, and outcome resolver.
+2. Wire in **shooting** as the first and only skill (mechanic already exists in `KinematicsSim.tsx`).
+3. Stub all other actions as auto-resolved/disabled so the loop is playable end-to-end with one real skill.
+4. Tune feel: countdown lengths, risk tiers, what a "good enough" solve looks like.
+
+**Phase B — Skill-by-skill expansion (one unit at a time):**
+5. Motion Graphs → through-ball.
+6. Forces → ground pass / first touch.
+7. Energy → chip / header.
+8. Swap Circuits → **Momentum / Collisions** unit, then add tackle / intercept.
+
+**Phase C — Match depth and polish:**
+9. CPU attacking/defending AI, possession/territory model, scoreline pressure.
+10. Match scoring, records, commentary feedback, and persistence.
+11. Responsive/mobile polish and deployment.
+
+**Sequencing principle:** plan first (this spec), then ship Phase A as a playable 1-skill proof before expanding — an interconnected system like this is far cheaper to get right with the loop validated early.
+
+### Open questions / risks
+
+- **Match AI scope:** A believable CPU is the biggest unknown; keep the first version scripted/probabilistic, not a real tactical AI.
+- **Countdown vs. solve UX:** Solving real physics under a timer can feel punishing; tune difficulty tiers and allow "safe" plays as a relief valve.
+- **Skill reuse vs. rebuild:** Prefer extending each unit's existing sim as the in-match question surface rather than building parallel mechanics.
+- **Circuits retirement:** Decide whether to fully replace Circuits with Momentum or keep Circuits as an optional non-soccer unit.
+
 ## Target audience
 
 Primary user: students taking or preparing for algebra-based collegiate introductory physics.

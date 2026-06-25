@@ -104,15 +104,35 @@ const KEYS: { label: string; ins?: string; kind?: string }[] = [
 export function Calculator({ onClose }: { onClose: () => void }) {
   const [expr, setExpr] = useState('')
   const [result, setResult] = useState('')
+  // After "=", the result becomes the running expression so the next op chains
+  // from it (e.g. cos(15) = 0.966, then × 20 → 0.966 × 20, not cos(15) × 20).
+  const [justEval, setJustEval] = useState(false)
 
   const press = (k: typeof KEYS[number]) => {
-    if (k.kind === 'del') { setExpr((e) => e.slice(0, -1)); return }
-    if (k.ins) setExpr((e) => e + k.ins)
+    if (k.kind === 'del') { setJustEval(false); setExpr((e) => e.slice(0, -1)); return }
+    if (!k.ins) return
+    const ins = k.ins
+    if (justEval) {
+      setJustEval(false)
+      setResult('')
+      // An operator keeps building on the just-computed value; anything else
+      // (a digit, function, paren) starts a fresh calculation.
+      setExpr((e) => (k.kind === 'op' ? e + ins : ins))
+      return
+    }
+    setExpr((e) => e + ins)
   }
   const equals = () => {
     if (!expr.trim()) return
     const v = evaluate(expr)
-    setResult(Number.isFinite(v) ? (Math.round(v * 1e6) / 1e6).toString() : 'oops!')
+    if (Number.isFinite(v)) {
+      const s = (Math.round(v * 1e6) / 1e6).toString()
+      setResult(s)
+      setExpr(s)
+      setJustEval(true)
+    } else {
+      setResult('oops!')
+    }
   }
 
   return (
@@ -130,7 +150,7 @@ export function Calculator({ onClose }: { onClose: () => void }) {
         {KEYS.map((k) => (
           <button key={k.label} type="button" className={`calc__key${k.kind ? ' calc__key--' + k.kind : ''}`} onClick={() => press(k)}>{k.label}</button>
         ))}
-        <button type="button" className="calc__key calc__key--clear" onClick={() => { setExpr(''); setResult('') }}>C</button>
+        <button type="button" className="calc__key calc__key--clear" onClick={() => { setExpr(''); setResult(''); setJustEval(false) }}>C</button>
         <button type="button" className="calc__key calc__key--eq" onClick={equals}>=</button>
       </div>
     </div>

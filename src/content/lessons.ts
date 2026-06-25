@@ -1,26 +1,26 @@
 import type { Lesson, Unit, SimState } from '../types'
-import { forces, energy, frictionlessFinalSpeed, circuit } from '../lib/physics'
+import { energy, frictionlessFinalSpeed, circuit } from '../lib/physics'
 
 export const UNITS: Unit[] = [
   {
     id: 'kinematics',
     index: 0,
     name: 'Kinematics',
-    blurb: 'Free Kick Physics: Score the Goal',
+    blurb: 'Penalty Physics: Score the Goal',
     lessonId: 'lesson-projectile',
   },
   {
     id: 'motion-graphs',
     index: 1,
     name: 'Motion Graphs',
-    blurb: 'Match the Motion',
+    blurb: 'Through-Ball: Lead the Runner',
     lessonId: 'lesson-motion-graphs',
   },
   {
     id: 'forces',
     index: 2,
     name: 'Forces',
-    blurb: 'Push the Crate',
+    blurb: 'Ground Pass: Weight the Pass',
     lessonId: 'lesson-forces',
   },
   {
@@ -41,8 +41,8 @@ export const UNITS: Unit[] = [
 
 export const UNIT_THEME: Record<string, { icon: string; accent: string; tagline: string }> = {
   kinematics: { icon: '⚽', accent: '#22c55e', tagline: 'Score the goal' },
-  'motion-graphs': { icon: '📈', accent: '#06b6d4', tagline: 'Read the slope' },
-  forces: { icon: '📦', accent: '#ef4444', tagline: 'Push & balance' },
+  'motion-graphs': { icon: '📈', accent: '#06b6d4', tagline: 'Lead the runner' },
+  forces: { icon: '📦', accent: '#ef4444', tagline: 'Weight the pass' },
   energy: { icon: '⚡', accent: '#10b981', tagline: 'Convert energy' },
   circuits: { icon: '💡', accent: '#8b5cf6', tagline: 'Close the loop' },
 }
@@ -53,7 +53,7 @@ export const LESSONS: Record<string, Lesson> = {
   'lesson-projectile': {
     id: 'lesson-projectile',
     unitId: 'kinematics',
-    title: 'Free Kick Physics: Score the Goal',
+    title: 'Penalty Physics: Score the Goal',
     estimatedMinutes: 7,
     sim: 'soccer',
     defaultSimState: { power: 22, angle: 18, goals: 0 },
@@ -63,34 +63,34 @@ export const LESSONS: Record<string, Lesson> = {
         id: 'proj-concept',
         kind: 'concept',
         prompt: 'A struck ball is projectile motion',
-        body: 'The instant your foot leaves the ball, only gravity acts on it. Your strike splits into two independent parts: a horizontal velocity vx that carries the ball toward the goal, and a vertical velocity vy that lifts it. vx never changes in flight; gravity steadily pulls vy down. To score, those parts must be tuned so the ball is still below the crossbar (under 2.44 m) when it reaches the goal — and moving fast enough that the keeper can’t react.',
+        body: 'Once your foot leaves the ball, only gravity acts on it. The strike splits into a horizontal velocity vₓ that carries it to goal (never changes) and a vertical velocity v_y that lifts it (gravity pulls it back down). Tune both so the ball is under the crossbar when it arrives.',
       },
       {
         id: 'proj-sandbox',
         kind: 'sandbox',
-        prompt: 'Take the free kick: dribble in, pick a spot, then solve the angle and force.',
-        body: 'Dribble in with ← →, beat the defenders, and press Space. Click the spot you want — it becomes a glowing ring with its distance d and height h. Then compute the launch angle θ and strike force v that land the ball in the ring: vₓ = v·cosθ, t = d/vₓ, y = h₀ + vy·t − ½g·t².',
+        prompt: 'Step up to the penalty spot: pick a spot in the goal, lock the power meter, then solve the strike.',
+        body: '',
       },
       {
         id: 'proj-prediction',
         kind: 'prediction',
-        prompt: 'Two free kicks leave your boot at the same speed — one at 12°, one at 40°. The goal is 16 m away and you want a fast shot that stays under the bar and beats the keeper. Which angle is better?',
+        prompt: 'Two penalties leave your boot at the same speed, one at 12°, one at 40°. The goal is 11 m away and you want a fast shot that stays under the bar and beats the keeper. Which angle is better?',
         options: [
-          { id: 'flat', label: '12° — flatter, so more of the speed is horizontal: fast and low' },
-          { id: 'steep', label: '40° — a high, looping ball' },
+          { id: 'flat', label: '12°: flatter, so more of the speed is horizontal: fast and low' },
+          { id: 'steep', label: '40°: a high, looping ball' },
           { id: 'same', label: 'No difference, the speed is the same' },
           { id: 'neither', label: 'Neither can reach the goal from 16 m' },
         ],
         correctOptionId: 'flat',
         conceptTags: ['projectile-horizontal-vertical-independence', 'projectile-time-of-flight'],
         feedbackCorrect:
-          'Right. At 12°, most of the speed goes into vx, so the ball travels fast and stays low — it reaches the goal quickly and under the bar, giving the keeper little time. The 40° kick puts speed into vy, looping high and slow: easy to claim or it sails over.',
+          'Right. At 12°, most of the speed goes into vx, so the ball travels fast and stays low, reaching the goal quickly and under the bar, giving the keeper little time. The 40° kick puts speed into vy, looping high and slow: easy to claim or it sails over.',
         feedbackByOption: {
-          steep: 'A 40° kick spends speed climbing (big vy), so it arrives high and slow — likely over the bar or an easy catch. For pace under the bar you want a flatter angle with more vx.',
-          same: 'Same speed, but the angle decides how it splits between vx and vy. That split sets how fast and how high the ball arrives — so angle matters a lot.',
-          neither: 'Both easily reach 16 m — try it. The real question is which beats the keeper: the fast, low one.',
+          steep: 'A 40° kick spends speed climbing (big vy), so it arrives high and slow, likely over the bar or an easy catch. For pace under the bar you want a flatter angle with more vx.',
+          same: 'Same speed, but the angle decides how it splits between vx and vy. That split sets how fast and how high the ball arrives, so angle matters a lot.',
+          neither: 'Both easily reach 11 m, so try it. The real question is which beats the keeper: the fast, low one.',
         },
-        hint: 'More horizontal speed (vx) means a faster, lower shot. Which angle puts more of the speed into vx — small or large?',
+        hint: 'More horizontal speed (vx) means a faster, lower shot. Which angle puts more of the speed into vx, small or large?',
       },
       {
         id: 'proj-numeric',
@@ -106,20 +106,25 @@ export const LESSONS: Record<string, Lesson> = {
         feedbackIncorrect:
           'Not yet. The upward part is vy = v·sinθ = 20 × sin20°. Use sin20° ≈ 0.34.',
         feedbackNearMiss:
-          'Close — make sure you used sinθ for the vertical part (not cosθ): 20 × 0.34.',
+          'Close. Make sure you used sinθ for the vertical part (not cosθ): 20 × 0.34.',
         hint: 'Vertical velocity uses sine: vy = v·sinθ = 20 × 0.34.',
       },
       {
         id: 'proj-challenge',
         kind: 'challenge',
-        prompt: 'Score a goal. Beat the defenders, choose a corner, then solve the strike.',
-        goalDescription: 'Score 1 goal: dodge the defenders with ← →, press Space to shoot, click a spot, then compute the angle and force so the ball lands inside the glowing ring at that height and distance.',
+        prompt: 'Score the penalty. Pick a spot in the goal, lock the meter, then solve the strike.',
+        goalDescription: 'Score 1 goal: land the ball in the glowing ring.',
         conceptTags: ['projectile-range', 'projectile-time-of-flight'],
         feedbackCorrect:
-          'Top corner! You picked a spot, then computed an angle and force that put the ball at the right height after distance d — landing it right in your ring. Projectile motion, applied.',
+          'Top corner! With one value locked on the meter, you found the one value of the other that put the ball at the right height after distance d, landing it right in your ring. Projectile motion, applied.',
         feedbackIncorrect:
-          'Keep going. Compute the height your ball reaches at the goal, y = h₀ + vy·t − ½g·t², and make it match your spot’s h so the ball lands inside the glowing ring: over 2.44 m clears the bar, too low slams into the turf, and in-goal-but-outside-the-ring gets saved.',
-        hint: 'Work out θ and v by hand so y ≈ h at distance d — land it inside the ring. vx = v·cosθ, t = d/vx, then y = h₀ + vy·t − ½g·t². Use the on-screen calculator if you need it.',
+          'Keep going. Compute the height your ball reaches at the goal, y = h₀ + vy·t − ½g·t², and make it match your spot’s h: overshoot sails over, undershoot drops short, and either way the keeper saves it.',
+        hint: 'One value is locked by the meter, so work out the other by hand so y ≈ h at distance d. vx = v·cosθ, t = d/vx, then y = h₀ + vy·t − ½g·t². Use the on-screen calculator if you need it.',
+      },
+      {
+        id: 'proj-quiz',
+        kind: 'quiz',
+        prompt: 'Final Quiz: Penalty Physics',
       },
       {
         id: 'proj-summary',
@@ -133,84 +138,81 @@ export const LESSONS: Record<string, Lesson> = {
   'lesson-motion-graphs': {
     id: 'lesson-motion-graphs',
     unitId: 'motion-graphs',
-    title: 'Motion Graphs: Match the Motion',
-    estimatedMinutes: 6,
-    sim: 'motion-graph',
-    defaultSimState: { p0: 0, p1: 2, p2: 6, p3: 7 },
-    challengeGoal: (s) => {
-      const d1 = num(s, 'p1') - num(s, 'p0')
-      const d2 = num(s, 'p2') - num(s, 'p1')
-      const d3 = num(s, 'p3') - num(s, 'p2')
-      const deltas = [d1, d2, d3]
-      const allForward = deltas.every((d) => d >= 1.5)
-      const spread = Math.max(...deltas) - Math.min(...deltas)
-      return allForward && spread <= 1
-    },
+    title: 'Through-Ball: Lead the Runner',
+    estimatedMinutes: 7,
+    sim: 'passing',
+    defaultSimState: { connections: 0 },
+    challengeGoal: (s) => num(s, 'connections') >= 1,
     steps: [
       {
-        id: 'graph-concept',
+        id: 'mg-concept',
         kind: 'concept',
-        prompt: 'Slope on a position–time graph is velocity',
-        body: 'On a position–time graph, the steepness of the line tells you how fast the object moves. A steeper upward slope means faster forward motion. A flat line means the object is stopped. A downward slope means it moves backward.',
+        prompt: 'A pass is a graph problem',
+        body: 'Plot any player against time and you get a straight line whose slope is their velocity: steeper means faster, and where the line starts is their head start x₀. A through-ball is two lines — the runner and your pass — and it connects exactly where those lines cross.',
       },
       {
-        id: 'graph-sandbox',
+        id: 'mg-sandbox',
         kind: 'sandbox',
-        prompt: 'Drag the graph points. Watch the dot move along the track.',
-        body: 'Each point sets the object’s position at that time. Drag them up or down and watch the track dot replay the motion you drew.',
+        prompt: 'Thread one through: read the runner’s line, set your pass speed, and connect inside the space.',
+        body: '',
       },
       {
-        id: 'graph-prediction',
+        id: 'mg-prediction',
         kind: 'prediction',
-        prompt: 'A position–time graph is a straight line sloping steeply upward. What does that describe?',
+        prompt: 'A teammate is making a run into space. To make the ball meet him further upfield (deeper in the space), how should you weight the pass?',
         options: [
-          { id: 'fast', label: 'Moving forward quickly at constant velocity' },
-          { id: 'slow', label: 'Moving forward slowly' },
-          { id: 'stopped', label: 'Standing still' },
-          { id: 'back', label: 'Moving backward' },
+          { id: 'soft', label: 'Less pace: a gentler line crosses his later and further along' },
+          { id: 'hard', label: 'More pace: a steeper line' },
+          { id: 'match', label: 'Exactly his speed' },
+          { id: 'back', label: 'A backward pass' },
         ],
-        correctOptionId: 'fast',
-        conceptTags: ['graph-slope-as-velocity'],
-        feedbackCorrect:
-          'Exactly. A straight, steep, upward line means a large constant velocity in the forward direction.',
-        feedbackByOption: {
-          slow: 'A slow object would have a gentle slope, not a steep one. Steeper means faster.',
-          stopped: 'A stopped object draws a flat horizontal line, since position does not change.',
-          back: 'Backward motion slopes downward (position decreasing), not upward.',
-        },
-        hint: 'Slope = change in position ÷ change in time = velocity.',
-      },
-      {
-        id: 'graph-numeric',
-        kind: 'numeric',
-        prompt: 'An object goes from 2 m to 14 m in 4 s. What is its average velocity?',
-        unitLabel: 'm/s',
-        correctAnswer: 3,
-        tolerance: 0.3,
-        nearMissTolerance: 1,
-        conceptTags: ['graph-slope-as-velocity'],
-        feedbackCorrect: 'Correct. Average velocity = Δposition ÷ Δtime = (14 − 2) ÷ 4 = 3 m/s.',
-        feedbackIncorrect: 'Use velocity = (final − initial position) ÷ time = (14 − 2) ÷ 4.',
-        feedbackNearMiss: 'Close. Make sure you divide the 12 m change by the full 4 s.',
-        hint: 'Velocity is the slope: rise (12 m) over run (4 s).',
-      },
-      {
-        id: 'graph-challenge',
-        kind: 'challenge',
-        prompt: 'Shape the graph so the object moves forward at a steady, constant velocity.',
-        goalDescription: 'Make all three segments rise by a similar amount (constant positive slope).',
+        correctOptionId: 'soft',
         conceptTags: ['graph-slope-as-velocity', 'graph-velocity-direction'],
         feedbackCorrect:
-          'Constant velocity achieved. Equal-sized upward steps mean the slope, and therefore the velocity, never changes.',
-        feedbackIncorrect:
-          'Constant velocity needs a straight line: each step should rise by the same amount in the forward direction.',
-        hint: 'Drag the points so the line is straight and rising — equal gaps between each.',
+          'Right. A gentler pass line has a smaller slope, so it crosses the runner’s line later in time and higher up the pitch: the ball meets him deeper in space.',
+        feedbackByOption: {
+          hard: 'More pace makes your line steeper, so it overtakes the runner sooner: the ball meets him early, at his feet, with no space to run onto.',
+          match: 'If your line has the same slope as his, the lines stay parallel and never cross: the ball never reaches him.',
+          back: 'A backward pass slopes the wrong way and heads away from the run entirely.',
+        },
+        hint: 'Smaller slope = the lines cross later = further up the pitch.',
       },
       {
-        id: 'graph-summary',
+        id: 'mg-numeric',
+        kind: 'numeric',
+        prompt: 'A teammate starts 8 m ahead of you and runs at a steady 4 m/s. Using x = x₀ + v·t, what is his position after 4 s?',
+        unitLabel: 'm',
+        correctAnswer: 24,
+        tolerance: 0.5,
+        nearMissTolerance: 2,
+        conceptTags: ['graph-slope-as-velocity'],
+        feedbackCorrect: 'Correct. x = x₀ + v·t = 8 + 4×4 = 8 + 16 = 24 m. That 24 m point is where you’d aim the pass to meet him.',
+        feedbackIncorrect: 'Use x = x₀ + v·t = 8 + 4×4. Add the head start to the distance run.',
+        feedbackNearMiss: 'Close. Don’t forget to add the 8 m head start to the 16 m he runs.',
+        hint: 'Distance run is v·t = 4×4 = 16 m, then add the head start x₀ = 8 m.',
+      },
+      {
+        id: 'mg-challenge',
+        kind: 'challenge',
+        prompt: 'Slot a through-ball into the space: set the pass speed so your line crosses the runner’s inside the green zone.',
+        goalDescription: 'Connect one through-ball in the target space.',
+        conceptTags: ['graph-slope-as-velocity', 'graph-velocity-direction'],
+        feedbackCorrect:
+          'Threaded it. You read the runner’s slope and head start, picked a pass speed whose line crossed his right in the space, and the ball met the run perfectly.',
+        feedbackIncorrect:
+          'Not connected. If the ball arrives behind the run, add pace; if it meets him before the space, take pace off. Aim for the crossing point to land in the green band.',
+        hint: 'Required pass speed ≈ target ÷ (time to reach it). Read the runner’s line, then match your slope so the lines cross in the zone.',
+      },
+      {
+        id: 'mg-quiz',
+        kind: 'quiz',
+        prompt: 'Final Quiz: Motion Graphs',
+      },
+      {
+        id: 'mg-summary',
         kind: 'summary',
         prompt: 'Motion graphs mastered',
-        body: 'You connected slope to velocity, computed an average velocity, and drew constant motion. Next up: Forces.',
+        body: 'You read slope as velocity, used x = x₀ + v·t to place a runner, and threaded a through-ball by crossing two lines in the right spot. Next up: Forces.',
       },
     ],
   },
@@ -218,79 +220,76 @@ export const LESSONS: Record<string, Lesson> = {
   'lesson-forces': {
     id: 'lesson-forces',
     unitId: 'forces',
-    title: 'Forces: Push the Crate',
+    title: 'Ground Pass: Weight the Pass',
     estimatedMinutes: 6,
     sim: 'forces',
-    defaultSimState: { force: 20, mass: 5, friction: 0.3, gravity: 9.8 },
-    challengeGoal: (s) => {
-      const r = forces(num(s, 'force'), num(s, 'mass'), num(s, 'friction'), num(s, 'gravity'))
-      return r.isMoving && Math.abs(r.acceleration - 2) <= 0.25
-    },
+    defaultSimState: { connections: 0 },
+    challengeGoal: (s) => num(s, 'connections') >= 1,
     steps: [
       {
         id: 'force-concept',
         kind: 'concept',
-        prompt: 'Net force, not motion, causes acceleration',
-        body: 'Newton’s second law: a = F_net / m. An object keeps moving on its own; it only speeds up or slows down when the net force is non-zero. Friction opposes motion, so the net force is the applied force minus friction.',
+        prompt: 'A ground pass is friction at work',
+        body: 'Once the ball leaves your foot, friction is the only push along the grass, and it always opposes motion: a steady deceleration a = μg. So the ball constantly bleeds speed, and how fast it arrives depends on how hard you start it. Using v² = v₀² − 2·a·d, the weight of the pass (v₀) sets the pace it reaches your teammate (v).',
       },
       {
         id: 'force-sandbox',
         kind: 'sandbox',
-        prompt: 'Adjust force, mass, and friction. Watch acceleration change.',
-        body: 'The arrows show applied force and friction. Below the static-friction threshold the crate stays put. Push harder and it accelerates.',
+        prompt: 'Weight a ground pass: lock the meter, then solve the kick so it reaches your teammate at the right pace.',
+        body: '',
       },
       {
         id: 'force-prediction',
         kind: 'prediction',
-        prompt: 'A crate slides across the floor at constant velocity. What is the net force on it?',
+        prompt: 'Same teammate, same distance. To make the ball arrive softer (slower) for an easy first touch, how should you weight the pass?',
         options: [
-          { id: 'zero', label: 'Zero' },
-          { id: 'forward', label: 'Forward, equal to the applied force' },
-          { id: 'back', label: 'Backward, equal to friction' },
-          { id: 'depends', label: 'It depends on the mass' },
+          { id: 'soft', label: 'Less pace off your foot: friction bleeds it down to a gentler arrival' },
+          { id: 'hard', label: 'More pace: drive it harder' },
+          { id: 'same', label: 'It makes no difference, friction sets the speed' },
+          { id: 'back', label: 'Add backspin so it speeds up' },
         ],
-        correctOptionId: 'zero',
-        conceptTags: ['force-net-force'],
+        correctOptionId: 'soft',
+        conceptTags: ['force-friction', 'force-net-force'],
         feedbackCorrect:
-          'Right. Constant velocity means zero acceleration, so the net force is zero — the applied force exactly cancels friction.',
+          'Right. Friction removes the same amount of speed over a fixed distance, so a softer kick (smaller v₀) arrives slower. v² = v₀² − 2·a·d: lower v₀ means lower arrival v.',
         feedbackByOption: {
-          forward: 'If the net force were forward, it would be speeding up. Constant velocity means forces balance.',
-          back: 'Friction is there, but the applied force cancels it. The net force is zero, not backward.',
-          depends: 'Mass affects how much force is needed to accelerate, but constant velocity always means zero net force.',
+          hard: 'More pace makes it arrive faster and harder to control, not softer. To arrive gently you start it gently.',
+          same: 'Friction sets the deceleration, but your kick sets the starting speed. v² = v₀² − 2·a·d, so v₀ controls the arrival pace.',
+          back: 'Friction only ever slows a rolling ball down; it never speeds it up. Weight comes from your kick.',
         },
-        hint: 'Constant velocity means zero acceleration. What does a = F_net/m say about F_net?',
+        hint: 'Over a fixed distance friction takes a fixed bite out of v². Smaller starting speed → smaller arrival speed.',
       },
       {
         id: 'force-numeric',
         kind: 'numeric',
-        prompt: 'A net force of 12 N acts on a 4 kg crate. What is its acceleration?',
-        unitLabel: 'm/s²',
-        correctAnswer: 3,
-        tolerance: 0.2,
-        nearMissTolerance: 1,
-        conceptTags: ['force-net-force'],
-        feedbackCorrect: 'Correct. a = F_net / m = 12 N ÷ 4 kg = 3 m/s².',
-        feedbackIncorrect: 'Use Newton’s second law: a = F_net / m = 12 ÷ 4.',
-        feedbackNearMiss: 'Close. Divide the net force by the mass exactly: 12 ÷ 4.',
-        hint: 'a = F_net / m.',
+        prompt: 'You pass the ball at 6 m/s along grass that decelerates it at 3 m/s². How far does it roll before it stops? (d = v₀² / 2a)',
+        unitLabel: 'm',
+        correctAnswer: 6,
+        tolerance: 0.3,
+        nearMissTolerance: 1.5,
+        conceptTags: ['force-friction'],
+        feedbackCorrect: 'Correct. d = v₀² / (2a) = 6² / (2×3) = 36 / 6 = 6 m. That is exactly where a dead-weight pass would come to rest.',
+        feedbackIncorrect: 'Use d = v₀² / (2a) = 6² / (2×3). Square the speed, then divide by twice the deceleration.',
+        feedbackNearMiss: 'Close. d = v₀² / (2a) = 36 / 6. Make sure you squared the 6 first.',
+        hint: 'Set v = 0 in v² = v₀² − 2·a·d and solve for d: d = v₀² / (2a).',
       },
       {
         id: 'force-challenge',
         kind: 'challenge',
-        prompt: 'Set force, mass, and friction so the crate accelerates at about 2 m/s².',
-        goalDescription: 'Get the crate moving with acceleration within 0.25 of 2 m/s².',
-        conceptTags: ['force-net-force', 'force-friction'],
+        prompt: 'Play the ground pass: weight it so friction leaves it at the right pace in your teammate’s space.',
+        goalDescription: 'Connect one weighted ground pass into the control zone.',
+        conceptTags: ['force-friction', 'force-net-force'],
         feedbackCorrect:
-          'Done. You pushed past the friction threshold and tuned the net force so a = F_net/m ≈ 2 m/s².',
+          'Weighted to perfection. You used v² = v₀² − 2·a·d to pick a kick speed that friction bled down to exactly the pace your teammate wanted.',
         feedbackIncorrect:
-          'First push hard enough to overcome friction, then balance force and mass so the acceleration readout is near 2 m/s².',
-        hint: 'Lower friction or mass, or raise the force. Watch the acceleration readout.',
+          'Not controlled. Underweight it and friction stops it short; overweight it and it runs through the zone. Solve v₀ so the arrival pace lands in the window.',
+        hint: 'Required kick speed v₀ = √(v*² + 2·a·d), where a = μg. Read the distance and friction, then weight it.',
       },
       {
         id: 'force-summary',
         kind: 'summary',
-        prompt: 'Forces mastered',
-        body: 'You separated motion from net force, applied F = ma, and tuned a real acceleration. Next up: Energy.',
+        prompt: 'Pass weight mastered',
+        body: 'You treated friction as a steady deceleration, used v² = v₀² − 2·a·d to control how a ground pass arrives, and weighted a pass into a teammate’s feet. Next up: Energy.',
       },
     ],
   },
@@ -320,7 +319,7 @@ export const LESSONS: Record<string, Lesson> = {
         id: 'energy-sandbox',
         kind: 'sandbox',
         prompt: 'Change height, mass, and friction. Watch the energy bars.',
-        body: 'The bar chart shows potential, kinetic, and thermal energy. Notice how the final speed depends on height and friction — but not the way you might expect for mass.',
+        body: 'The bar chart shows potential, kinetic, and thermal energy. Notice how the final speed depends on height and friction, but not the way you might expect for mass.',
       },
       {
         id: 'energy-prediction',
@@ -335,11 +334,11 @@ export const LESSONS: Record<string, Lesson> = {
         correctOptionId: 'same',
         conceptTags: ['energy-conservation'],
         feedbackCorrect:
-          'Correct. mgh = ½mv² — the mass cancels, so v = √(2gh) regardless of mass.',
+          'Correct. mgh = ½mv², the mass cancels, so v = √(2gh) regardless of mass.',
         feedbackByOption: {
           double: 'Tempting, but mass appears on both sides of mgh = ½mv² and cancels out.',
           half: 'Mass cancels in the energy equation, so the final speed does not depend on it.',
-          quad: 'No — set mgh = ½mv², cancel m, and you get v = √(2gh), independent of mass.',
+          quad: 'No. Set mgh = ½mv², cancel m, and you get v = √(2gh), independent of mass.',
         },
         hint: 'Write mgh = ½mv² and cancel the mass on both sides.',
       },
@@ -412,7 +411,7 @@ export const LESSONS: Record<string, Lesson> = {
         id: 'circuit-sandbox',
         kind: 'sandbox',
         prompt: 'Close the switch and try series vs parallel.',
-        body: 'Toggle the switch to complete the loop. Add a second bulb and compare series and parallel — watch how brightness and current change.',
+        body: 'Toggle the switch to complete the loop. Add a second bulb and compare series and parallel, watching how brightness and current change.',
       },
       {
         id: 'circuit-prediction',
@@ -431,7 +430,7 @@ export const LESSONS: Record<string, Lesson> = {
         feedbackByOption: {
           series: 'In series the bulbs split the voltage, so each gets less and they dim.',
           same: 'Layout matters: parallel bulbs get full voltage each; series bulbs share it.',
-          neither: 'Both layouts light as long as the loop is closed — but parallel is brighter per bulb.',
+          neither: 'Both layouts light as long as the loop is closed, but parallel is brighter per bulb.',
         },
         hint: 'In parallel, each bulb connects directly across the battery and gets the full voltage.',
       },
@@ -446,7 +445,7 @@ export const LESSONS: Record<string, Lesson> = {
         conceptTags: ['circuits-ohms-law'],
         feedbackCorrect: 'Correct. Ohm’s law: I = V / R = 12 V ÷ 4 Ω = 3 A.',
         feedbackIncorrect: 'Use Ohm’s law: I = V / R = 12 ÷ 4.',
-        feedbackNearMiss: 'Close. I = V / R — divide voltage by resistance exactly.',
+        feedbackNearMiss: 'Close. I = V / R, so divide voltage by resistance exactly.',
         hint: 'I = V / R.',
       },
       {
@@ -464,7 +463,7 @@ export const LESSONS: Record<string, Lesson> = {
       {
         id: 'circuit-summary',
         kind: 'summary',
-        prompt: 'Circuits mastered — course complete!',
+        prompt: 'Circuits mastered: course complete!',
         body: 'You built a closed loop, applied Ohm’s law, and compared series with parallel. That completes all five Physics I units.',
       },
     ],

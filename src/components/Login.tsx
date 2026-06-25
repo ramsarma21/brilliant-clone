@@ -19,29 +19,21 @@ export function Login() {
         <span className="brand brand--light">
           <span className="brand__mark">⚡</span> Physics&nbsp;Lab
         </span>
-        <h1>Learn college physics by experimenting.</h1>
-        <p>
-          Five interactive Physics I units — projectiles, motion graphs, forces, energy, and
-          circuits. Predict, manipulate, observe, and get instant feedback.
-        </p>
+        <h1>Physics you can play with.</h1>
+        <p>Interactive simulations for introductory college physics.</p>
         <div className="login__chips">
-          <span className="subject-chip">🚀 Projectiles</span>
-          <span className="subject-chip">📈 Graphs</span>
-          <span className="subject-chip">📦 Forces</span>
-          <span className="subject-chip">⚡ Energy</span>
-          <span className="subject-chip">💡 Circuits</span>
+          <span className="subject-chip">Projectiles</span>
+          <span className="subject-chip">Graphs</span>
+          <span className="subject-chip">Forces</span>
+          <span className="subject-chip">Energy</span>
+          <span className="subject-chip">Circuits</span>
         </div>
-        <ul className="login__points">
-          <li>Hands-on simulations, not videos</li>
-          <li>Instant, specific feedback</li>
-          <li>Progress and streaks that save automatically</li>
-        </ul>
       </div>
 
       <form className="login__card" onSubmit={onSubmit}>
         <div className="login__card-inner">
-          <h2>Demo login</h2>
-          <p className="muted">Use the demo credentials to explore the full course.</p>
+          <h2>Welcome back</h2>
+          <p className="muted">Sign in to continue.</p>
 
           <label className="field">
             <span>Username</span>
@@ -67,9 +59,9 @@ export function Login() {
           {loginError && <p className="field-error" role="alert">{loginError}</p>}
 
           <button type="submit" className="btn btn--primary btn--block">
-            Log in
+            Sign in
           </button>
-          <p className="login__hint muted">Credentials: test / test</p>
+          <p className="login__hint muted">Demo account · <strong>test</strong> / <strong>test</strong></p>
         </div>
       </form>
     </div>

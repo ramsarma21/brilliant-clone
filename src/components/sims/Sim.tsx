@@ -1,9 +1,8 @@
 import type { SimKey } from '../../types'
 import type { SimProps } from './types'
 import { ProjectileSim } from './ProjectileSim'
-import { BasketballSim } from './BasketballSim'
-import { SoccerSim } from './SoccerSim'
-import { MotionGraphSim } from './MotionGraphSim'
+import { KinematicsSim } from './KinematicsSim'
+import { MotionSim } from './MotionSim'
 import { ForcesSim } from './ForcesSim'
 import { EnergySim } from './EnergySim'
 import { CircuitsSim } from './CircuitsSim'
@@ -14,12 +13,10 @@ export function Sim({ sim, ...rest }: Props) {
   switch (sim) {
     case 'projectile':
       return <ProjectileSim {...rest} />
-    case 'basketball':
-      return <BasketballSim {...rest} />
     case 'soccer':
-      return <SoccerSim {...rest} />
-    case 'motion-graph':
-      return <MotionGraphSim {...rest} />
+      return <KinematicsSim {...rest} />
+    case 'passing':
+      return <MotionSim {...rest} />
     case 'forces':
       return <ForcesSim {...rest} />
     case 'energy':

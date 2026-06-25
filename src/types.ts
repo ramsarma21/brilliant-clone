@@ -10,6 +10,7 @@ export type StepKind =
   | 'prediction'
   | 'numeric'
   | 'challenge'
+  | 'quiz'
   | 'summary'
 
 export type ConceptStep = {
@@ -67,6 +68,12 @@ export type ChallengeStep = {
   hint?: string
 }
 
+export type QuizStep = {
+  id: string
+  kind: 'quiz'
+  prompt: string
+}
+
 export type SummaryStep = {
   id: string
   kind: 'summary'
@@ -80,6 +87,7 @@ export type LessonStep =
   | PredictionStep
   | NumericStep
   | ChallengeStep
+  | QuizStep
   | SummaryStep
 
 export type Lesson = {
@@ -106,9 +114,8 @@ export type Unit = {
 
 export type SimKey =
   | 'projectile'
-  | 'basketball'
   | 'soccer'
-  | 'motion-graph'
+  | 'passing'
   | 'forces'
   | 'energy'
   | 'circuits'
@@ -120,6 +127,12 @@ export type UserProfile = {
   displayName: string
   username: string
   createdAt: string
+  kinematicsMastered?: boolean
+  motionGraphsMastered?: boolean
+  forcesMastered?: boolean
+  energyMastered?: boolean
+  circuitsMastered?: boolean
+  momentumMastered?: boolean
 }
 
 export type StepAnswer = {
