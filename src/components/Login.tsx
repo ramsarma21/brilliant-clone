@@ -26,7 +26,7 @@ export function Login() {
           <span className="subject-chip">Graphs</span>
           <span className="subject-chip">Forces</span>
           <span className="subject-chip">Energy</span>
-          <span className="subject-chip">Circuits</span>
+          <span className="subject-chip">Momentum</span>
         </div>
       </div>
 

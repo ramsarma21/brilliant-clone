@@ -93,51 +93,32 @@ type Q = {
   stage: React.ReactNode
 }
 
+const shuffled = <T,>(items: T[]): T[] => {
+  const out = [...items]
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[out[i], out[j]] = [out[j], out[i]]
+  }
+  return out
+}
+
 const QUESTIONS: Q[] = [
   {
     tag: 'Question 1',
-    prompt: 'Once the ball leaves your foot (ignore air), what acts on it?',
+    prompt: 'Once the ball is in the air (ignore air resistance), its acceleration is…',
     options: [
-      { id: 'a', label: 'Gravity only' },
-      { id: 'b', label: 'Gravity plus a forward push' },
-      { id: 'c', label: 'Nothing at all' },
-      { id: 'd', label: 'Friction from the air slowing it' },
+      { id: 'a', label: '10 m/s² straight down' },
+      { id: 'b', label: 'Zero — nothing pushes it anymore' },
+      { id: 'c', label: 'Forward, toward the goal' },
+      { id: 'd', label: 'Downward only on the way down' },
     ],
     correct: 'a',
-    explain: 'Only gravity. The forward push ended the instant your foot left the ball, so from then on gravity is the lone force.',
+    explain: 'Gravity is the only force in flight, so the acceleration is a constant 10 m/s² downward the whole time — going up, at the top, and coming down.',
     stage: <GravStage />,
   },
   {
     tag: 'Question 2',
-    prompt: 'During the flight, the horizontal velocity vₓ…',
-    options: [
-      { id: 'a', label: 'Stays the same the whole way' },
-      { id: 'b', label: 'Speeds up toward the goal' },
-      { id: 'c', label: 'Slows down to zero' },
-      { id: 'd', label: 'Reverses near the top' },
-    ],
-    correct: 'a',
-    explain: 'Nothing pushes the ball sideways, so vₓ is constant: it covers equal ground every second.',
-    stage: <HorizStage />,
-  },
-  {
-    tag: 'Question 3',
-    prompt: <>You strike at <b>v = 20 m/s</b> and <b>θ = 30°</b>. The horizontal part vₓ = v·cosθ is? <span className="quiz-given">(cos30° ≈ 0.87)</span></>,
-    options: [
-      { id: 'a', label: '17.4 m/s' },
-      { id: 'b', label: '10 m/s' },
-      { id: 'c', label: '23 m/s' },
-      { id: 'd', label: '6.8 m/s' },
-    ],
-    correct: 'a',
-    explain: 'vₓ = v·cosθ = 20 × 0.87 ≈ 17.4 m/s drives the ball toward the goal.',
-    formulas: ['vₓ = v·cosθ', 'vₓ = 20·0.87'],
-    calculator: true,
-    stage: <SplitStage only="x" />,
-  },
-  {
-    tag: 'Question 4',
-    prompt: <>Same kick (<b>v = 20 m/s</b>, <b>θ = 30°</b>). The upward part v_y = v·sinθ is? <span className="quiz-given">(sin30° = 0.5)</span></>,
+    prompt: <>You strike at <b>v = 20 m/s</b> and <b>θ = 60°</b>. The horizontal launch speed vₓ = v·cosθ is? <span className="quiz-given">(cos60° = 0.5)</span></>,
     options: [
       { id: 'a', label: '10 m/s' },
       { id: 'b', label: '17.4 m/s' },
@@ -145,66 +126,88 @@ const QUESTIONS: Q[] = [
       { id: 'd', label: '5 m/s' },
     ],
     correct: 'a',
-    explain: 'v_y = v·sinθ = 20 × 0.5 = 10 m/s lifts the ball. Vertical uses sine, horizontal uses cosine.',
-    formulas: ['v_y = v·sinθ', 'v_y = 20·0.5'],
-    calculator: true,
-    stage: <SplitStage only="y" />,
+    explain: 'vₓ = v·cosθ = 20 × 0.5 = 10 m/s. The horizontal piece always uses cosine.',
+    formulas: ['vₓ = v·cosθ', 'vₓ = 20·0.5'],
+    stage: <SplitStage only="x" />,
   },
   {
-    tag: 'Question 5',
-    prompt: 'Which kick arrives faster and lower, giving the keeper less time?',
+    tag: 'Question 3',
+    prompt: 'From the same height, one ball is kicked horizontally off a wall while another is just dropped. Which one lands first?',
     options: [
-      { id: 'a', label: 'A flatter (smaller) angle' },
-      { id: 'b', label: 'A steeper (larger) angle' },
-      { id: 'c', label: 'Straight up' },
-      { id: 'd', label: 'The angle makes no difference' },
+      { id: 'a', label: 'They land at the same time' },
+      { id: 'b', label: 'The kicked ball — it has more speed' },
+      { id: 'c', label: 'The dropped ball — it goes straight down' },
+      { id: 'd', label: 'Whichever ball is heavier' },
     ],
     correct: 'a',
-    explain: 'A flatter angle puts more of the speed into vₓ, so the ball travels fast and stays low: hard to save.',
-    stage: <CompareStage />,
+    explain: 'Horizontal and vertical motion are independent. Both balls start with zero vertical velocity and fall under the same g, so they hit the ground together — the sideways kick only changes where it lands, not when.',
+    stage: <SplitStage />,
   },
   {
-    tag: 'Question 6',
-    prompt: <>The penalty spot is <b>11 m</b> away and <b>vₓ = 11 m/s</b>. How long to reach it? <span className="quiz-given">(t = d ⁄ vₓ)</span></>,
+    tag: 'Question 4',
+    prompt: 'At the very top of its arc, the ball’s acceleration is…',
     options: [
-      { id: 'a', label: '1 s' },
-      { id: 'b', label: '0.5 s' },
-      { id: 'c', label: '18 s' },
-      { id: 'd', label: '2 s' },
+      { id: 'a', label: '10 m/s², still pointing down' },
+      { id: 'b', label: 'Zero' },
+      { id: 'c', label: 'Upward, then flips downward' },
+      { id: 'd', label: 'Equal to vₓ' },
     ],
     correct: 'a',
-    explain: 't = d ⁄ vₓ = 11 ⁄ 11 = 1 s. Horizontal speed sets the travel time.',
-    formulas: ['t = d⁄vₓ', 't = 11⁄11'],
-    calculator: true,
-    stage: <HorizStage clock />,
-  },
-  {
-    tag: 'Question 7',
-    prompt: 'At the highest point of the arc, the vertical velocity v_y is…',
-    options: [
-      { id: 'a', label: 'Zero' },
-      { id: 'b', label: 'At its maximum' },
-      { id: 'c', label: 'Equal to vₓ' },
-      { id: 'd', label: 'Already negative' },
-    ],
-    correct: 'a',
-    explain: 'At the top the ball stops rising for an instant, so v_y = 0. Right after, gravity pulls it back down.',
+    explain: 'Only the vertical velocity is zero at the apex — gravity never switches off, so the acceleration stays 10 m/s² downward for the entire flight.',
     stage: <ApexStage />,
   },
   {
-    tag: 'Question 8',
-    prompt: <>A kick leaves with <b>v_y = 14 m/s</b> upward. Its apex height h = v_y² ⁄ (2g) is? <span className="quiz-given">(g = 9.8)</span></>,
+    tag: 'Question 5',
+    prompt: 'While the ball is still rising it slows down even though it is moving upward. So its velocity and acceleration must be…',
     options: [
-      { id: 'a', label: '10 m' },
-      { id: 'b', label: '14 m' },
-      { id: 'c', label: '20 m' },
-      { id: 'd', label: '7 m' },
+      { id: 'a', label: 'Opposite in direction' },
+      { id: 'b', label: 'Both pointing up' },
+      { id: 'c', label: 'Both pointing down' },
+      { id: 'd', label: 'Both zero' },
     ],
     correct: 'a',
-    explain: 'h = v_y² ⁄ (2g) = 14² ⁄ 19.6 = 196 ⁄ 19.6 = 10 m.',
-    formulas: ['h = v_y²⁄2g', 'h = 14²⁄(2·9.8)'],
-    calculator: true,
-    stage: <SplitStage only="y" />,
+    explain: 'On the way up velocity points up while gravity’s acceleration points down. When velocity and acceleration are opposite, the object slows — exactly what happens as the ball climbs.',
+    stage: <GravStage />,
+  },
+  {
+    tag: 'Question 6',
+    prompt: 'Two free kicks leave with the SAME speed, one at a flat angle and one steep. Compared with the steep kick, the flatter kick…',
+    options: [
+      { id: 'a', label: 'Stays lower and reaches the goal sooner' },
+      { id: 'b', label: 'Climbs higher and hangs in the air longer' },
+      { id: 'c', label: 'Has a larger vertical speed v_y' },
+      { id: 'd', label: 'Has zero horizontal speed' },
+    ],
+    correct: 'a',
+    explain: 'A flat angle puts more of the fixed speed into vₓ and less into v_y, so the ball travels fast and low and arrives quickly — it trades height for pace.',
+    stage: <CompareStage />,
+  },
+  {
+    tag: 'Question 7',
+    prompt: 'A lob is struck and lands back at the same height it left. Compared with its launch speed, its landing speed is…',
+    options: [
+      { id: 'a', label: 'The same magnitude' },
+      { id: 'b', label: 'Larger' },
+      { id: 'c', label: 'Smaller' },
+      { id: 'd', label: 'Zero' },
+    ],
+    correct: 'a',
+    explain: 'A trajectory is symmetric: the ball loses speed on the way up and regains the exact same amount coming down, so it returns to that height with the same speed (now aimed downward).',
+    stage: <CompareStage />,
+  },
+  {
+    tag: 'Question 8',
+    prompt: <>A lob leaves the grass with <b>v_y = 15 m/s</b> upward and lands at the same height. Its total hang time t = 2·v_y ⁄ g is? <span className="quiz-given">(g = 10)</span></>,
+    options: [
+      { id: 'a', label: '3 s' },
+      { id: 'b', label: '1.5 s' },
+      { id: 'c', label: '6 s' },
+      { id: 'd', label: '15 s' },
+    ],
+    correct: 'a',
+    explain: 't = 2·v_y ⁄ g = (2 × 15) ⁄ 10 = 3 s — 1.5 s up and 1.5 s back down.',
+    formulas: ['t = 2·v_y ⁄ g', 't = (2·15)⁄10'],
+    stage: <HorizStage clock />,
   },
 ]
 
@@ -212,6 +215,7 @@ export function KinematicsQuiz({ accent, onPrev, canPrev, onNext, lessonId, step
   // tab 0 = start, tabs 1..8 = questions, tab 9 = results
   const [tab, setTab] = useState(0)
   const [picked, setPicked] = useState<(string | null)[]>(Array(QUESTIONS.length).fill(null))
+  const [optionOrders, setOptionOrders] = useState(() => QUESTIONS.map((q) => shuffled(q.options)))
   const [showCalc, setShowCalc] = useState(false)
   const [recordedKey, setRecordedKey] = useState('')
   const last = QUESTIONS.length + 1
@@ -222,6 +226,7 @@ export function KinematicsQuiz({ accent, onPrev, canPrev, onNext, lessonId, step
   const back = () => { if (tab === 0) onPrev(); else setTab((t) => t - 1) }
   const retry = () => {
     setPicked(Array(QUESTIONS.length).fill(null))
+    setOptionOrders(QUESTIONS.map((q) => shuffled(q.options)))
     setRecordedKey('')
     setShowCalc(false)
     setTab(0)
@@ -330,27 +335,23 @@ export function KinematicsQuiz({ accent, onPrev, canPrev, onNext, lessonId, step
         <div className="kin__main">
           <span className="kin__tag">{q.tag}</span>
           <h2 className="kin__title kin__title--q">{q.prompt}</h2>
-          {(q.formulas || q.calculator) && (
-            <div className="quiz-tools">
-              {q.formulas && (
-                <div className="kin__formulas quiz-formulas">
-                  {q.formulas.map((f) => (
-                    <div className="kin__formula" key={f}>
-                      <span className="kin__formula-label">formula</span>
-                      <code className="kin__formula-expr">{f}</code>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {q.calculator && (
-                <button type="button" className="btn btn--ghost btn--sm" onClick={() => setShowCalc((open) => !open)}>
-                  🧮 {showCalc ? 'Hide calculator' : 'Calculator'}
-                </button>
-              )}
-            </div>
-          )}
+          <div className="quiz-tools">
+            {q.formulas && (
+              <div className="kin__formulas quiz-formulas">
+                {q.formulas.map((f) => (
+                  <div className="kin__formula" key={f}>
+                    <span className="kin__formula-label">formula</span>
+                    <code className="kin__formula-expr">{f}</code>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button type="button" className="btn btn--ghost btn--sm" onClick={() => setShowCalc((open) => !open)}>
+              🧮 {showCalc ? 'Hide calculator' : 'Calculator'}
+            </button>
+          </div>
           <div className="quiz-opts">
-            {q.options.map((o) => {
+            {optionOrders[qi].map((o) => {
               const isPicked = picked[qi] === o.id
               const isAnswer = o.id === q.correct
               const cls = !answered ? '' : isAnswer ? 'is-correct' : isPicked ? 'is-wrong' : 'is-dim'
@@ -369,7 +370,7 @@ export function KinematicsQuiz({ accent, onPrev, canPrev, onNext, lessonId, step
               <b>{wasCorrect ? 'Correct! ' : 'Not quite. '}</b>{q.explain}
             </div>
           )}
-          {showCalc && q.calculator && <Calculator onClose={() => setShowCalc(false)} />}
+          {showCalc && <Calculator onClose={() => setShowCalc(false)} />}
         </div>
       </div>
       <Foot tab={tab} count={QUESTIONS.length} onBack={back} onNext={next} canBack nextLabel={qi === QUESTIONS.length - 1 ? 'See results →' : 'Next'} />

@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Calculator } from './sims/Calculator'
 
-// Final quiz for the Motion Graphs unit. Same shape as the kinematics quiz
-// (start tab, 8 question tabs, results tab) and reuses the kin-*/quiz-* styles,
-// with small position-time graph stages instead of trajectory animations.
+// Final quiz for the Impulse unit (goalkeeping). Same shape as the other unit
+// quizzes (start tab, 8 question tabs, results tab) and reuses the kin-*/quiz-*
+// styles, with a small save diagram (glove punching a ball) instead of
+// trajectory animations.
 
 type Props = {
   accent: string
@@ -23,31 +24,45 @@ type Props = {
   }) => void
 }
 
-// ---- tiny position–time graph stage ----
-type Line = { x0: number; v: number; color: string; dash?: boolean }
-function GraphStage({ lines, band, note, yLabel = 'pos' }: { lines: Line[]; band?: [number, number]; note?: string; yLabel?: string }) {
-  const VW = 300, VH = 200, P = 30, TM = 5, PM = 30
-  const gx = (t: number) => P + (t / TM) * (VW - 2 * P)
-  const gy = (p: number) => P + (VH - 2 * P) - (Math.min(Math.max(p, 0), PM) / PM) * (VH - 2 * P)
+// ---- tiny save diagram: a keeper glove applying a force to the incoming ball.
+// J = F·Δt = Δp. `fLen` (0..1) scales the force arrow so "more force" reads. ----
+function SaveStage({ fLen = 0.6, jLabel, fLabel, tLabel, vLabel, note }: { fLen?: number; jLabel?: string; fLabel?: string; tLabel?: string; vLabel?: string; note?: string }) {
+  const VW = 300, VH = 200
+  const cy = 104, ballX = 196, gloveX = 96
+  const arrowLen = 40 + fLen * 78
   return (
     <div className="kin-stage kin-stage--tool">
       <svg viewBox={`0 0 ${VW} ${VH}`} className="kin-svg" preserveAspectRatio="xMidYMid meet">
-        {band && (
-          <rect x={P} y={gy(band[1])} width={VW - 2 * P} height={gy(band[0]) - gy(band[1])} fill="rgba(54,224,127,0.18)" />
+        <defs>
+          <marker id="gq-arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L7,3 L0,6 Z" fill="#f59e0b" />
+          </marker>
+          <marker id="gq-arrow-v" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L7,3 L0,6 Z" fill="#ffd166" />
+          </marker>
+        </defs>
+        <line x1="16" y1={cy + 60} x2={VW - 16} y2={cy + 60} stroke="rgba(255,255,255,0.25)" />
+        {/* incoming ball */}
+        <circle cx={ballX} cy={cy} r={13} fill="#f1f4f8" stroke="#b9c2cc" strokeWidth="2" />
+        <path d={`M${ballX - 5} ${cy - 6} l6 4 -3 7 -6 -2 z`} fill="#1b2230" opacity="0.55" />
+        {/* incoming velocity tick from the right */}
+        {vLabel && (
+          <>
+            <line x1={ballX + 64} y1={cy - 26} x2={ballX + 18} y2={cy - 26} stroke="#ffd166" strokeWidth="4" strokeLinecap="round" markerEnd="url(#gq-arrow-v)" strokeDasharray="6 4" />
+            <text x={ballX + 40} y={cy - 34} fill="#ffd166" fontSize="12" textAnchor="middle" fontWeight="800">{vLabel}</text>
+          </>
         )}
-        <line x1={P} y1={P} x2={P} y2={VH - P} stroke="rgba(255,255,255,0.3)" />
-        <line x1={P} y1={VH - P} x2={VW - P} y2={VH - P} stroke="rgba(255,255,255,0.3)" />
-        <text x={P - 6} y={P + 2} fill="rgba(255,255,255,0.7)" fontSize="9" textAnchor="end">{yLabel}</text>
-        <text x={VW - P} y={VH - P + 14} fill="rgba(255,255,255,0.7)" fontSize="9" textAnchor="end">time</text>
-        {lines.map((l, i) => (
-          <line
-            key={i}
-            x1={gx(0)} y1={gy(l.x0)} x2={gx(TM)} y2={gy(l.x0 + l.v * TM)}
-            stroke={l.color} strokeWidth="4" strokeLinecap="round"
-            strokeDasharray={l.dash ? '5 4' : undefined}
-          />
-        ))}
-        {note && <text x={VW / 2} y={VH - 8} fill="rgba(255,255,255,0.75)" fontSize="10" textAnchor="middle">{note}</text>}
+        {/* keeper glove */}
+        <g stroke="#c3cad6" strokeWidth="2">
+          <rect x={gloveX - 22} y={cy - 16} width={26} height={32} rx={10} fill="#f4f6fa" />
+          <rect x={gloveX - 26} y={cy + 12} width={20} height={10} rx={4} fill="#f59e0b" />
+        </g>
+        {/* force arrow from glove into the ball */}
+        <line x1={gloveX + 8} y1={cy} x2={gloveX + 8 + arrowLen} y2={cy} stroke="#f59e0b" strokeWidth="6" strokeLinecap="round" markerEnd="url(#gq-arrow)" />
+        {fLabel && <text x={gloveX + 8 + arrowLen / 2} y={cy - 12} fill="#fbbf24" fontSize="13" textAnchor="middle" fontWeight="800">{fLabel}</text>}
+        {tLabel && <text x={gloveX + 8 + arrowLen / 2} y={cy + 20} fill="rgba(255,255,255,0.8)" fontSize="11" textAnchor="middle" fontWeight="700">{tLabel}</text>}
+        {jLabel && <text x={VW / 2} y={cy + 48} fill="#fcd34d" fontSize="13" textAnchor="middle" fontWeight="800">{jLabel}</text>}
+        {note && <text x={VW / 2} y={VH - 10} fill="rgba(255,255,255,0.75)" fontSize="10" textAnchor="middle">{note}</text>}
       </svg>
     </div>
   )
@@ -76,113 +91,113 @@ const shuffled = <T,>(items: T[]): T[] => {
 const QUESTIONS: Q[] = [
   {
     tag: 'Question 1',
-    prompt: 'On a position–time graph, the slope of the line tells you the…',
+    prompt: 'The impulse–momentum theorem says the impulse on the ball equals its…',
     options: [
-      { id: 'a', label: 'Velocity' },
-      { id: 'b', label: 'Acceleration' },
-      { id: 'c', label: 'Total distance' },
-      { id: 'd', label: 'Starting position' },
+      { id: 'a', label: 'Change in momentum, J = Δp' },
+      { id: 'b', label: 'Kinetic energy, ½mv²' },
+      { id: 'c', label: 'Power delivered, F·v' },
+      { id: 'd', label: 'Acceleration, Δv ⁄ Δt' },
     ],
     correct: 'a',
-    explain: 'Slope = Δposition ÷ Δtime, which is exactly the definition of velocity. Steeper line = faster.',
-    stage: <GraphStage lines={[{ x0: 0, v: 5, color: '#7ef0a0' }]} note="slope = velocity" />,
+    explain: 'The impulse–momentum theorem: J = Δp. The impulse you apply to the ball equals its change in momentum.',
+    stage: <SaveStage jLabel="J = Δp" note="impulse = Δ momentum" />,
   },
   {
     tag: 'Question 2',
-    prompt: 'On a velocity–time graph, the slope of the line tells you the…',
+    prompt: 'Impulse is measured in…',
     options: [
-      { id: 'a', label: 'Acceleration' },
-      { id: 'b', label: 'Velocity' },
-      { id: 'c', label: 'Position' },
-      { id: 'd', label: 'Displacement' },
+      { id: 'a', label: 'N·s (the same as kg·m/s)' },
+      { id: 'b', label: 'J (joules)' },
+      { id: 'c', label: 'N (newtons)' },
+      { id: 'd', label: 'm/s' },
     ],
     correct: 'a',
-    explain: 'On a v–t graph the slope is Δvelocity ÷ Δtime = acceleration. (The velocity itself is the height of the line, not its slope.)',
-    stage: <GraphStage yLabel="vel" lines={[{ x0: 2, v: 4, color: '#06b6d4' }]} note="slope = acceleration" />,
+    explain: 'From J = F·Δt the units are newton-seconds, N·s. Since J = Δp = m·Δv, that is identical to kg·m/s.',
+    stage: <SaveStage fLen={0.5} jLabel="N·s = kg·m/s" />,
   },
   {
     tag: 'Question 3',
-    prompt: 'A line on a position–time graph slopes downward (position is decreasing). The player is…',
+    prompt: <>A shot (ball <b>m = 0.43 kg</b>) flies in at <b>v = 20 m/s</b>. What impulse holds it dead? <span className="quiz-given">(J = m·v)</span></>,
     options: [
-      { id: 'a', label: 'Moving backward, toward the start' },
-      { id: 'b', label: 'Speeding up forward' },
-      { id: 'c', label: 'Standing still' },
-      { id: 'd', label: 'Accelerating downhill' },
+      { id: 'a', label: '8.6 N·s' },
+      { id: 'b', label: '20.4 N·s' },
+      { id: 'c', label: '46.5 N·s' },
+      { id: 'd', label: '86 N·s' },
     ],
     correct: 'a',
-    explain: 'A downward (negative) slope means position drops each second, so the velocity is negative — the player is heading back toward the start line.',
-    stage: <GraphStage lines={[{ x0: 26, v: -4, color: '#ff6ec7' }]} note="negative slope" />,
+    explain: 'J = Δp = m·v = 0.43 × 20 = 8.6 N·s. The impulse equals the momentum you remove.',
+    formulas: ['J = m·v', 'J = 0.43·20'],
+    stage: <SaveStage fLen={0.7} jLabel="J = ?" vLabel="20 m/s" />,
   },
   {
     tag: 'Question 4',
-    prompt: 'On a velocity–time graph, a flat horizontal line sitting above zero means the player has…',
+    prompt: 'You catch a shot but “give” with soft hands, doubling the contact time Δt. For the SAME impulse, the force on your hands is…',
     options: [
-      { id: 'a', label: 'Constant velocity and zero acceleration' },
-      { id: 'b', label: 'Zero velocity (standing still)' },
-      { id: 'c', label: 'Constant, non-zero acceleration' },
-      { id: 'd', label: 'Steadily increasing velocity' },
+      { id: 'a', label: 'Halved' },
+      { id: 'b', label: 'Doubled' },
+      { id: 'c', label: 'Unchanged' },
+      { id: 'd', label: 'Quadrupled' },
     ],
     correct: 'a',
-    explain: 'Flat means the velocity is not changing, so acceleration (the slope) is zero — but the line is above zero, so the player keeps cruising at a steady speed.',
-    stage: <GraphStage yLabel="vel" lines={[{ x0: 18, v: 0, color: '#7ef0a0' }]} note="flat v–t = constant speed" />,
+    explain: 'The impulse J = F·Δt is fixed by the shot\u2019s momentum. Doubling Δt halves F — exactly why keepers cushion the ball.',
+    stage: <SaveStage fLen={0.35} fLabel="small F" tLabel="long Δt" jLabel="same J" />,
   },
   {
     tag: 'Question 5',
-    prompt: 'A striker is moving forward (positive velocity) but his acceleration points backward (negative). He is…',
+    prompt: 'Two saves deliver the SAME impulse. Save A is a big force for a short time; Save B is a small force for a long time. Which changes the ball’s momentum more?',
     options: [
-      { id: 'a', label: 'Slowing down' },
-      { id: 'b', label: 'Speeding up' },
-      { id: 'c', label: 'Moving at constant speed' },
-      { id: 'd', label: 'Already stopped' },
+      { id: 'a', label: 'The same — equal impulse, equal Δp' },
+      { id: 'b', label: 'Save A — the bigger force wins' },
+      { id: 'c', label: 'Save B — the longer time wins' },
+      { id: 'd', label: 'Neither — momentum cannot change' },
     ],
     correct: 'a',
-    explain: 'When velocity and acceleration point in opposite directions the object slows down. Same signs ⇒ speeding up; opposite signs ⇒ slowing down.',
-    stage: <GraphStage yLabel="vel" lines={[{ x0: 24, v: -4, color: '#ffd166' }]} note="v > 0, a < 0" />,
+    explain: 'J = F·Δt = Δp. Equal impulses produce equal momentum changes, whether from big-force/short-time or small-force/long-time.',
+    stage: <SaveStage fLen={0.6} jLabel="equal J" note="F·Δt equal" />,
   },
   {
     tag: 'Question 6',
-    prompt: <>A runner starts <b>6 m</b> up the pitch and jogs at a steady <b>4 m/s</b>. Where is he after <b>3 s</b>? <span className="quiz-given">(x = x₀ + v·t)</span></>,
+    prompt: 'On a force-versus-time graph of the save, the impulse delivered to the ball equals the…',
     options: [
-      { id: 'a', label: '18 m' },
-      { id: 'b', label: '12 m' },
-      { id: 'c', label: '24 m' },
-      { id: 'd', label: '10 m' },
+      { id: 'a', label: 'Area under the force–time curve' },
+      { id: 'b', label: 'Slope of the curve' },
+      { id: 'c', label: 'Highest point (peak force)' },
+      { id: 'd', label: 'Length of the time axis' },
     ],
     correct: 'a',
-    explain: 'x = x₀ + v·t = 6 + 4×3 = 6 + 12 = 18 m.',
-    formulas: ['x = x₀ + v·t', 'x = 6 + 4·3'],
-    stage: <GraphStage lines={[{ x0: 6, v: 4, color: '#ffd166' }]} />,
+    explain: 'Impulse is force accumulated over time — the area under the force–time graph (which is just F·Δt for a constant force).',
+    stage: <SaveStage fLen={0.7} fLabel="F" tLabel="Δt" jLabel="J = area" />,
   },
   {
     tag: 'Question 7',
-    prompt: <>A ball rolls at a constant <b>8 m/s</b> for <b>5 s</b>. Using the area under its velocity–time graph, how far does it travel? <span className="quiz-given">(Δx = area)</span></>,
+    prompt: 'A striker hits an identical 0.43 kg ball at DOUBLE the speed. The impulse you need to stop it is…',
     options: [
-      { id: 'a', label: '40 m' },
-      { id: 'b', label: '13 m' },
-      { id: 'c', label: '1.6 m' },
-      { id: 'd', label: '8 m' },
+      { id: 'a', label: 'Doubled' },
+      { id: 'b', label: 'The same' },
+      { id: 'c', label: 'Halved' },
+      { id: 'd', label: 'Quadrupled' },
     ],
     correct: 'a',
-    explain: 'Displacement is the area under the v–t graph. Here it is a rectangle: Δx = 8 m/s × 5 s = 40 m.',
-    formulas: ['Δx = v·t (area)', 'Δx = 8·5'],
-    stage: <GraphStage yLabel="vel" lines={[{ x0: 8, v: 0, color: '#06b6d4' }]} band={[0, 8]} note="area = displacement" />,
+    explain: 'J = m·v with m fixed, so impulse is proportional to speed: twice the speed means twice the momentum to remove.',
+    stage: <SaveStage fLen={0.95} jLabel="2J" vLabel="2v" note="double v ⇒ double impulse" />,
   },
   {
     tag: 'Question 8',
-    prompt: 'Two players are drawn on one position–time graph. Player A’s line is steeper than Player B’s. Which statement is true?',
+    prompt: <>A <b>0.43 kg</b> shot at <b>v = 20 m/s</b> is parried to rest in <b>Δt = 0.1 s</b>. The force on your gloves is? <span className="quiz-given">(F = m·v ⁄ Δt)</span></>,
     options: [
-      { id: 'a', label: 'A is faster than B' },
-      { id: 'b', label: 'B is faster than A' },
-      { id: 'c', label: 'They move at the same speed' },
-      { id: 'd', label: 'A is accelerating' },
+      { id: 'a', label: '86 N' },
+      { id: 'b', label: '8.6 N' },
+      { id: 'c', label: '860 N' },
+      { id: 'd', label: '43 N' },
     ],
     correct: 'a',
-    explain: 'On an x–t graph a steeper slope is a larger velocity, so the steeper line (A) is the faster player. Slope here is speed, not acceleration.',
-    stage: <GraphStage lines={[{ x0: 0, v: 5.5, color: '#7ef0a0' }, { x0: 2, v: 2, color: '#ffd166' }]} />,
+    explain: 'First the impulse J = m·v = 0.43 × 20 = 8.6 N·s, then F = J ⁄ Δt = 8.6 ⁄ 0.1 = 86 N.',
+    formulas: ['F = m·v ⁄ Δt', 'F = 0.43·20 ⁄ 0.1'],
+    stage: <SaveStage fLen={0.75} fLabel="F = ?" tLabel="0.1 s" vLabel="20 m/s" />,
   },
 ]
 
-export function MotionGraphsQuiz({ accent, onPrev, canPrev, onNext, lessonId, stepId, onRecord }: Props) {
+export function GoalieQuiz({ accent, onPrev, canPrev, onNext, lessonId, stepId, onRecord }: Props) {
   const [tab, setTab] = useState(0)
   const [picked, setPicked] = useState<(string | null)[]>(Array(QUESTIONS.length).fill(null))
   const [optionOrders, setOptionOrders] = useState(() => QUESTIONS.map((q) => shuffled(q.options)))
@@ -212,7 +227,7 @@ export function MotionGraphsQuiz({ accent, onPrev, canPrev, onNext, lessonId, st
       isCorrect: passed,
       feedback: passed ? `Passed the quiz with ${score}/8.` : `Quiz score ${score}/8. Passing requires 6/8.`,
       isMasteryCheck: true,
-      conceptTags: ['graph-final-quiz'],
+      conceptTags: ['impulse-momentum'],
     })
   }
   const next = () => {
@@ -243,9 +258,9 @@ export function MotionGraphsQuiz({ accent, onPrev, canPrev, onNext, lessonId, st
           <div className="kin__visual">
             <div className="kin-stage kin-stage--intro">
               <div className="kin-bubbles">
-                <span className="kin-bubble kin-bubble--a">slope = velocity</span>
-                <span className="kin-bubble kin-bubble--b">x = x₀ + v·t</span>
-                <span className="kin-bubble kin-bubble--c">lead the run</span>
+                <span className="kin-bubble kin-bubble--a">J = Δp</span>
+                <span className="kin-bubble kin-bubble--b">J = F·Δt</span>
+                <span className="kin-bubble kin-bubble--c">N·s</span>
               </div>
               <div className="quiz-trophy">🏆</div>
               <div className="kin-grass" />
@@ -253,8 +268,8 @@ export function MotionGraphsQuiz({ accent, onPrev, canPrev, onNext, lessonId, st
           </div>
           <div className="kin__main">
             <span className="kin__tag">Final quiz</span>
-            <h2 className="kin__title">Test your motion graphs</h2>
-            <p className="kin__body">Eight quick questions on slope, velocity, and leading a runner. Pick an answer and you will see why it works. You need <b>6 out of 8</b> to pass this mastery check.</p>
+            <h2 className="kin__title">Test your goalkeeping</h2>
+            <p className="kin__body">Eight quick questions on the impulse J = Δp = F·Δt behind every save. Pick an answer and you will see why it works. You need <b>6 out of 8</b> to pass this mastery check.</p>
             <div className="kin__formulas">
               <div className="kin__formula"><span className="kin__formula-label">questions</span><code className="kin__formula-expr">8 total</code></div>
               <div className="kin__formula"><span className="kin__formula-label">format</span><code className="kin__formula-expr">multiple choice</code></div>
@@ -274,7 +289,7 @@ export function MotionGraphsQuiz({ accent, onPrev, canPrev, onNext, lessonId, st
         <div className="kin__grid">
           <div className="kin__visual">
             <div className="kin-stage kin-stage--recap">
-              <div className="quiz-trophy quiz-trophy--big">{score >= 6 ? '🏆' : '📈'}</div>
+              <div className="quiz-trophy quiz-trophy--big">{score >= 6 ? '🏆' : '🧤'}</div>
               <div className="kin-whistle">{cheer}</div>
               <div className="kin-grass" />
             </div>
@@ -282,7 +297,7 @@ export function MotionGraphsQuiz({ accent, onPrev, canPrev, onNext, lessonId, st
           <div className="kin__main">
             <span className="kin__tag">Results</span>
             <h2 className="kin__title">You scored {score} / {QUESTIONS.length}</h2>
-            <p className="kin__body">{pct}% correct. {passed ? 'Quiz passed. This counts as the final motion graphs mastery check.' : 'You need 6 out of 8 to pass. Review the misses, then retry the quiz.'}</p>
+            <p className="kin__body">{pct}% correct. {passed ? 'Quiz passed. This counts as the final impulse mastery check.' : 'You need 6 out of 8 to pass. Review the misses, then retry the quiz.'}</p>
             <div className="quiz-scorebar"><span className="quiz-scorebar__fill" style={{ width: `${pct}%` }} /></div>
           </div>
         </div>

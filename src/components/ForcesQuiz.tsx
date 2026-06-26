@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { Calculator } from './sims/Calculator'
 
-// Final quiz for the Motion Graphs unit. Same shape as the kinematics quiz
+// Final quiz for the Forces unit (dribbling). Same shape as the kinematics quiz
 // (start tab, 8 question tabs, results tab) and reuses the kin-*/quiz-* styles,
-// with small position-time graph stages instead of trajectory animations.
+// with small force/acceleration diagrams instead of trajectory animations.
 
 type Props = {
   accent: string
@@ -23,31 +23,40 @@ type Props = {
   }) => void
 }
 
-// ---- tiny position–time graph stage ----
-type Line = { x0: number; v: number; color: string; dash?: boolean }
-function GraphStage({ lines, band, note, yLabel = 'pos' }: { lines: Line[]; band?: [number, number]; note?: string; yLabel?: string }) {
-  const VW = 300, VH = 200, P = 30, TM = 5, PM = 30
-  const gx = (t: number) => P + (t / TM) * (VW - 2 * P)
-  const gy = (p: number) => P + (VH - 2 * P) - (Math.min(Math.max(p, 0), PM) / PM) * (VH - 2 * P)
+// ---- tiny force diagram stage: the ball with a foot-force arrow (and the
+// acceleration it produces). `fLen` (0..1) scales the push so "more force" reads. ----
+function KickStage({ fLen = 0.6, fLabel, aLabel, mLabel, note }: { fLen?: number; fLabel?: string; aLabel?: string; mLabel?: string; note?: string }) {
+  const VW = 300, VH = 200
+  const cy = 120, ballX = 150, r = 22
+  const arrowLen = 40 + fLen * 80
   return (
     <div className="kin-stage kin-stage--tool">
       <svg viewBox={`0 0 ${VW} ${VH}`} className="kin-svg" preserveAspectRatio="xMidYMid meet">
-        {band && (
-          <rect x={P} y={gy(band[1])} width={VW - 2 * P} height={gy(band[0]) - gy(band[1])} fill="rgba(54,224,127,0.18)" />
+        <defs>
+          <marker id="fq-arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L7,3 L0,6 Z" fill="#ff5b6e" />
+          </marker>
+          <marker id="fq-arrow-a" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L7,3 L0,6 Z" fill="#ffd166" />
+          </marker>
+        </defs>
+        <line x1="16" y1={cy + r + 6} x2={VW - 16} y2={cy + r + 6} stroke="rgba(255,255,255,0.25)" />
+        {/* ball */}
+        <circle cx={ballX} cy={cy} r={r} fill="#f1f4f8" stroke="#b9c2cc" strokeWidth="2" />
+        <circle cx={ballX - 6} cy={cy - 6} r={4} fill="#1b1f2a" />
+        <circle cx={ballX + 7} cy={cy + 4} r={3} fill="#1b1f2a" />
+        {mLabel && <text x={ballX} y={cy + r + 22} fill="rgba(255,255,255,0.8)" fontSize="11" textAnchor="middle" fontWeight="700">{mLabel}</text>}
+        {/* force arrow into the ball from the left */}
+        <line x1={ballX - r - arrowLen} y1={cy} x2={ballX - r - 4} y2={cy} stroke="#ff5b6e" strokeWidth="6" strokeLinecap="round" markerEnd="url(#fq-arrow)" />
+        {fLabel && <text x={ballX - r - arrowLen / 2} y={cy - 12} fill="#ff5b6e" fontSize="13" textAnchor="middle" fontWeight="800">{fLabel}</text>}
+        {/* acceleration arrow out of the ball to the right */}
+        {aLabel && (
+          <>
+            <line x1={ballX + r + 4} y1={cy} x2={ballX + r + 56} y2={cy} stroke="#ffd166" strokeWidth="5" strokeLinecap="round" markerEnd="url(#fq-arrow-a)" strokeDasharray="6 4" />
+            <text x={ballX + r + 30} y={cy - 12} fill="#ffd166" fontSize="13" textAnchor="middle" fontWeight="800">{aLabel}</text>
+          </>
         )}
-        <line x1={P} y1={P} x2={P} y2={VH - P} stroke="rgba(255,255,255,0.3)" />
-        <line x1={P} y1={VH - P} x2={VW - P} y2={VH - P} stroke="rgba(255,255,255,0.3)" />
-        <text x={P - 6} y={P + 2} fill="rgba(255,255,255,0.7)" fontSize="9" textAnchor="end">{yLabel}</text>
-        <text x={VW - P} y={VH - P + 14} fill="rgba(255,255,255,0.7)" fontSize="9" textAnchor="end">time</text>
-        {lines.map((l, i) => (
-          <line
-            key={i}
-            x1={gx(0)} y1={gy(l.x0)} x2={gx(TM)} y2={gy(l.x0 + l.v * TM)}
-            stroke={l.color} strokeWidth="4" strokeLinecap="round"
-            strokeDasharray={l.dash ? '5 4' : undefined}
-          />
-        ))}
-        {note && <text x={VW / 2} y={VH - 8} fill="rgba(255,255,255,0.75)" fontSize="10" textAnchor="middle">{note}</text>}
+        {note && <text x={VW / 2} y={VH - 10} fill="rgba(255,255,255,0.75)" fontSize="10" textAnchor="middle">{note}</text>}
       </svg>
     </div>
   )
@@ -76,113 +85,113 @@ const shuffled = <T,>(items: T[]): T[] => {
 const QUESTIONS: Q[] = [
   {
     tag: 'Question 1',
-    prompt: 'On a position–time graph, the slope of the line tells you the…',
+    prompt: 'Newton\u2019s second law relates the net force on the ball to its acceleration. It says…',
     options: [
-      { id: 'a', label: 'Velocity' },
-      { id: 'b', label: 'Acceleration' },
-      { id: 'c', label: 'Total distance' },
-      { id: 'd', label: 'Starting position' },
+      { id: 'a', label: 'F_net = m·a' },
+      { id: 'b', label: 'F_net = m ⁄ a' },
+      { id: 'c', label: 'F_net = a ⁄ m' },
+      { id: 'd', label: 'F_net = m + a' },
     ],
     correct: 'a',
-    explain: 'Slope = Δposition ÷ Δtime, which is exactly the definition of velocity. Steeper line = faster.',
-    stage: <GraphStage lines={[{ x0: 0, v: 5, color: '#7ef0a0' }]} note="slope = velocity" />,
+    explain: 'The net force equals mass times acceleration: F_net = m·a. The acceleration always points in the direction of the net force.',
+    stage: <KickStage fLabel="F" aLabel="a" mLabel="m" note="F_net = m·a" />,
   },
   {
     tag: 'Question 2',
-    prompt: 'On a velocity–time graph, the slope of the line tells you the…',
+    prompt: <>A through-pass drives a net force of <b>F = 86 N</b> into the <b>0.43 kg</b> ball. Its acceleration is? <span className="quiz-given">(a = F ⁄ m)</span></>,
     options: [
-      { id: 'a', label: 'Acceleration' },
-      { id: 'b', label: 'Velocity' },
-      { id: 'c', label: 'Position' },
-      { id: 'd', label: 'Displacement' },
+      { id: 'a', label: '200 m/s²' },
+      { id: 'b', label: '86 m/s²' },
+      { id: 'c', label: '37 m/s²' },
+      { id: 'd', label: '20 m/s²' },
     ],
     correct: 'a',
-    explain: 'On a v–t graph the slope is Δvelocity ÷ Δtime = acceleration. (The velocity itself is the height of the line, not its slope.)',
-    stage: <GraphStage yLabel="vel" lines={[{ x0: 2, v: 4, color: '#06b6d4' }]} note="slope = acceleration" />,
+    explain: 'Rearrange F = m·a: a = F ⁄ m = 86 ⁄ 0.43 = 200 m/s².',
+    formulas: ['a = F ⁄ m', 'a = 86 ⁄ 0.43'],
+    stage: <KickStage fLen={0.9} fLabel="86 N" aLabel="a = ?" mLabel="0.43 kg" />,
   },
   {
     tag: 'Question 3',
-    prompt: 'A line on a position–time graph slopes downward (position is decreasing). The player is…',
+    prompt: <>An in-and-out touch accelerates the <b>0.43 kg</b> ball at <b>a = 150 m/s²</b>. The net force is? <span className="quiz-given">(F = m·a)</span></>,
     options: [
-      { id: 'a', label: 'Moving backward, toward the start' },
-      { id: 'b', label: 'Speeding up forward' },
-      { id: 'c', label: 'Standing still' },
-      { id: 'd', label: 'Accelerating downhill' },
+      { id: 'a', label: '64.5 N' },
+      { id: 'b', label: '150 N' },
+      { id: 'c', label: '349 N' },
+      { id: 'd', label: '6.45 N' },
     ],
     correct: 'a',
-    explain: 'A downward (negative) slope means position drops each second, so the velocity is negative — the player is heading back toward the start line.',
-    stage: <GraphStage lines={[{ x0: 26, v: -4, color: '#ff6ec7' }]} note="negative slope" />,
+    explain: 'F = m·a = 0.43 × 150 = 64.5 N. Multiply the fixed mass by the acceleration.',
+    formulas: ['F = m·a', 'F = 0.43·150'],
+    stage: <KickStage fLen={0.85} fLabel="F = ?" aLabel="150 m/s²" mLabel="0.43 kg" />,
   },
   {
     tag: 'Question 4',
-    prompt: 'On a velocity–time graph, a flat horizontal line sitting above zero means the player has…',
+    prompt: 'You kick the ball and your foot pushes it forward with 40 N. By Newton\u2019s third law, at that same instant the ball…',
     options: [
-      { id: 'a', label: 'Constant velocity and zero acceleration' },
-      { id: 'b', label: 'Zero velocity (standing still)' },
-      { id: 'c', label: 'Constant, non-zero acceleration' },
-      { id: 'd', label: 'Steadily increasing velocity' },
+      { id: 'a', label: 'Pushes back on your foot with 40 N' },
+      { id: 'b', label: 'Pushes back on your foot with less than 40 N because it is light' },
+      { id: 'c', label: 'Pushes forward on your foot with 40 N' },
+      { id: 'd', label: 'Exerts no force on your foot at all' },
     ],
     correct: 'a',
-    explain: 'Flat means the velocity is not changing, so acceleration (the slope) is zero — but the line is above zero, so the player keeps cruising at a steady speed.',
-    stage: <GraphStage yLabel="vel" lines={[{ x0: 18, v: 0, color: '#7ef0a0' }]} note="flat v–t = constant speed" />,
+    explain: 'Third-law pairs are equal in size and opposite in direction, and they act on DIFFERENT objects: the foot pushes the ball forward, the ball pushes the foot back, both 40 N.',
+    stage: <KickStage fLen={0.7} fLabel="foot 40 N" aLabel="ball 40 N" note="equal & opposite" />,
   },
   {
     tag: 'Question 5',
-    prompt: 'A striker is moving forward (positive velocity) but his acceleration points backward (negative). He is…',
+    prompt: 'A ball rolls across smooth, level turf at a constant velocity (ignore friction). The net force on it is…',
     options: [
-      { id: 'a', label: 'Slowing down' },
-      { id: 'b', label: 'Speeding up' },
-      { id: 'c', label: 'Moving at constant speed' },
-      { id: 'd', label: 'Already stopped' },
+      { id: 'a', label: 'Zero — the forces are balanced' },
+      { id: 'b', label: 'A steady forward force keeping it moving' },
+      { id: 'c', label: 'A force that grows as it travels' },
+      { id: 'd', label: 'Equal to its weight, pointing forward' },
     ],
     correct: 'a',
-    explain: 'When velocity and acceleration point in opposite directions the object slows down. Same signs ⇒ speeding up; opposite signs ⇒ slowing down.',
-    stage: <GraphStage yLabel="vel" lines={[{ x0: 24, v: -4, color: '#ffd166' }]} note="v > 0, a < 0" />,
+    explain: 'Constant velocity means zero acceleration, so F_net = m·a = 0. A moving object needs NO net force to keep moving — that is Newton\u2019s first law.',
+    stage: <KickStage fLen={0.3} fLabel="balanced" note="constant v ⇒ F_net = 0" />,
   },
   {
     tag: 'Question 6',
-    prompt: <>A runner starts <b>6 m</b> up the pitch and jogs at a steady <b>4 m/s</b>. Where is he after <b>3 s</b>? <span className="quiz-given">(x = x₀ + v·t)</span></>,
+    prompt: 'Two players strike the same ball at once: one pushes it right with 30 N, the other pushes it left with 18 N. The ball…',
     options: [
-      { id: 'a', label: '18 m' },
-      { id: 'b', label: '12 m' },
-      { id: 'c', label: '24 m' },
-      { id: 'd', label: '10 m' },
+      { id: 'a', label: 'Accelerates to the right (net 12 N right)' },
+      { id: 'b', label: 'Accelerates to the left (net 12 N left)' },
+      { id: 'c', label: 'Stays still — the forces cancel' },
+      { id: 'd', label: 'Accelerates with the full 48 N' },
     ],
     correct: 'a',
-    explain: 'x = x₀ + v·t = 6 + 4×3 = 6 + 12 = 18 m.',
-    formulas: ['x = x₀ + v·t', 'x = 6 + 4·3'],
-    stage: <GraphStage lines={[{ x0: 6, v: 4, color: '#ffd166' }]} />,
+    explain: 'Add the forces as a free body: 30 N right − 18 N left = 12 N net to the right, so the acceleration points right.',
+    stage: <KickStage fLen={0.6} fLabel="net 12 N →" aLabel="a →" />,
   },
   {
     tag: 'Question 7',
-    prompt: <>A ball rolls at a constant <b>8 m/s</b> for <b>5 s</b>. Using the area under its velocity–time graph, how far does it travel? <span className="quiz-given">(Δx = area)</span></>,
+    prompt: 'You push the SAME 0.43 kg ball three ways — A: 10 N, B: 20 N, C: 30 N. Rank the accelerations from largest to smallest.',
     options: [
-      { id: 'a', label: '40 m' },
-      { id: 'b', label: '13 m' },
-      { id: 'c', label: '1.6 m' },
-      { id: 'd', label: '8 m' },
+      { id: 'a', label: 'C > B > A' },
+      { id: 'b', label: 'A > B > C' },
+      { id: 'c', label: 'A = B = C' },
+      { id: 'd', label: 'B > C > A' },
     ],
     correct: 'a',
-    explain: 'Displacement is the area under the v–t graph. Here it is a rectangle: Δx = 8 m/s × 5 s = 40 m.',
-    formulas: ['Δx = v·t (area)', 'Δx = 8·5'],
-    stage: <GraphStage yLabel="vel" lines={[{ x0: 8, v: 0, color: '#06b6d4' }]} band={[0, 8]} note="area = displacement" />,
+    explain: 'With mass fixed, a = F ⁄ m is directly proportional to force, so the biggest force (C, 30 N) gives the biggest acceleration: C > B > A.',
+    stage: <KickStage fLen={0.95} fLabel="bigger F" aLabel="bigger a" note="a ∝ F" />,
   },
   {
     tag: 'Question 8',
-    prompt: 'Two players are drawn on one position–time graph. Player A’s line is steeper than Player B’s. Which statement is true?',
+    prompt: 'You carry the same soccer ball from Earth to the Moon, where gravity is weaker. The ball\u2019s MASS…',
     options: [
-      { id: 'a', label: 'A is faster than B' },
-      { id: 'b', label: 'B is faster than A' },
-      { id: 'c', label: 'They move at the same speed' },
-      { id: 'd', label: 'A is accelerating' },
+      { id: 'a', label: 'Stays 0.43 kg, but its weight is less' },
+      { id: 'b', label: 'Becomes smaller, like its weight' },
+      { id: 'c', label: 'Becomes larger to balance gravity' },
+      { id: 'd', label: 'Drops to zero in low gravity' },
     ],
     correct: 'a',
-    explain: 'On an x–t graph a steeper slope is a larger velocity, so the steeper line (A) is the faster player. Slope here is speed, not acceleration.',
-    stage: <GraphStage lines={[{ x0: 0, v: 5.5, color: '#7ef0a0' }, { x0: 2, v: 2, color: '#ffd166' }]} />,
+    explain: 'Mass is the amount of matter and never changes: m = 0.43 kg everywhere. Weight is the gravitational force mg, so it shrinks on the Moon where g is smaller.',
+    stage: <KickStage fLen={0.4} mLabel="m = 0.43 kg" note="mass ≠ weight" />,
   },
 ]
 
-export function MotionGraphsQuiz({ accent, onPrev, canPrev, onNext, lessonId, stepId, onRecord }: Props) {
+export function ForcesQuiz({ accent, onPrev, canPrev, onNext, lessonId, stepId, onRecord }: Props) {
   const [tab, setTab] = useState(0)
   const [picked, setPicked] = useState<(string | null)[]>(Array(QUESTIONS.length).fill(null))
   const [optionOrders, setOptionOrders] = useState(() => QUESTIONS.map((q) => shuffled(q.options)))
@@ -212,7 +221,7 @@ export function MotionGraphsQuiz({ accent, onPrev, canPrev, onNext, lessonId, st
       isCorrect: passed,
       feedback: passed ? `Passed the quiz with ${score}/8.` : `Quiz score ${score}/8. Passing requires 6/8.`,
       isMasteryCheck: true,
-      conceptTags: ['graph-final-quiz'],
+      conceptTags: ['force-net-force'],
     })
   }
   const next = () => {
@@ -243,9 +252,9 @@ export function MotionGraphsQuiz({ accent, onPrev, canPrev, onNext, lessonId, st
           <div className="kin__visual">
             <div className="kin-stage kin-stage--intro">
               <div className="kin-bubbles">
-                <span className="kin-bubble kin-bubble--a">slope = velocity</span>
-                <span className="kin-bubble kin-bubble--b">x = x₀ + v·t</span>
-                <span className="kin-bubble kin-bubble--c">lead the run</span>
+                <span className="kin-bubble kin-bubble--a">F = m·a</span>
+                <span className="kin-bubble kin-bubble--b">a = F ⁄ m</span>
+                <span className="kin-bubble kin-bubble--c">m = 0.43 kg</span>
               </div>
               <div className="quiz-trophy">🏆</div>
               <div className="kin-grass" />
@@ -253,8 +262,8 @@ export function MotionGraphsQuiz({ accent, onPrev, canPrev, onNext, lessonId, st
           </div>
           <div className="kin__main">
             <span className="kin__tag">Final quiz</span>
-            <h2 className="kin__title">Test your motion graphs</h2>
-            <p className="kin__body">Eight quick questions on slope, velocity, and leading a runner. Pick an answer and you will see why it works. You need <b>6 out of 8</b> to pass this mastery check.</p>
+            <h2 className="kin__title">Test your dribbling forces</h2>
+            <p className="kin__body">Eight quick questions on Newton’s second law behind every move. Pick an answer and you will see why it works. You need <b>6 out of 8</b> to pass this mastery check.</p>
             <div className="kin__formulas">
               <div className="kin__formula"><span className="kin__formula-label">questions</span><code className="kin__formula-expr">8 total</code></div>
               <div className="kin__formula"><span className="kin__formula-label">format</span><code className="kin__formula-expr">multiple choice</code></div>
@@ -274,7 +283,7 @@ export function MotionGraphsQuiz({ accent, onPrev, canPrev, onNext, lessonId, st
         <div className="kin__grid">
           <div className="kin__visual">
             <div className="kin-stage kin-stage--recap">
-              <div className="quiz-trophy quiz-trophy--big">{score >= 6 ? '🏆' : '📈'}</div>
+              <div className="quiz-trophy quiz-trophy--big">{score >= 6 ? '🏆' : '⚽'}</div>
               <div className="kin-whistle">{cheer}</div>
               <div className="kin-grass" />
             </div>
@@ -282,7 +291,7 @@ export function MotionGraphsQuiz({ accent, onPrev, canPrev, onNext, lessonId, st
           <div className="kin__main">
             <span className="kin__tag">Results</span>
             <h2 className="kin__title">You scored {score} / {QUESTIONS.length}</h2>
-            <p className="kin__body">{pct}% correct. {passed ? 'Quiz passed. This counts as the final motion graphs mastery check.' : 'You need 6 out of 8 to pass. Review the misses, then retry the quiz.'}</p>
+            <p className="kin__body">{pct}% correct. {passed ? 'Quiz passed. This counts as the final forces mastery check.' : 'You need 6 out of 8 to pass. Review the misses, then retry the quiz.'}</p>
             <div className="quiz-scorebar"><span className="quiz-scorebar__fill" style={{ width: `${pct}%` }} /></div>
           </div>
         </div>

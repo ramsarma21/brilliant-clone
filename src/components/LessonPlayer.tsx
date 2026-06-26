@@ -7,7 +7,10 @@ import { KinematicsIntro } from './KinematicsIntro'
 import { KinematicsQuiz } from './KinematicsQuiz'
 import { MotionGraphsIntro } from './MotionGraphsIntro'
 import { MotionGraphsQuiz } from './MotionGraphsQuiz'
-import { Modal } from './ui/Modal'
+import { ForcesQuiz } from './ForcesQuiz'
+import { EnergyQuiz } from './EnergyQuiz'
+import { DefenseQuiz } from './DefenseQuiz'
+import { GoalieQuiz } from './GoalieQuiz'
 import { Feedback, type FeedbackKind } from './Feedback'
 import type {
   ChallengeStep,
@@ -159,43 +162,20 @@ function NavButtons({
   )
 }
 
-function SandboxPeek({
-  simKey,
-  sandbox,
-  setSandbox,
-  prompt,
-}: {
-  simKey: SimKey
-  sandbox: SimState
-  setSandbox: (s: SimState) => void
-  prompt: string
-}) {
-  const [open, setOpen] = useState(false)
-  return (
-    <>
-      <button type="button" className="sandbox-peek" onClick={() => setOpen(true)}>
-        Open sandbox
-      </button>
-      <Modal
-        open={open}
-        title="Sandbox"
-        subtitle="Experiment freely. Your changes carry over."
-        onClose={() => setOpen(false)}
-      >
-        <p className="modal__prompt">{prompt}</p>
-        <Sim sim={simKey} state={sandbox} onChange={setSandbox} />
-      </Modal>
-    </>
-  )
-}
-
 function lessonTheme(lessonId: string) {
   return UNIT_THEME[LESSONS[lessonId].unitId]
 }
 
 function QuizView(props: StepViewProps) {
   const theme = lessonTheme(props.lessonId)
-  const Quiz = LESSONS[props.lessonId].unitId === 'motion-graphs' ? MotionGraphsQuiz : KinematicsQuiz
+  const unitId = LESSONS[props.lessonId].unitId
+  const Quiz =
+    unitId === 'motion-graphs' ? MotionGraphsQuiz
+    : unitId === 'forces' ? ForcesQuiz
+    : unitId === 'energy' ? EnergyQuiz
+    : unitId === 'momentum' ? DefenseQuiz
+    : unitId === 'impulse' ? GoalieQuiz
+    : KinematicsQuiz
   return (
     <Quiz
       accent={theme.accent}
@@ -270,6 +250,7 @@ function PredictionView(props: StepViewProps & { step: PredictionStep }) {
   const [selected, setSelected] = useState<string | null>(null)
   const [fb, setFb] = useState<{ kind: FeedbackKind; message: string } | null>(null)
   const [solved, setSolved] = useState(props.masteryDone)
+  const [showCalc, setShowCalc] = useState(false)
 
   function submit() {
     if (!selected) return
@@ -309,19 +290,15 @@ function PredictionView(props: StepViewProps & { step: PredictionStep }) {
       </div>
       {showHint && <Feedback kind="hint" message={step.hint!} />}
       {fb && <Feedback kind={fb.kind} message={fb.message} />}
-      {fb && fb.kind !== 'correct' && (
-        <SandboxPeek
-          simKey={props.simKey}
-          sandbox={props.sandbox}
-          setSandbox={props.setSandbox}
-          prompt={step.prompt}
-        />
-      )}
       <div className="step__actions">
         <button className="btn btn--secondary" onClick={submit} disabled={!selected}>
           Check answer
         </button>
+        <button type="button" className="btn btn--ghost" onClick={() => setShowCalc((open) => !open)}>
+          🧮 {showCalc ? 'Hide calculator' : 'Calculator'}
+        </button>
       </div>
+      {showCalc && <Calculator onClose={() => setShowCalc(false)} />}
       <NavButtons
         onPrev={props.onPrev}
         canPrev={props.canPrev}
@@ -384,6 +361,7 @@ function NumericView(props: StepViewProps & { step: NumericStep }) {
         />
         {step.unitLabel && <span className="numeric-input__unit">{step.unitLabel}</span>}
       </div>
+      <p className="numeric-input__note muted">Round to the nearest whole number — up or down is fine.</p>
       {showHint && <Feedback kind="hint" message={step.hint!} />}
       {fb && <Feedback kind={fb.kind} message={fb.message} />}
       <div className="step__actions">
@@ -409,7 +387,7 @@ function ChallengeView(props: StepViewProps & { step: ChallengeStep }) {
   const { step } = props
   const [fb, setFb] = useState<{ kind: FeedbackKind; message: string } | null>(null)
   const [solved, setSolved] = useState(props.masteryDone)
-  const isSoccerChallenge = props.simKey === 'soccer' || props.simKey === 'passing' || props.simKey === 'forces'
+  const isSoccerChallenge = props.simKey === 'soccer' || props.simKey === 'passing' || props.simKey === 'forces' || props.simKey === 'energy' || props.simKey === 'defense' || props.simKey === 'goalie'
 
   function recordChallenge(correct: boolean, message: string) {
     if (correct) setSolved(true)
@@ -493,6 +471,34 @@ function SummaryView(props: StepViewProps & { body: string; prompt: string }) {
         Boolean(lp?.masteryChecksCorrect['mg-numeric']) &&
           Boolean(lp?.masteryChecksCorrect['mg-challenge']),
         Boolean(lp?.masteryChecksCorrect['mg-quiz']),
+      ].filter(Boolean).length
+    : props.lessonId === 'lesson-forces'
+    ? [
+        Boolean(lp?.masteryChecksCorrect['force-prediction']),
+        Boolean(lp?.masteryChecksCorrect['force-numeric']) &&
+          Boolean(lp?.masteryChecksCorrect['force-challenge']),
+        Boolean(lp?.masteryChecksCorrect['force-quiz']),
+      ].filter(Boolean).length
+    : props.lessonId === 'lesson-energy'
+    ? [
+        Boolean(lp?.masteryChecksCorrect['energy-prediction']),
+        Boolean(lp?.masteryChecksCorrect['energy-numeric']) &&
+          Boolean(lp?.masteryChecksCorrect['energy-challenge']),
+        Boolean(lp?.masteryChecksCorrect['energy-quiz']),
+      ].filter(Boolean).length
+    : props.lessonId === 'lesson-defense'
+    ? [
+        Boolean(lp?.masteryChecksCorrect['def-prediction']),
+        Boolean(lp?.masteryChecksCorrect['def-numeric']) &&
+          Boolean(lp?.masteryChecksCorrect['def-challenge']),
+        Boolean(lp?.masteryChecksCorrect['def-quiz']),
+      ].filter(Boolean).length
+    : props.lessonId === 'lesson-goalie'
+    ? [
+        Boolean(lp?.masteryChecksCorrect['gk-prediction']),
+        Boolean(lp?.masteryChecksCorrect['gk-numeric']) &&
+          Boolean(lp?.masteryChecksCorrect['gk-challenge']),
+        Boolean(lp?.masteryChecksCorrect['gk-quiz']),
       ].filter(Boolean).length
     : lesson.steps.filter((s) => 'conceptTags' in s && lp?.masteryChecksCorrect[s.id]).length
 

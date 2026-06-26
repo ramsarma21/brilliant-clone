@@ -76,6 +76,42 @@ function isUnitMastered(lp: LessonProgress | undefined): boolean {
     const quizDone = Boolean(lp.masteryChecksCorrect['mg-quiz'])
     return checks && quizDone
   }
+  if (lp.lessonId === 'lesson-forces') {
+    const checks =
+      Boolean(lp.masteryChecksCorrect['force-prediction']) &&
+      Boolean(lp.masteryChecksCorrect['force-numeric']) &&
+      Boolean(lp.masteryChecksCorrect['force-challenge']) &&
+      lp.manipulationChallengeComplete
+    const quizDone = Boolean(lp.masteryChecksCorrect['force-quiz'])
+    return checks && quizDone
+  }
+  if (lp.lessonId === 'lesson-energy') {
+    const checks =
+      Boolean(lp.masteryChecksCorrect['energy-prediction']) &&
+      Boolean(lp.masteryChecksCorrect['energy-numeric']) &&
+      Boolean(lp.masteryChecksCorrect['energy-challenge']) &&
+      lp.manipulationChallengeComplete
+    const quizDone = Boolean(lp.masteryChecksCorrect['energy-quiz'])
+    return checks && quizDone
+  }
+  if (lp.lessonId === 'lesson-defense') {
+    const checks =
+      Boolean(lp.masteryChecksCorrect['def-prediction']) &&
+      Boolean(lp.masteryChecksCorrect['def-numeric']) &&
+      Boolean(lp.masteryChecksCorrect['def-challenge']) &&
+      lp.manipulationChallengeComplete
+    const quizDone = Boolean(lp.masteryChecksCorrect['def-quiz'])
+    return checks && quizDone
+  }
+  if (lp.lessonId === 'lesson-goalie') {
+    const checks =
+      Boolean(lp.masteryChecksCorrect['gk-prediction']) &&
+      Boolean(lp.masteryChecksCorrect['gk-numeric']) &&
+      Boolean(lp.masteryChecksCorrect['gk-challenge']) &&
+      lp.manipulationChallengeComplete
+    const quizDone = Boolean(lp.masteryChecksCorrect['gk-quiz'])
+    return checks && quizDone
+  }
   const lesson = LESSONS[lp.lessonId]
   const checkStepIds = lesson.steps
     .filter((s) => s.kind === 'prediction' || s.kind === 'numeric' || s.kind === 'challenge')

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { AppProvider, useApp } from './state/AppState'
+import { PlayerProvider } from './state/PlayerState'
 import { Login } from './components/Login'
 import { Dashboard } from './components/Dashboard'
 import { LessonPlayer } from './components/LessonPlayer'
@@ -31,9 +32,11 @@ function Shell() {
 export default function App() {
   return (
     <AppProvider>
-      <main className="app">
-        <Shell />
-      </main>
+      <PlayerProvider>
+        <main className="app">
+          <Shell />
+        </main>
+      </PlayerProvider>
     </AppProvider>
   )
 }

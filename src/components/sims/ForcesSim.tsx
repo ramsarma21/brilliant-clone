@@ -1,143 +1,175 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SimProps } from './types'
 import { Calculator } from './Calculator'
 
 // ============================================================================
-// Forces unit — soccer skill = PASSING (the ground pass / first touch).
+// Forces unit — soccer skill = DRIBBLING PRACTICE (the move-menu drill).
 //
-// This is MotionSim's sibling, rendered in the SAME first-person pseudo-3D world
-// and with the SAME structure (Madden meter → solve → fly → result, an in-game
-// calculator with a time drain, difficulty-scaled hints, a defender who sprints
-// in to cut out a mis-weighted pass, and an animated post-miss teaching lesson +
-// "try for yourself" sandbox). Where MotionSim is a CONSTANT-VELOCITY lead-the-
-// runner problem, this is a FRICTION-DECELERATED ground pass — the heart of the
-// Forces unit (friction a = μ·g, v² = v₀² − 2·a·s).
+// A defender approaches while you dribble. A MOVE MENU offers three distinct
+// dribbling moves, each bound to a keyboard key (1/2/3). You PICK a move with
+// the key (or by clicking it); that choice is the decision. Executing the move
+// asks ONE Newton's-2nd-law question about the force your foot puts on the ball.
 //
-// Madden-meter solve structure:
-//   • The meter LOCKS one target, alternating each run:
-//       – 'pace' run: meter locks the ARRIVAL PACE v* the receiver wants.
-//       – 'dead' run: meter locks the STOP DISTANCE s* (roll it dead in a space).
-//   • In BOTH the player solves the KICK SPEED v₀ that controls the ball, and
-//     there is EXACTLY ONE right answer:
-//       – pace:  v₀ = √(v*² + 2·a·d)   (reach his feet at distance d with pace v*)
-//       – dead:  v₀ = √(2·a·s*)        (come to rest exactly at s*)
+// Every move pushes the SAME regulation ball, so the mass is the constant
+// m = 0.43 kg across all moves and rounds. Each round alternates the two solve
+// directions:
 //
-// The ball visibly DECELERATES (a slow pass crawls and dies short, a fast one
-// zips and overruns), so the chosen kick speed is always reflected on screen.
+//   • solve FORCE given mass + acceleration:   F = m · a
+//   • solve ACCELERATION given force + mass:    a = F / m
+//
+// The spin move comes out of a roulette turn: after shielding and rotating, the
+// foot accelerates the ball out of the turn into space, still framed as F = m · a.
+//
+// Flow per round: menu (defender closing) → solve (fixed 30 s, formula always
+// shown, calculator drains the clock at 1.25×) → fly (the chosen move animates).
+//   • Correct → the move comes off, you beat your man, streak/score up, onGoal
+//     fires and connections increments. Click anywhere to continue.
+//   • Wrong → the miss plays out, the defender wins it and the brief result text
+//     names the correct answer. Click anywhere for the next run.
+//   • Run the 30 s down → the defender steps up and dispossesses you.
+//
+// Answers are decimals; we accept anything within 1.0 of the exact value, so the
+// player may round to the nearest whole number either way.
+//
+// There is no click-to-place reticle and no safe-zone box. The choice is the
+// move; the physics is the force behind it.
 // ============================================================================
 
-// ---- Camera / canvas (identical feel to MotionSim) ----
+// ---- Camera / canvas (identical feel to KinematicsSim / MotionSim) ----
 const W = 900
 const H = 560
 const HORIZON = H * 0.4
-const EYE_Y = 1.6
+// Third-person view: the camera sits CAM_BACK metres behind the dribbler and a
+// little above him (raised eye height), so you watch your own avatar take the
+// man on. Depth is offset by CAM_BACK inside project(); there is no screen->world
+// inverse projection in this sim (the move menu replaced click-to-place), so no
+// inverse needs to subtract it.
+const EYE_Y = 2.4
 const FOCAL = 560
+const CAM_BACK = 6 // metres the camera trails behind the player (world z = 0)
 
 // ---- World (metres) ----
 const RELEASE = { y: 0.12, z: 0.8 } // ground ball resting at your feet
 const BALL_R = 0.13
-const ZONE_HALF = 1.7 // half-width of the catchable space, in metres ALONG the lane
-const LANE_HALF = 1.25 // half-width of the drawn passing channel
-const POS_MAX = 40 // metres of lane the world can show
+// Home of the dribbler ("you") in third-person: a touch left of and just ahead
+// of the camera, so the avatar sits low-centre with the ball at his feet and
+// never masks the defender, the loose ball, or the move menu.
+const YOU_HOME = { x: -0.9, z: 0.25 }
 
-// ---- Friction physics ----
-const G = 10                  // clean gravity for tidy numbers
-const PACE_TOL = 0.7          // m/s tolerance on the arrival pace (pace mode)
-const DEAD_TOL = ZONE_HALF    // m tolerance on the resting spot (dead mode)
+// ---- The constant: every move is the foot pushing the SAME regulation ball ----
+const BALL_MASS = 0.43 // kg (FIFA Law 2 regulation mass) — never changes
 
-// ---- UNIFIED RISK/REWARD AXIS (reused verbatim from MotionSim) ----
-// `diff` (0 = easy … 1 = hard) comes from where the player LOCKS the meter and
-// drives EVERYTHING, so a safe lock and an ambitious lock feel genuinely
-// different: easy locks get the most solve time + the fullest hint scaffold, but
-// a safe pass is predictable and easy to read (HIGH cut-out chance); a hard lock
-// gets little time + no help but gets through far more often (LOW cut-out).
-const SOLVE_MS_EASY = 40000   // diff = 0 (safest lock): a generous 40 s
-const SOLVE_MS_MIN = 18000    // diff = 1 (hardest lock): a tight 18 s
-const SOLVE_WARN_MS = 10000   // last 10 s get an urgent red countdown
-const solveMsForDiff = (diff: number) => Math.round(lerp(SOLVE_MS_EASY, SOLVE_MS_MIN, clamp(diff, 0, 1)))
-const calcDrainForDiff = (diff: number) => lerp(1.12, 1.6, clamp(diff, 0, 1))
-const interceptProbFor = (diff: number) => clamp(0.85 - 0.72 * diff, 0.08, 0.9)
+const BEST_KEY = 'physics-dribble-best'
 
-const BEST_KEY = 'physics-forces-best'
+// ---- Solve economy (FIXED — no difficulty scaling) ----
+const SOLVE_MS = 30000 // every picked move gets a flat 30 s to solve
+const SOLVE_WARN_MS = 10000 // last 10 s get an urgent red countdown
+const CALC_DRAIN = 1.25 // opening the calculator drains the clock at 1.25×
+
+// ---- Defender (closes you down while you size up the move) ----
+const DEF_START = 9.2 // metres in front when the menu opens
+const DEF_MIN = 4.4 // closest he gets before you have to commit
+const DEF_APPROACH = 0.55 // m/s he drifts in as he marks
+
+// ---- Move animation ----
+const FLY_DUR = 1.7 // seconds the executed move plays out
+
+// ---- Timeout dispossession (the "too slow" turnover) ----
+const ROB_CLOSE_S = 0.8
+const ROB_DUR_S = 1.7
 
 type P2 = { sx: number; sy: number; scale: number }
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v))
-const round1 = (x: number) => Math.round(x * 10) / 10
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
-// Smooth accel→decel — used for the defender's interception lunge so it never snaps.
+const round1 = (x: number) => Math.round(x * 10) / 10
+const easeOut = (u: number) => 1 - (1 - u) * (1 - u)
 const easeInOut = (u: number) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2)
 const parseNum = (s: string): number => { const v = parseFloat(s); return Number.isFinite(v) ? v : 0 }
 
-type Phase = 'aim' | 'meter' | 'solve' | 'fly' | 'result'
-type SolveFor = 'pace' | 'dead'
-type Outcome = 'connected' | 'short' | 'over'
+// ============================================================================
+// The three dribbling moves. Each is a real thing the foot does to the ball, so
+// each maps to an honest F = m·a question about that exact motion.
+// Accelerations are kept to multiples of 10 m/s² so that, with m = 0.43 kg,
+//   F = m·a is exact to one decimal AND a = F/m recovers the integer cleanly.
+// ============================================================================
+type Dir = 'findF' | 'findA'
+type MoveId = 'inout' | 'chip' | 'spin'
 
-type Play = {
-  mu: number       // friction coefficient (0.2 / 0.3 / 0.4)
-  a: number        // friction deceleration = μ·g (2 / 3 / 4 m/s²)
-  d: number        // receiver distance down the lane (pace mode target / default space)
-  dir: number      // lane bearing this round (rad off straight-ahead), randomised
-  side: 1 | -1     // which side the lane leans toward (drives the defender offset)
-  ux: number       // unit lane direction (lateral)
-  uz: number       // unit lane direction (forward/depth)
-  defOff: number   // defender's loiter offset to the side of the lane
+type MoveDef = {
+  id: MoveId
+  key: string
+  name: string
+  emoji: string
+  blurb: string
+  // how the force question is framed for this specific move
+  ctxF: (a: number) => string // describe finding the force
+  ctxA: (f: number) => string // describe finding the acceleration
 }
 
-function makePlay(prevDir: number): Play {
-  const mu = [0.2, 0.3, 0.4][Math.floor(Math.random() * 3)]
-  const a = round1(mu * G) // 2 / 3 / 4
-  const d = [6, 8, 10, 12][Math.floor(Math.random() * 4)]
-  // Fresh lane on a RANDOM bearing every round (kept inside a forward cone so the
-  // pass stays on-screen). No pitch lines/markers — just the space + the players.
-  let ang = (Math.random() * 2 - 1) * 0.5            // ≈ ±29° off straight-ahead
-  if (Math.abs(ang - prevDir) < 0.25) ang += (ang >= prevDir ? 1 : -1) * 0.28 // vary vs last run
-  ang = clamp(ang, -0.55, 0.55)
-  const ux = Math.sin(ang), uz = Math.cos(ang)
-  const side: 1 | -1 = ux >= 0 ? 1 : -1
-  return { mu, a, d, dir: ang, side, ux, uz, defOff: -side * 2.2 }
+const MOVES: MoveDef[] = [
+  {
+    id: 'inout', key: '1', name: 'In & out', emoji: '↔️',
+    blurb: 'Feint one way, shove it the other',
+    ctxF: (a) => `The plant-and-shove cuts the ball sideways at a = ${a} m/s². What sideways force F is that?`,
+    ctxA: (f) => `Your standing foot drives the ball sideways with F = ${f} N. What lateral acceleration a does it get?`,
+  },
+  {
+    id: 'chip', key: '2', name: 'Chip over', emoji: '🆙',
+    blurb: 'Scoop it up over his foot',
+    ctxF: (a) => `Scoop under it to lift the ball, giving it an upward a = ${a} m/s². What force F does your foot apply?`,
+    ctxA: (f) => `Your toe lifts the ball with F = ${f} N. What upward acceleration a does the ball leave with?`,
+  },
+  {
+    id: 'spin', key: '3', name: 'Spin move', emoji: '🌀',
+    blurb: 'Roulette past him and burst out',
+    ctxF: (a) => `Coming out of the roulette turn you drive the ball into space at a = ${a} m/s². What force F does your foot put through it?`,
+    ctxA: (f) => `You accelerate out of the spin with F = ${f} N. What acceleration a does the ball burst away at?`,
+  },
+]
+
+// The GIVEN quantity is a fresh random integer each run. 1..50 (never 0) so the
+// answer is never trivially zero and a = F/m never divides into a degenerate
+// case. The mass is the lone CONSTANT (m = 0.43 kg); we only ever solve for F or
+// a, never for m.
+const GIVEN_MIN = 1
+const GIVEN_MAX = 50
+const randGiven = () => GIVEN_MIN + Math.floor(Math.random() * (GIVEN_MAX - GIVEN_MIN + 1))
+const randDir = (): Dir => (Math.random() < 0.5 ? 'findF' : 'findA')
+
+type Problem = {
+  move: MoveDef
+  dir: Dir
+  m: number // 0.43 kg, always (the constant)
+  a: number // m/s² — the GIVEN when findF, else the rounded answer for display
+  F: number // N — the GIVEN when findA, else the rounded answer for display
+  answer: number // EXACT value the player solves for (graded against this)
+  unit: string // 'N' or 'm/s²'
 }
 
-// Meter (t∈[0,1]) → the LOCKED target, for each mode. Friendly integers so the
-// answer stays cleanly derivable; a slower lock = a gentler/safer target (easy),
-// a faster lock = a firmer/longer one (hard).
-const meterToVstar = (t: number) => [2, 3, 4][clamp(Math.floor(t * 3), 0, 2)]
-const meterToSstar = (t: number) => [4, 6, 8, 10][clamp(Math.floor(t * 4), 0, 3)]
+const answerOf = (p: Problem) => p.answer
+// Answers are decimals, but we accept anything within 1.0 of the exact value so
+// the player may round to the nearest whole number EITHER way (e.g. exact 53.44
+// counts for both 53 and 54). Flat tolerance, not a percentage.
+const tolOf = (_p: Problem) => 1.0001
 
-// ---- friction relations ----
-const stopDist = (v0: number, a: number) => (v0 * v0) / (2 * a)            // rest distance
-const stopTime = (v0: number, a: number) => v0 / a                          // time to rest
-const paceAt = (v0: number, a: number, s: number) => Math.sqrt(Math.max(0, v0 * v0 - 2 * a * s))
-const posAt = (v0: number, a: number, t: number) => (t >= v0 / a ? (v0 * v0) / (2 * a) : v0 * t - 0.5 * a * t * t)
-// time the (still-moving) ball reaches lane position s; clamps to rest if s ≥ stopDist.
-const timeTo = (v0: number, a: number, s: number) => {
-  const ss = stopDist(v0, a)
-  if (s >= ss) return v0 / a
-  return (v0 - Math.sqrt(Math.max(0, v0 * v0 - 2 * a * s))) / a
-}
-
-// The single correct kick speed, given the locked target.
-const answerPace = (a: number, d: number, vStar: number) => Math.sqrt(vStar * vStar + 2 * a * d)
-const answerDead = (a: number, sStar: number) => Math.sqrt(2 * a * sStar)
-
-type Grade = { outcome: Outcome; sStop: number; vArr: number; reach: number }
-// The single source of truth for grading a kick — used by fire(), the live
-// preview, the lesson distractor guard and the sandbox verdict. `zone` is the
-// centre of the space (= d in pace mode, = s* in dead mode); `lockVal` is the
-// locked target (v* in pace mode, s* in dead mode).
-function grade(v0: number, solveFor: SolveFor, a: number, zone: number, lockVal: number): Grade {
-  const ss = stopDist(v0, a)
-  if (solveFor === 'pace') {
-    const reached = ss >= zone - 1e-9
-    const arr = paceAt(v0, a, zone)
-    let outcome: Outcome
-    if (reached && Math.abs(arr - lockVal) <= PACE_TOL) outcome = 'connected'
-    else if (!reached || arr < lockVal) outcome = 'short'
-    else outcome = 'over'
-    return { outcome, sStop: ss, vArr: arr, reach: reached ? zone : ss }
+// A freshly randomized problem for the given move + solve direction. The mass is
+// the constant 0.43 kg; the given integer drives one exact decimal answer.
+function makeProblem(move: MoveDef, dir: Dir): Problem {
+  const given = randGiven()
+  if (dir === 'findF') {
+    const exactF = BALL_MASS * given // 0.43 · a (a = given m/s²)
+    return { move, dir, m: BALL_MASS, a: given, F: round1(exactF), answer: exactF, unit: 'N' }
   }
-  const outcome: Outcome = Math.abs(ss - lockVal) <= DEAD_TOL ? 'connected' : ss < lockVal ? 'short' : 'over'
-  return { outcome, sStop: ss, vArr: 0, reach: ss }
+  const exactA = given / BALL_MASS // F / 0.43 (F = given N)
+  return { move, dir, m: BALL_MASS, a: round1(exactA), F: given, answer: exactA, unit: 'm/s²' }
+}
+
+// Build the round's three move problems. Each move independently draws a fresh
+// random GIVEN and a randomly chosen solve direction, so the menu mixes "find F"
+// and "find a" and every run is a different question.
+function makeRound(): { problems: Problem[]; openSide: 1 | -1 } {
+  const problems = MOVES.map((move) => makeProblem(move, randDir()))
+  return { problems, openSide: Math.random() < 0.5 ? 1 : -1 }
 }
 
 // ---- minimal sound (same toolkit as MotionSim) ----
@@ -172,7 +204,7 @@ class Sfx {
     g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur)
     o.connect(g).connect(this.ctx.destination); o.start(t); o.stop(t + dur)
   }
-  pass() { this.burst(380, 0.6, 0.12, 0.28); this.tone(140, 0.1, 'sine', 0.18) }
+  knock() { this.burst(380, 0.6, 0.12, 0.28); this.tone(140, 0.1, 'sine', 0.18) }
   whistle() { this.tone(2100, 0.18, 'square', 0.08); this.tone(2400, 0.18, 'square', 0.06, 0.04) }
   cheer() { this.burst(900, 0.4, 0.6, 0.28) }
   steal() { this.tone(150, 0.22, 'sawtooth', 0.2) }
@@ -181,77 +213,265 @@ class Sfx {
 
 type Particle = { x: number; y: number; vx: number; vy: number; life: number; max: number; color: string; size: number; rot: number; vr: number }
 
+type Phase = 'menu' | 'solve' | 'fly' | 'robbed' | 'result'
+type Outcome = 'beat' | 'lost'
+
 type Game = {
   phase: Phase
-  play: Play
-  solveFor: SolveFor
-  meterT: number
-  meterDir: 1 | -1
-  lockedVstar: number  // set on a 'pace' run (meter result)
-  lockedS: number      // set on a 'dead' run (meter result)
-  zone: number         // centre of the space (d in pace, s* in dead)
-  diff: number         // 0..1 difficulty from the meter lock
-  solveMs: number
-  solveElapsedMs: number // accrues 1× normally, faster while the calculator is open
-  v0: number           // the kick speed actually played
-  t: number            // fly clock
-  released: boolean
-  // Outcome decided ONCE at strike (deterministic), applied by the fly loop.
+  problems: Problem[]
+  picked: Problem | null
+  openSide: 1 | -1
+  solveElapsedMs: number
+  // fly
+  t: number
   outcome: Outcome | null
-  sStop: number        // where the ball would come to rest
-  vArr: number         // pace as it reaches the space (pace mode)
-  reach: number        // lane position the ball is collected / rests at on a clean pass
-  reachT: number       // time of that clean collection / rest
-  // Defender interception (the keeper-save analogue).
-  interceptS: number
-  interceptT: number
-  defRunDur: number
-  luckFail: boolean    // a correct kick the defender still read & cut out
+  played: number // the answer actually played
+  // defender approach (menu/solve)
+  defZ: number
   resolved: boolean
   scored: boolean
   celebrate: number
   particles: Particle[]
-  // Sandbox "try for yourself" pass: reuses the fly mechanics but never scores.
-  sandbox: boolean
-  sandboxResetAt: number
+  robbed: boolean
 }
 
-const newGame = (play: Play, solveFor: SolveFor): Game => ({
-  phase: 'aim', play, solveFor,
-  meterT: 0, meterDir: 1,
-  lockedVstar: 0, lockedS: 0, zone: play.d, diff: 0, solveMs: SOLVE_MS_EASY, solveElapsedMs: 0,
-  v0: 0, t: 0, released: false,
-  outcome: null, sStop: 0, vArr: 0, reach: 0, reachT: 0,
-  interceptS: NaN, interceptT: Infinity, defRunDur: 0.9, luckFail: false,
-  resolved: false, scored: false, celebrate: 0, particles: [],
-  sandbox: false, sandboxResetAt: 0,
+const newGame = (problems: Problem[], openSide: 1 | -1): Game => ({
+  phase: 'menu', problems, picked: null, openSide,
+  solveElapsedMs: 0,
+  t: 0, outcome: null, played: 0,
+  defZ: DEF_START,
+  resolved: false, scored: false, celebrate: 0, particles: [], robbed: false,
 })
 
-type MissData = { play: Play; solveFor: SolveFor; lockedVstar: number; lockedS: number; zone: number; used: number; diff: number }
+// ============================================================================
+// The executed-move scene: where the ball, the defender and "you" are at
+// progress u ∈ [0,1]. Each move traces a visibly different world path so the
+// animation reads as the move named in the menu and matches the physics.
+// ============================================================================
+type V3 = { x: number; y: number; z: number }
+type SceneActor = { x: number; z: number; running: boolean; hasBall: boolean; reach: V3 | null }
+// The dribbler ("you"). `footTarget` is the world point his near foot should be
+// glued to (the ball while he is carrying/striking it, then a short follow-
+// through point); when null he is in his running gait. `lean` (-1..1) tilts the
+// body into the touch. `contact`/`contactPt` drive the contact cue (puff +
+// ball squash) at the decisive frame.
+type YouPose = { show: boolean; x: number; z: number; running: boolean; footTarget: V3 | null; lean: number }
+type Scene = { ball: V3; def: SceneActor; you: YouPose; contact: number; contactPt: V3 | null }
+
+// A short triangular pulse centred on `c` with half-width `w`, used to fire the
+// contact cue/squash exactly around a move's contact frame.
+const pulse = (u: number, c: number, w: number) => Math.max(0, 1 - Math.abs(u - c) / w)
+
+function flyScene(moveId: MoveId, outcome: Outcome, openSide: number, defZ: number, u: number): Scene {
+  return outcome === 'lost'
+    ? lostScene(moveId, openSide, defZ, u)
+    : beatScene(moveId, openSide, defZ, u)
+}
+
+// ----------------------------------------------------------------------------
+// A clean move = a DRIBBLE PAST your man into space. The ball stays at the foot
+// through a short plant/load, then at the per-move CONTACT FRAME (cF) the
+// decisive touch routes it AROUND the defender onto the open side. The dribbler
+// BURSTS onto it and carries it through, finishing clearly UP-PITCH of the
+// defender (endZ, beyond defZ) with the ball at his feet in space — so you come
+// out the far side and the beaten man is left trailing nearer the camera. The
+// two ground moves (in & out, spin) keep the ball rolling on the turf the whole
+// way; only the chip leaves the ground, clearing his foot then dropping back to
+// the grass to be run onto. The defender commits (often the WRONG way), is
+// beaten, then half-turns to chase and falls behind. He never touches the ball.
+// ----------------------------------------------------------------------------
+function beatScene(moveId: MoveId, openSide: number, defZ: number, u: number): Scene {
+  const goSide = openSide // the open side you finish on, out past your man
+  // ~120-200 ms of plant/load precede each contact (cF is the contact frame).
+  const cF = moveId === 'chip' ? 0.22 : moveId === 'spin' ? 0.55 : 0.30
+  const leanDir = moveId === 'chip' ? 0 : goSide
+  // The carry finishes CLEARLY up-pitch of the defender (endZ beyond defZ) and a
+  // touch onto the open side (LANE), so you come out the far side with the ball
+  // at your feet and your man left behind.
+  const endZ = defZ + 2.4
+  const LANE = 1.3
+
+  const ballAt = (uu: number): V3 => {
+    if (moveId === 'inout') {
+      // feint to the CLOSED side, plant, then the real contact cuts it the OTHER
+      // way onto the open side and past him. Stays rolling on the grass.
+      if (uu < 0.16) return { x: -goSide * 0.5 * easeOut(uu / 0.16), y: BALL_R, z: RELEASE.z }
+      if (uu < cF) return { x: lerp(-goSide * 0.5, -goSide * 0.15, (uu - 0.16) / (cF - 0.16)), y: BALL_R, z: RELEASE.z }
+      const k = easeOut((uu - cF) / (1 - cF))
+      return { x: lerp(-goSide * 0.15, goSide * LANE, k), y: BALL_R, z: lerp(RELEASE.z, endZ, k) }
+    }
+    if (moveId === 'chip') {
+      // scoop up over his foot, clear him, then drop back onto the turf in space
+      // on the open side so you run onto it past him. The ONLY airborne move.
+      if (uu < cF) return { x: 0, y: BALL_R, z: RELEASE.z }
+      const k = easeOut((uu - cF) / (1 - cF))
+      return { x: lerp(0, goSide * LANE, k), y: BALL_R + 1.7 * Math.sin(Math.PI * Math.min(1, k)), z: lerp(RELEASE.z, endZ, k) }
+    }
+    // spin: roll a tight roulette loop at the feet (grounded drag/roll touches),
+    // then at cF burst out the open side and away up-pitch past him.
+    if (uu < cF) {
+      const ang = Math.PI * 2 * (uu / cF)
+      const rad = 0.7
+      return { x: goSide * rad * Math.sin(ang), y: BALL_R, z: RELEASE.z + rad * 0.5 * (1 - Math.cos(ang)) }
+    }
+    const k = easeOut((uu - cF) / (1 - cF))
+    return { x: lerp(0, goSide * LANE, k), y: BALL_R, z: lerp(RELEASE.z, endZ, k) }
+  }
+
+  const ball = ballAt(u)
+  const contactPt = ballAt(cF)
+  const contact = pulse(u, cF, 0.07)
+
+  // The near foot is glued to the ball through control + plant + strike, follows
+  // through just past the contact point, then meets the ball again on a dribble
+  // cadence as he carries it into space (small touches). It skips the brief
+  // moment the chip is airborne (the foot does not chase the ball up).
+  let footTarget: V3 | null = null
+  if (u <= cF) footTarget = ball
+  else if (u <= cF + 0.14) {
+    const k = (u - cF) / 0.14
+    footTarget = {
+      x: lerp(contactPt.x, ball.x, 0.35 * k),
+      y: lerp(contactPt.y, ball.y, 0.2 * k),
+      z: lerp(contactPt.z, ball.z, 0.35 * k),
+    }
+  } else {
+    const cu = clamp((u - (cF + 0.14)) / (1 - (cF + 0.14)), 0, 1)
+    const grounded = ball.y <= BALL_R + 0.2
+    if (grounded && Math.sin(cu * Math.PI * 3) > 0.5) footTarget = ball
+  }
+  const strikeP = clamp((u - (cF - 0.12)) / 0.12, 0, 1)
+  const lean = leanDir * Math.max(contact, u > cF - 0.12 && u <= cF + 0.14 ? strikeP : 0)
+
+  // The defender commits (often the WRONG way), gets beaten as you go past, then
+  // half-turns to chase and is left trailing nearer the camera. `commit` lunges
+  // him in; `recover` swings him round late but he never catches up in depth, so
+  // he ends BEHIND you (smaller z). He never touches the ball on a clean move.
+  const commit = easeOut(clamp(u / 0.45, 0, 1))
+  const recover = easeInOut(clamp((u - 0.45) / 0.55, 0, 1))
+  const def: SceneActor = { x: 0, z: defZ, running: u < 0.98, hasBall: false, reach: null }
+  if (moveId === 'inout') {
+    // bites the feint to the closed side and steps up, then swings back to chase
+    def.x = lerp(0, -goSide * 1.8, commit) + lerp(0, goSide * 2.2, recover)
+    def.z = defZ + lerp(0, 0.7, commit) - lerp(0, 1.7, recover)
+  } else if (moveId === 'chip') {
+    // steps up to block, gets chipped over, turns late and drops in behind
+    def.x = lerp(0, goSide * 0.35, recover)
+    def.z = defZ + lerp(0, 0.9, commit) - lerp(0, 1.5, recover)
+  } else {
+    // wrong-footed by the roulette, then trails out of the spin
+    def.x = lerp(0, -goSide * 1.5, commit) + lerp(0, goSide * 1.9, recover)
+    def.z = defZ + lerp(0, 0.5, commit) - lerp(0, 1.8, recover)
+  }
+
+  // The avatar plants beside the contact point, then BURSTS into space staying
+  // right on the ball: the ball sits a tight touch-distance ahead at his feet, a
+  // controlled carry rather than a lonely roll. He finishes just behind it and
+  // clearly up-pitch of the beaten man. He tracks the ball's ground (x, z) even
+  // while the chip is airborne, so he is there when it drops.
+  const plantX = contactPt.x - goSide * 0.25
+  const plantZ = contactPt.z - 0.45
+  let youX: number, youZ: number
+  if (u <= cF) {
+    const ap = easeOut(u / cF)
+    youX = lerp(YOU_HOME.x, plantX, ap)
+    youZ = lerp(YOU_HOME.z, plantZ, ap)
+  } else {
+    const cu = easeOut(clamp((u - cF) / (1 - cF), 0, 1))
+    youX = lerp(plantX, ball.x - goSide * 0.18, cu)
+    youZ = lerp(plantZ, ball.z - 0.5, cu)
+  }
+  const you: YouPose = {
+    show: true,
+    x: youX,
+    z: youZ,
+    running: footTarget == null && u < 0.98,
+    footTarget,
+    lean,
+  }
+  return { ball, def, you, contact, contactPt }
+}
+
+// ----------------------------------------------------------------------------
+// A wrong answer. The dribbler plays the (mishit) touch he picked, the defender
+// steps across and reaches a leg in to make real contact at the STEAL frame,
+// the ball deflects off his foot and settles on the GROUND at his feet. Each
+// move keeps its failure read: the cut is read, the chip is too flat, the spin
+// is closed down. Exactly one ball is drawn (loose until won, then his
+// foot-ball via hasBall).
+// ----------------------------------------------------------------------------
+function lostScene(moveId: MoveId, openSide: number, defZ: number, u: number): Scene {
+  const ez = easeOut(u)
+  const STEAL = moveId === 'spin' ? 0.42 : moveId === 'chip' ? 0.46 : 0.5
+  const cF = moveId === 'chip' ? 0.2 : moveId === 'spin' ? 0.3 : 0.28
+  const dz = lerp(defZ, defZ - 1.2, easeInOut(clamp(u / 0.72, 0, 1)))
+  let dx = 0
+  let bx = 0, by = BALL_R, bz = RELEASE.z
+
+  if (moveId === 'inout') {
+    dx = -openSide * 1.7 * easeOut(clamp(u / STEAL, 0, 1))
+    if (u < cF) { const k = easeOut(u / cF); bx = openSide * 1.3 * k; bz = RELEASE.z + 1.0 * k }
+    else if (u < STEAL) { const k = (u - cF) / (STEAL - cF); bx = lerp(openSide * 1.3, -openSide * 1.4, k); bz = RELEASE.z + 1.0 + 1.0 * k }
+    else { const k = easeOut((u - STEAL) / (1 - STEAL)); bx = lerp(-openSide * 1.4, dx, k); bz = lerp(RELEASE.z + 2.0, dz, k) }
+  } else if (moveId === 'chip') {
+    if (u < STEAL) { const k = u / STEAL; bx = openSide * 0.4 * k; by = BALL_R + 0.7 * Math.sin(Math.PI * k); bz = lerp(RELEASE.z, dz, k) }
+    else { const k = easeOut((u - STEAL) / (1 - STEAL)); bx = lerp(openSide * 0.4, dx, k); by = BALL_R; bz = dz }
+  } else {
+    dx = -openSide * 0.9 * easeOut(clamp(u / STEAL, 0, 1))
+    const turn = Math.PI * 1.15, rad = 0.85
+    if (u < STEAL) { const ang = turn * (u / STEAL); bx = openSide * rad * Math.sin(ang); bz = RELEASE.z + rad * 0.6 * (1 - Math.cos(ang)) }
+    else { const k = easeOut((u - STEAL) / (1 - STEAL)); bx = lerp(openSide * rad * Math.sin(turn), dx, k); bz = lerp(RELEASE.z + rad * 0.6 * (1 - Math.cos(turn)), dz, k) }
+  }
+
+  const won = u >= 0.86
+  const ball: V3 = { x: bx, y: by, z: bz }
+  const def: SceneActor = {
+    x: dx, z: dz, running: u < 0.9, hasBall: won,
+    // his foot reaches the ball around the steal frame to make the nick
+    reach: !won && u > STEAL - 0.14 && u < STEAL + 0.16 ? ball : null,
+  }
+
+  // dribbler keeps his foot on the ball through his touch, then is beaten
+  const you: YouPose = {
+    show: true,
+    x: lerp(YOU_HOME.x, -openSide * 0.2, ez * 0.5),
+    z: lerp(YOU_HOME.z, RELEASE.z - 0.3, ez * 0.5),
+    running: u >= STEAL && u < 0.72,
+    footTarget: u < STEAL ? ball : null,
+    lean: openSide * pulse(u, cF, 0.12),
+  }
+
+  // his touch fires a soft cue at cF; the defender's nick fires the stronger
+  // cue at STEAL. No cue once the ball is dead at his feet.
+  const cSteal = pulse(u, STEAL, 0.06)
+  const cTouch = pulse(u, cF, 0.06) * 0.65
+  const contact = won ? 0 : Math.max(cSteal, cTouch)
+  const contactPt = won ? null : ball
+
+  return { ball, def, you, contact, contactPt }
+}
 
 export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const [phase, setPhase] = useState<Phase>('aim')
+  const [phase, setPhase] = useState<Phase>('menu')
   const [answerStr, setAnswerStr] = useState('')
   const [streak, setStreak] = useState(0)
   const [best, setBest] = useState(() => { try { return Number(localStorage.getItem(BEST_KEY) ?? 0) || 0 } catch { return 0 } })
+  // Gated first run (showGoal): the drill only finishes once you have beaten your
+  // man with ALL THREE moves. Tracks which move ids are done.
+  const [wonTypes, setWonTypes] = useState<MoveId[]>([])
   const [sound, setSound] = useState(true)
   const [showCalc, setShowCalc] = useState(false)
-  const [missData, setMissData] = useState<MissData | null>(null)
-  // A correct kick the defender still read & cut out (the unlucky-save case):
-  // no score, no teaching lesson — just a quick "play on" retry.
-  const [unlucky, setUnlucky] = useState(false)
-  const [sandboxBusy, setSandboxBusy] = useState(false)
-  const [sandboxResult, setSandboxResult] = useState<{ kind: 'goal' | 'miss'; text: string } | null>(null)
+  // Ran the solve clock down without committing: the defender robbed you. A
+  // non-lesson turnover — reset the streak, click anywhere to play on.
+  const [robbed, setRobbed] = useState(false)
   const [, force] = useState(0)
   const rerender = useCallback(() => force((n) => n + 1), [])
 
   const sfx = useRef(new Sfx())
   const soundRef = useRef(sound); soundRef.current = sound
   const showCalcRef = useRef(showCalc); showCalcRef.current = showCalc
-  const solveModeRef = useRef<SolveFor>('pace')
-  const prevDirRef = useRef<number>(0)
-  const gameRef = useRef<Game>(newGame(makePlay(0), 'pace'))
+  const gameRef = useRef<Game>((() => { const r = makeRound(); return newGame(r.problems, r.openSide) })())
   const rafRef = useRef<number | null>(null)
   const bgRef = useRef<HTMLCanvasElement | null>(null)
   const gradRef = useRef<{ grass: CanvasGradient; vignette: CanvasGradient } | null>(null)
@@ -261,197 +481,139 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const answerRef = useRef(answerStr); answerRef.current = answerStr
   const streakRef = useRef(streak); streakRef.current = streak
   const bestRef = useRef(best); bestRef.current = best
-  // Try-for-yourself preview: when active, the draw loop renders a live candidate
-  // decelerating roll for `value` (the kick speed) instead of the frozen scene.
-  const previewRef = useRef<{ active: boolean; value: number }>({ active: false, value: 0 })
-  const setPreview = useCallback((p: { active: boolean; value: number } | null) => {
-    previewRef.current = p ?? { active: false, value: 0 }
-    if (!previewRef.current.active) {
-      const g = gameRef.current
-      if (g.sandbox) {
-        g.sandbox = false; g.sandboxResetAt = 0; g.particles = []
-        g.scored = false; g.resolved = false
-        if (g.phase === 'fly') g.phase = 'result'
-      }
-      setSandboxBusy(false); setSandboxResult(null)
-    }
-  }, [])
+  const wonTypesRef = useRef(wonTypes); wonTypesRef.current = wonTypes
 
   // ---- projection ----
   const project = useCallback((x: number, y: number, z: number): P2 => {
-    const cz = Math.max(0.05, z)
+    const cz = Math.max(0.05, z + CAM_BACK)
     const scale = FOCAL / cz
     return { sx: W / 2 + x * scale, sy: HORIZON - (y - EYE_Y) * scale, scale }
-  }, [])
-  const atS = useCallback((p: Play, s: number, y: number, lateral = 0): P2 => {
-    const px = p.uz, pz = -p.ux
-    const gx = p.ux * s + px * lateral
-    const gz = RELEASE.z + p.uz * s + pz * lateral
-    return project(gx, y, gz)
-  }, [project])
-
-  // Live centre of the space to render: fixed at d in pace mode; in dead mode it
-  // follows the meter while sweeping, then freezes at the locked s*.
-  const zoneCenterNow = useCallback((g: Game): number => {
-    if (g.solveFor === 'pace') return g.play.d
-    if (g.lockedS > 0) return g.lockedS
-    if (g.phase === 'meter') return meterToSstar(g.meterT)
-    return g.play.d
   }, [])
 
   // ===== Actions =====
   const nextRun = useCallback(() => {
-    previewRef.current = { active: false, value: 0 }
-    const play = makePlay(prevDirRef.current)
-    prevDirRef.current = play.dir
-    gameRef.current = newGame(play, solveModeRef.current)
+    const r = makeRound()
+    gameRef.current = newGame(r.problems, r.openSide)
     goalFiredRef.current = false
-    setAnswerStr(''); setShowCalc(false); setMissData(null); setUnlucky(false)
-    setSandboxBusy(false); setSandboxResult(null)
-    setPhase('aim')
+    // keep the beaten-move tally across the gated drill; only clear once all three
+    // are done (a fresh drill)
+    if (wonTypesRef.current.length >= MOVES.length) setWonTypes([])
+    setAnswerStr(''); setShowCalc(false); setRobbed(false)
+    setPhase('menu')
   }, [])
 
-  const startMeter = useCallback(() => {
+  // Pick a move from the menu — that choice becomes the physics question.
+  const pickMove = useCallback((p: Problem) => {
     const g = gameRef.current
-    if (g.phase !== 'aim') return
-    g.solveFor = solveModeRef.current
-    solveModeRef.current = g.solveFor === 'pace' ? 'dead' : 'pace'
-    g.phase = 'meter'; g.meterT = 0; g.meterDir = 1
+    if (g.phase !== 'menu') return
+    g.picked = p
+    g.solveElapsedMs = 0
+    g.phase = 'solve'
     if (soundRef.current) sfx.current.ensure()
-    setPhase('meter')
-  }, [])
-
-  const lockMeter = useCallback(() => {
-    const g = gameRef.current
-    if (g.phase !== 'meter') return
-    if (g.solveFor === 'pace') { g.lockedVstar = meterToVstar(g.meterT); g.zone = g.play.d }
-    else { g.lockedS = meterToSstar(g.meterT); g.zone = g.lockedS }
-    g.diff = clamp(g.meterT, 0, 1)
-    g.solveMs = solveMsForDiff(g.diff) // easy lock = more time, hard lock = less
-    g.phase = 'solve'; g.solveElapsedMs = 0
-    if (soundRef.current) sfx.current.whistle()
     setAnswerStr('')
     setPhase('solve')
   }, [])
 
-  // Shared strike core. Decides the outcome ONCE (deterministic) and, on a miss,
-  // sets up the defender's interception run. `sandbox` shots never score.
-  const fire = useCallback((v0: number, sandbox: boolean) => {
+  // Execute the chosen move with the player's answer. The outcome is decided
+  // once (deterministic): a correct force/acceleration beats the man.
+  const fire = useCallback((value: number) => {
     const g = gameRef.current
-    const p = g.play
-    g.v0 = v0; g.sandbox = sandbox
-    const zone = g.zone
-    const lockVal = g.solveFor === 'pace' ? g.lockedVstar : g.lockedS
-    const gr = grade(v0, g.solveFor, p.a, zone, lockVal)
-    g.outcome = gr.outcome; g.sStop = gr.sStop; g.vArr = gr.vArr; g.reach = gr.reach
-    g.reachT = g.solveFor === 'pace' ? timeTo(v0, p.a, zone) : stopTime(v0, p.a)
-    // Keeper-save analogue: a correctly weighted pass threads cleanly on the first
-    // lesson run (showGoal) and in the sandbox; on practice/unlimited runs we roll
-    // once — safer (easier) locks are more likely to be read & cut out.
-    const firstRun = !!sceneRef.current.showGoal
-    g.luckFail = gr.outcome === 'connected' && !sandbox && !firstRun && Math.random() < interceptProbFor(g.diff)
-    const cleanThread = gr.outcome === 'connected' && !g.luckFail
-    if (cleanThread) { g.interceptS = NaN; g.interceptT = Infinity }
-    else {
-      // The defender lunges from his loiter spot and cuts the ball, at min(loiter,
-      // where the ball ends): a short pass is poked off near where it dies, an
-      // over-hit is read and cut in front of the space.
-      const defLoiter = zone * 0.6
-      const missReach = Math.max(0.7, gr.sStop)
-      g.interceptS = clamp(Math.min(defLoiter, missReach - 0.5), 1.2, POS_MAX)
-      g.interceptT = timeTo(v0, p.a, g.interceptS)
-    }
-    g.defRunDur = 0.9
-    g.t = 0; g.released = true; g.resolved = false; g.scored = false; g.celebrate = 0
+    const p = g.picked
+    if (!p) return
+    g.played = value
+    g.outcome = Math.abs(value - answerOf(p)) <= tolOf(p) ? 'beat' : 'lost'
+    g.t = 0; g.resolved = false; g.scored = false; g.celebrate = 0
     g.phase = 'fly'
-    if (soundRef.current) { sfx.current.ensure(); sfx.current.pass() }
-    if (!sandbox) setPhase('fly')
+    if (soundRef.current) { sfx.current.ensure(); sfx.current.knock() }
+    setPhase('fly')
   }, [])
 
-  const playPass = useCallback(() => {
+  const playMove = useCallback(() => {
     const g = gameRef.current
     if (g.phase !== 'solve') return
-    const ans = parseNum(answerRef.current)
-    fire(clamp(ans, 0, 20), false)
-  }, [fire])
-
-  const sandboxShoot = useCallback((value: number) => {
-    const g = gameRef.current
-    if (g.sandbox && g.phase === 'fly') return
-    previewRef.current = { active: false, value }
-    setSandboxBusy(true); setSandboxResult(null)
-    fire(clamp(value, 0, 20), true)
+    fire(parseNum(answerRef.current))
   }, [fire])
 
   const resolve = useCallback(() => {
     const g = gameRef.current
     if (g.resolved) return
     g.resolved = true
-    const p = g.play
-    const outcome = g.outcome
-    const cleanThread = outcome === 'connected' && !g.luckFail
+    const p = g.picked
     g.phase = 'result'
-    if (cleanThread) {
+    const clean = g.outcome === 'beat'
+    if (clean && p) {
       g.scored = true; g.celebrate = 1
-      spawnConfetti(g, atS(p, g.zone, 1.0))
-      if (soundRef.current) { sfx.current.pass(); sfx.current.cheer() }
-      if (g.sandbox) {
-        setSandboxResult({ kind: 'goal', text: 'Perfect weight, right into the space past the defender!' })
-        setSandboxBusy(false)
-      } else {
-        const s = streakRef.current + 1
-        setStreak(s)
-        if (s > bestRef.current) { setBest(s); try { localStorage.setItem(BEST_KEY, String(s)) } catch { /* ignore */ } }
-        if (!goalFiredRef.current) {
+      const sc = flyScene(p.move.id, 'beat', g.openSide, g.defZ, 1)
+      spawnConfetti(g, project(sc.ball.x, 1.0, sc.ball.z))
+      if (soundRef.current) { sfx.current.knock(); sfx.current.cheer() }
+      const s = streakRef.current + 1
+      setStreak(s)
+      if (s > bestRef.current) { setBest(s); try { localStorage.setItem(BEST_KEY, String(s)) } catch { /* ignore */ } }
+      const sceneNow = sceneRef.current
+      sceneNow.onChange({ ...sceneNow.state, connections: Number(sceneNow.state.connections ?? 0) + 1 })
+      if (sceneNow.showGoal) {
+        // gated first run: tick this move off; only finish once all three moves
+        // have beaten your man
+        const already = wonTypesRef.current
+        const next = already.includes(p.move.id) ? already : [...already, p.move.id]
+        if (!already.includes(p.move.id)) setWonTypes(next)
+        if (next.length >= MOVES.length && !goalFiredRef.current) {
           goalFiredRef.current = true
-          const sc = sceneRef.current
-          sc.onChange({ ...sc.state, connections: Number(sc.state.connections ?? 0) + 1 })
-          sc.onGoal?.()
+          sceneNow.onGoal?.()
         }
+      } else if (!goalFiredRef.current) {
+        goalFiredRef.current = true
+        sceneNow.onGoal?.()
       }
-    } else if (outcome === 'connected') {
-      // Correct weight, but the defender read it — the unlucky-save case. No score,
-      // no teaching lesson (the maths was right); just reset the streak and play on.
+    } else {
+      // wrong answer: play the miss, reset the streak, show the brief result text
       if (soundRef.current) { sfx.current.steal(); sfx.current.miss() }
       setStreak(0)
-      setUnlucky(true)
-    } else {
-      if (soundRef.current) { sfx.current.steal(); sfx.current.miss() }
-      if (g.sandbox) {
-        setSandboxResult({ kind: 'miss', text: interceptText(outcome, g.solveFor) })
-        g.sandboxResetAt = (performance.now?.() ?? 0) + 1200
-      } else {
-        setStreak(0)
-        setMissData({ play: p, solveFor: g.solveFor, lockedVstar: g.lockedVstar, lockedS: g.lockedS, zone: g.zone, used: g.v0, diff: g.diff })
-      }
     }
     setPhase('result')
-  }, [atS])
+  }, [project])
 
-  const actionsRef = useRef({ startMeter, lockMeter, playPass, resolve, sandboxShoot })
-  actionsRef.current = { startMeter, lockMeter, playPass, resolve, sandboxShoot }
+  // Timeout: solve clock expired with no move played. The defender steps up and
+  // robs the ball off your feet — a non-lesson turnover.
+  const dispossess = useCallback(() => {
+    const g = gameRef.current
+    if (g.phase !== 'solve') return
+    g.robbed = true
+    g.t = 0
+    g.phase = 'robbed'
+    if (soundRef.current) { sfx.current.ensure(); sfx.current.steal() }
+    setStreak(0)
+    setRobbed(true)
+    setPhase('robbed')
+  }, [])
+
+  const endRobbery = useCallback(() => {
+    const g = gameRef.current
+    if (g.phase !== 'robbed') return
+    g.phase = 'result'
+    setPhase('result')
+  }, [])
+
+  const actionsRef = useRef({ pickMove, playMove, resolve, dispossess, endRobbery })
+  actionsRef.current = { pickMove, playMove, resolve, dispossess, endRobbery }
 
   // ===== Input =====
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       const g = gameRef.current
       const typing = (e.target as HTMLElement)?.tagName === 'INPUT'
-      if ((e.key === ' ' || e.code === 'Space') && !typing) {
-        e.preventDefault()
-        if (g.phase === 'aim') actionsRef.current.startMeter()
-        else if (g.phase === 'meter') actionsRef.current.lockMeter()
-        else if (g.phase === 'solve' && answerRef.current) actionsRef.current.playPass()
+      if (g.phase === 'menu' && !typing) {
+        const m = g.problems.find((pr) => pr.move.key === e.key)
+        if (m) { e.preventDefault(); actionsRef.current.pickMove(m) }
+        return
+      }
+      if ((e.key === 'Enter' || e.key === ' ' || e.code === 'Space') && !typing) {
+        if (g.phase === 'solve' && answerRef.current) { e.preventDefault(); actionsRef.current.playMove() }
       }
     }
     window.addEventListener('keydown', down)
     return () => window.removeEventListener('keydown', down)
   }, [])
-
-  function onPointerDown() {
-    const g = gameRef.current
-    if (g.phase === 'aim') actionsRef.current.startMeter()
-    else if (g.phase === 'meter') actionsRef.current.lockMeter()
-  }
 
   // ===== Draw =====
   const draw = useCallback(() => {
@@ -460,9 +622,7 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
     const ctx = canvas.getContext('2d')
     if (!ctx) return
     const g = gameRef.current
-    const p = g.play
     const now = performance.now()
-    const preview = previewRef.current.active && g.phase === 'result'
 
     const dpr = Math.min(2, window.devicePixelRatio || 1)
     const rect = canvas.getBoundingClientRect()
@@ -492,62 +652,98 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
       ctx.beginPath(); ctx.moveTo(a2.sx, a2.sy); ctx.lineTo(b2.sx, b2.sy); ctx.lineTo(c2.sx, c2.sy); ctx.lineTo(d2.sx, d2.sy); ctx.closePath(); ctx.fill()
     }
 
-    const zone = zoneCenterNow(g)
-    drawSpace(ctx, atS, p, zone, g.solveFor === 'dead', now)
-
-    const t = g.t
-    const running = false // the receiver waits in the space
-
-    // ---- defender (sprints in to cut out a mis-weighted OR unlucky-read pass) ----
-    const cleanThread = g.outcome === 'connected' && !g.luckFail
-    const cutOut = !!g.outcome && !cleanThread
-    const defLoiter = zone * 0.6
-    let defS = defLoiter, defLat = p.defOff, defRunning = false, defHasBall = false
-    if (!preview && (g.phase === 'fly' || g.phase === 'result') && cutOut) {
-      const tp = clamp((t - (g.interceptT - g.defRunDur)) / g.defRunDur, 0, 1)
-      const e = easeInOut(tp)
-      defS = lerp(defLoiter, g.interceptS, e)
-      defLat = lerp(p.defOff, 0, e)
-      defRunning = tp > 0.02 && tp < 0.98
-      defHasBall = t >= g.interceptT
-    } else if (!preview && (g.phase === 'fly' || g.phase === 'result') && cleanThread) {
-      // beaten: a smooth half-step toward the lane, but the ball is already gone
-      const tp = easeInOut(clamp((t - (g.reachT - 0.6)) / 0.6, 0, 1))
-      defLat = lerp(p.defOff, p.defOff * 0.45, tp)
-      defRunning = tp > 0.02 && tp < 0.7
-    }
-    drawPlayer(ctx, atS, p, defS, defLat, FOE_KIT, now, defRunning, defHasBall)
-
-    // ---- receiver (teammate) waiting in the space ----
-    drawPlayer(ctx, atS, p, zone, 0, TEAM_KIT, now, running, false)
-
-    // ---- try-for-yourself live preview roll ----
-    if (preview) {
-      const lockVal = g.solveFor === 'pace' ? g.lockedVstar : g.lockedS
-      drawPreviewRoll(ctx, atS, p, previewRef.current.value, g.solveFor, zone, lockVal, now)
-    }
-
-    // ---- ball (visibly decelerating) ----
-    if (!preview && ((g.phase === 'fly' && g.released) || (g.phase === 'result' && !defHasBall && cleanThread))) {
-      let bs = posAt(g.v0, p.a, t)
-      if (cleanThread) bs = Math.min(bs, g.reach)
-      else bs = Math.min(bs, g.interceptS)
-      bs = Math.min(bs, POS_MAX)
-      const bp = atS(p, bs, BALL_R)
-      const shadow = atS(p, bs, 0.01)
+    const drawWorldPlayer = (x: number, z: number, kit: Kit, running: boolean, hasBall: boolean, action?: PlayerAction) =>
+      drawPlayer(ctx, project(x, 0, z), project(x, 1.84, z), kit, now, running, hasBall, action)
+    const drawWorldBall = (x: number, y: number, z: number, spin: number, squash = 0) => {
+      const bp = project(x, y, z); const sh = project(x, 0, z)
       ctx.fillStyle = 'rgba(0,0,0,0.28)'
-      ctx.beginPath(); ctx.ellipse(shadow.sx, shadow.sy, BALL_R * shadow.scale * 1.3, BALL_R * shadow.scale * 0.5, 0, 0, Math.PI * 2); ctx.fill()
-      drawBall(ctx, bp.sx, bp.sy, Math.max(4, BALL_R * bp.scale), bs * 2.2, 0)
-    } else if (!preview && !(g.phase === 'fly' || g.phase === 'result')) {
-      const groundY = H - 34
-      ctx.fillStyle = 'rgba(0,0,0,0.32)'
-      ctx.beginPath(); ctx.ellipse(W / 2, groundY + 8, 44, 13, 0, 0, Math.PI * 2); ctx.fill()
-      drawBall(ctx, W / 2, groundY - 4, 38, now / 600, 0)
+      ctx.beginPath(); ctx.ellipse(sh.sx, sh.sy, Math.max(4, BALL_R * sh.scale * 1.3), Math.max(2, BALL_R * sh.scale * 0.5), 0, 0, Math.PI * 2); ctx.fill()
+      drawBall(ctx, bp.sx, bp.sy, Math.max(4, Math.min(74, BALL_R * bp.scale)), spin, squash)
+    }
+    // Build a kick/reach pose so a player's near foot lands exactly on a world
+    // point (the ball), selling foot-on-ball contact and tight control.
+    const footAction = (target: V3, lean: number): PlayerAction => {
+      const fp = project(target.x, target.y, target.z)
+      return { footX: fp.sx, footY: fp.sy, lean }
+    }
+    // A brief contact cue (white flash + expanding ring) at a world point, used
+    // on the decisive touch / the defender's nick.
+    const drawContact = (pt: V3, intensity: number) => {
+      if (intensity <= 0.03) return
+      const p = project(pt.x, pt.y, pt.z)
+      const r = Math.max(7, BALL_R * p.scale)
+      const k = clamp(intensity, 0, 1)
+      const cy = p.sy - r * 0.4
+      ctx.save()
+      ctx.globalAlpha = k * 0.85
+      ctx.fillStyle = 'rgba(255,255,255,0.95)'
+      ctx.beginPath(); ctx.arc(p.sx, cy, r * (0.5 + 0.45 * k), 0, Math.PI * 2); ctx.fill()
+      ctx.globalAlpha = k * 0.7
+      ctx.strokeStyle = 'rgba(255,236,180,0.95)'; ctx.lineWidth = Math.max(1.5, r * 0.14)
+      ctx.beginPath(); ctx.arc(p.sx, cy, r * (1.05 + (1 - k) * 1.5), 0, Math.PI * 2); ctx.stroke()
+      ctx.restore()
+    }
+
+    const animating = g.phase === 'fly' || (g.phase === 'result' && !g.robbed && g.outcome !== null)
+    const u = g.phase === 'fly' ? clamp(g.t / FLY_DUR, 0, 1) : 1
+
+    if (g.phase === 'robbed') {
+      // TIMEOUT ROBBERY (third-person): your man steps all the way up and nicks
+      // the ball off your feet. You stay in shot, beaten on the spot. Exactly
+      // ONE ball is drawn: the loose world ball sliding toward him until he wins
+      // it, then his foot-ball after. As he arrives he reaches a leg in and the
+      // contact cue fires on the nick.
+      const tu = clamp(g.t / ROB_CLOSE_S, 0, 1)
+      const e = easeInOut(tu)
+      const robZ = lerp(g.defZ, 2.0, e)
+      const robHasBall = g.t >= ROB_CLOSE_S
+      const jit = Math.sin(now / 70) * Math.min(0.06, g.t * 0.12)
+      const bz = lerp(YOU_HOME.z + 0.5, robZ - 0.5, e)
+      const ballPt: V3 = { x: jit, y: BALL_R, z: bz }
+      const reaching = !robHasBall && tu > 0.6
+      drawWorldPlayer(0, robZ, FOE_KIT, tu < 0.92, robHasBall, reaching ? footAction(ballPt, 0) : undefined)
+      drawWorldPlayer(YOU_HOME.x, YOU_HOME.z, TEAM_KIT, tu < 0.4, false)
+      if (!robHasBall) {
+        const nick = pulse(tu, 0.92, 0.12)
+        drawWorldBall(jit, BALL_R, bz, now / 320, nick * 0.4)
+        drawContact(ballPt, nick)
+      }
+    } else if (animating && g.picked && g.outcome) {
+      const sc = flyScene(g.picked.move.id, g.outcome, g.openSide, g.defZ, u)
+      // Players in DEPTH ORDER (farther/up-pitch drawn first so the nearer one
+      // overlaps on top), then the ball, then the contact cue. On a beat you end
+      // up-pitch of the defender, so the beaten man (now nearer the camera) is
+      // painted ON TOP of you, selling that you have gone PAST him; on a loss the
+      // defender is up-pitch and stays behind you. Only ONE ball is ever drawn:
+      // the loose flight ball below, OR the defender's foot-ball when he has won
+      // it. The "you" player never carries his own ball (that would double up
+      // with the loose ball), so hasBall is always false here; his near foot is
+      // glued to the world ball instead.
+      const drawDef = () => drawWorldPlayer(sc.def.x, sc.def.z, FOE_KIT, sc.def.running, sc.def.hasBall, sc.def.reach ? footAction(sc.def.reach, 0) : undefined)
+      const drawYou = () => { if (sc.you.show) drawWorldPlayer(sc.you.x, sc.you.z, TEAM_KIT, sc.you.running, false, sc.you.footTarget ? footAction(sc.you.footTarget, sc.you.lean) : undefined) }
+      if (sc.def.z >= sc.you.z) { drawDef(); drawYou() } else { drawYou(); drawDef() }
+      if (!sc.def.hasBall) drawWorldBall(sc.ball.x, sc.ball.y, sc.ball.z, g.t * 9, sc.contact * 0.4)
+      if (sc.contactPt) drawContact(sc.contactPt, sc.contact)
+    } else {
+      // menu / solve (third-person): your man closes while you idle-dribble the
+      // ball at your feet with small, frequent touches. The ball stays GLUED
+      // near the feet, nudged left/right with little forward pushes in time with
+      // a dribble cycle, and the near foot reaches the ball on every touch — so
+      // he is actively carrying it, not letting it drift. ONE ball only: the
+      // world ball at your feet; the "you" avatar never draws its own foot-ball.
+      drawWorldPlayer(0, g.defZ, FOE_KIT, g.phase === 'menu' || g.phase === 'solve', false)
+      const ph = (now / 1000) / 0.5 * Math.PI * 2 // ~0.5 s dribble cycle
+      const side = Math.sin(ph)
+      const touchX = YOU_HOME.x + 0.5 + side * 0.22
+      const touchZ = YOU_HOME.z + 0.55 + Math.abs(Math.sin(ph)) * 0.1
+      const ballPt: V3 = { x: touchX, y: BALL_R, z: touchZ }
+      drawWorldBall(touchX, BALL_R, touchZ, now / 360)
+      drawWorldPlayer(YOU_HOME.x, YOU_HOME.z, TEAM_KIT, false, false, footAction(ballPt, side * 0.35))
     }
 
     ctx.fillStyle = gradRef.current.vignette; ctx.fillRect(-30, -30, W + 60, H + 60)
 
-    if (!preview && g.particles.length) {
+    if (g.particles.length) {
       for (const pt of g.particles) {
         ctx.save(); ctx.globalAlpha = clamp(pt.life / pt.max, 0, 1)
         ctx.translate(pt.x, pt.y); ctx.rotate(pt.rot)
@@ -567,68 +763,49 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
       ctx.fillStyle = '#fff'; ctx.font = '700 15px Plus Jakarta Sans, sans-serif'
       ctx.fillText(`🏆 Best: ${bestRef.current}`, W - 138, 38)
     }
-    if (g.phase === 'meter') {
-      const isPace = g.solveFor === 'pace'
-      const val = isPace ? meterToVstar(g.meterT) : meterToSstar(g.meterT)
-      drawMeter(ctx, g.meterT,
-        isPace ? `RECEIVER PACE: v* = ${val} m/s` : `DEAD TARGET: s* = ${val} m`,
-        isPace ? '#ff9e4d' : '#7ec8ff')
-    }
-    if (g.phase === 'aim') {
-      drawTopLabel(ctx, 'Read the pass', `Next you'll lock the ${g.solveFor === 'pace' ? 'pace he wants' : 'stop distance'}. SPACE / click to start the meter.`)
-    }
     if (g.phase === 'solve') {
-      const total = g.solveMs / 1000
-      const left = Math.max(0, (g.solveMs - g.solveElapsedMs) / 1000)
+      const total = SOLVE_MS / 1000
+      const left = Math.max(0, (SOLVE_MS - g.solveElapsedMs) / 1000)
       const warn = left <= SOLVE_WARN_MS / 1000
-      const calcLabel = showCalcRef.current ? ` (calc: ${calcDrainForDiff(g.diff).toFixed(2)}× drain)` : ''
-      const label = 'Solve kick speed v₀: SPACE to play' + calcLabel
+      const calcLabel = showCalcRef.current ? ' (calc: 1.25× drain)' : ''
+      const label = (g.picked?.dir === 'findF' ? 'Solve the force F: ENTER to do the move' : 'Solve the acceleration a: ENTER to do the move') + calcLabel
       drawTimer(ctx, left, total, warn ? `Hurry! ${Math.ceil(left)}s left` : label, warn ? '#ff3b5f' : '#7ec8ff', warn)
     }
-    if (g.phase === 'fly' && !preview && cutOut && g.t >= g.interceptT) {
-      drawTopLabel(ctx, 'Intercepted! 🧤', g.luckFail ? 'Well weighted, but the defender read it and cut it out.' : 'The defender read the pass and cut it out.')
-    }
-  }, [project, atS, zoneCenterNow])
+  }, [project])
 
   // ===== Loop =====
   useEffect(() => {
     let last = performance.now()
-    const update = (now: number, dt: number) => {
+    const update = (dt: number) => {
       const g = gameRef.current
       const act = actionsRef.current
-      if (g.phase === 'meter') {
-        g.meterT += g.meterDir * dt * 0.55 * (1 + 0.4 * g.meterT)
-        if (g.meterDir === 1 && g.meterT >= 1) { g.meterT = 1; g.meterDir = -1 }
-        else if (g.meterDir === -1 && g.meterT <= 0) { g.meterT = 0; act.lockMeter() }
+      if (g.phase === 'menu' || g.phase === 'solve') {
+        g.defZ = Math.max(DEF_MIN, g.defZ - DEF_APPROACH * dt)
       }
       if (g.phase === 'solve') {
-        g.solveElapsedMs += dt * 1000 * (showCalcRef.current ? calcDrainForDiff(g.diff) : 1)
-        if (g.solveElapsedMs >= g.solveMs) act.playPass()
+        g.solveElapsedMs += dt * 1000 * (showCalcRef.current ? CALC_DRAIN : 1)
+        if (g.solveElapsedMs >= SOLVE_MS) act.dispossess()
+      }
+      if (g.phase === 'robbed') {
+        g.t += dt
+        if (g.t >= ROB_DUR_S) act.endRobbery()
       }
       if (g.phase === 'fly') {
         g.t += dt
-        const cleanThread = g.outcome === 'connected' && !g.luckFail
-        const end = cleanThread ? g.reachT + 0.5 : g.interceptT + 0.45
-        if (g.t >= end) act.resolve()
+        if (g.t >= FLY_DUR + 0.35) act.resolve()
       }
       if (g.celebrate > 0) g.celebrate = Math.max(0, g.celebrate - dt)
       if (g.particles.length) {
         for (const pt of g.particles) { pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.vy += 760 * dt; pt.life -= dt; pt.rot += pt.vr * dt }
         g.particles = g.particles.filter((pt) => pt.life > 0)
       }
-      if (g.sandbox && g.sandboxResetAt > 0 && now >= g.sandboxResetAt) {
-        g.sandboxResetAt = 0; g.scored = false; g.resolved = false; g.particles = []
-        g.phase = 'result'
-        previewRef.current = { active: true, value: previewRef.current.value }
-        setSandboxBusy(false)
-      }
     }
     const loop = (now: number) => {
       const dt = Math.min(0.04, (now - last) / 1000); last = now
-      update(now, dt)
+      update(dt)
       draw()
       const ph = gameRef.current.phase
-      if (ph === 'fly' || ph === 'meter') rerender()
+      if (ph === 'fly' || ph === 'menu' || ph === 'solve' || ph === 'robbed') rerender()
       rafRef.current = requestAnimationFrame(loop)
     }
     rafRef.current = requestAnimationFrame(loop)
@@ -639,12 +816,13 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
 
   // ===== Side-panel data =====
   const g = gameRef.current
-  const p = g.play
+  const p = g.picked
   const outcome = g.outcome
-  const canClickContinue = phase === 'result' && outcome === 'connected' && !missData
-  const scaffold: 'full' | 'partial' | 'none' = g.diff < 0.33 ? 'full' : g.diff <= 0.66 ? 'partial' : 'none'
-  const isPace = g.solveFor === 'pace'
-  const placeholder = (isPace ? answerPace(p.a, p.d, g.lockedVstar) : answerDead(p.a, g.lockedS)).toFixed(1)
+  const unlimited = !showGoal
+  const wonCount = wonTypes.length
+  const allWon = !unlimited && wonCount >= MOVES.length
+  // any settled result (beat, tackled, or robbed) continues on click
+  const canClickContinue = phase === 'result'
 
   return (
     <div
@@ -660,515 +838,131 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
           ref={canvasRef}
           width={W}
           height={H}
-          className={`soccer__canvas soccer__canvas--${phase === 'aim' ? 'meter' : phase}`}
-          onPointerDown={onPointerDown}
+          className={`soccer__canvas soccer__canvas--${phase === 'menu' ? 'meter' : phase}`}
         />
         <button type="button" className="soccer__sound" onClick={toggleSound} aria-label="Toggle sound">{sound ? '🔊' : '🔈'}</button>
 
-        {phase === 'aim' && (
-          <div className="soccer__prompt">
-            {isPace
-              ? <><strong>Ground pass!</strong> A teammate waits in the green space and a defender is lurking. Weight your kick so it reaches his feet at the pace he wants. Click or press <kbd>Space</kbd> to start the power meter.</>
-              : <><strong>Dead pass!</strong> Roll the ball to rest in the open space before the defender can read it. Click or press <kbd>Space</kbd> to start the power meter.</>}
+        {/* MOVE MENU — pick a move with the key shown, or click it. */}
+        {phase === 'menu' && (
+          <div style={{ position: 'absolute', left: 0, right: 0, bottom: 16, display: 'flex', gap: 10, justifyContent: 'center', padding: '0 16px', pointerEvents: 'auto' }}>
+            {g.problems.map((pr) => {
+              const done = !unlimited && wonTypes.includes(pr.move.id)
+              return (
+                <button
+                  key={pr.move.id}
+                  type="button"
+                  onClick={() => pickMove(pr)}
+                  style={{
+                    flex: '1 1 0', maxWidth: 188, background: done ? 'rgba(12,40,26,0.9)' : 'rgba(8,12,28,0.88)',
+                    border: `2px solid ${done ? 'rgba(52,210,123,0.85)' : 'rgba(126,200,255,0.55)'}`, borderRadius: 14,
+                    padding: '10px 12px', color: '#fff', cursor: 'pointer', textAlign: 'left',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                    <span style={{ background: done ? '#34d27b' : '#7ec8ff', color: '#06223f', fontWeight: 800, borderRadius: 7, padding: '1px 8px', fontSize: 14 }}>{pr.move.key}</span>
+                    <strong style={{ fontSize: 14.5 }}>{pr.move.emoji} {pr.move.name}{done ? ' ✓' : ''}</strong>
+                  </div>
+                  <span style={{ fontSize: 11, opacity: 0.82, lineHeight: 1.25, display: 'block' }}>{pr.move.blurb}</span>
+                  <span style={{ fontSize: 10.5, opacity: 0.7, display: 'block', marginTop: 3 }}>{pr.dir === 'findF' ? 'find the force F = m·a' : 'find the acceleration a = F/m'}</span>
+                </button>
+              )
+            })}
           </div>
         )}
-        {phase === 'meter' && (
-          <div className="soccer__prompt">
-            Meter sweeps SLOW → FAST, then rebounds once. <kbd>Space</kbd> or click to lock {isPace ? 'the pace he wants' : 'the stop distance'}; then solve the kick speed.
-          </div>
-        )}
-        {phase === 'fly' && <div className="soccer__prompt">Pass is on…</div>}
 
-        {phase === 'result' && outcome === 'connected' && !unlucky && !missData && (
+        {phase === 'result' && outcome === 'beat' && (
           <div className="soccer__banner soccer__banner--goal">
-            <strong>PERFECT WEIGHT!</strong>
-            <span>Right into the space. Click anywhere to continue.</span>
+            <strong>BEAT YOUR MAN!</strong>
+            <span>
+              {p?.move.name} came off perfectly.{' '}
+              {unlimited
+                ? 'Click anywhere to continue.'
+                : allWon
+                  ? 'All three moves done — moving on!'
+                  : `${wonCount} / ${MOVES.length} done. Click for the next.`}
+            </span>
           </div>
         )}
 
-        {phase === 'result' && unlucky && (
+        {phase === 'result' && outcome === 'lost' && !robbed && (
           <div className="soccer__banner soccer__banner--save">
-            <strong>RIGHT ANSWER 🧤</strong>
-            <span>Safe pass read. Click anywhere.</span>
+            <strong>TACKLED! 🧤</strong>
+            <span>He won the ball. Click anywhere to try the next run.</span>
           </div>
         )}
 
-        {phase === 'solve' && showCalc && <Calculator onClose={() => setShowCalc(false)} />}
-
-        {phase === 'result' && missData && (
-          <Remediation
-            data={missData}
-            onDone={nextRun}
-            setPreview={setPreview}
-            onShoot={(v) => actionsRef.current.sandboxShoot(v)}
-            sandboxBusy={sandboxBusy}
-            sandboxResult={sandboxResult}
-          />
+        {phase === 'result' && robbed && (
+          <div className="soccer__banner soccer__banner--save">
+            <strong>TOO SLOW ⛔</strong>
+            <span>He closed you down. Dispossessed. Click anywhere to try again.</span>
+          </div>
         )}
+
+        {/* In-game calculator overlay during solve. */}
+        {phase === 'solve' && showCalc && <Calculator onClose={() => setShowCalc(false)} />}
       </div>
 
       <div className="soccer__side">
-        {phase === 'solve' && (
+        {phase === 'menu' && (
+          <div className="soccer__givens">
+            <div className="is-key"><span>The ball</span><strong>m = {BALL_MASS} kg</strong></div>
+            <div><span>Every move uses</span><strong>F = m · a</strong></div>
+            {unlimited
+              ? <div><span>Pick with</span><strong>keys 1 – 3</strong></div>
+              : <div className="is-key"><span>Moves done</span><strong>{wonCount} / {MOVES.length}</strong></div>}
+          </div>
+        )}
+
+        {phase === 'solve' && p && (
           <>
             <div className="soccer__givens">
-              {isPace
-                ? <>
-                    <div className="is-key"><span>Pass to his feet at</span><strong>d = {p.d} m</strong></div>
-                    <div className="is-key"><span>Receiver wants pace (locked)</span><strong>v* = {g.lockedVstar} m/s</strong></div>
-                  </>
-                : <div className="is-key"><span>Roll it to rest at (locked)</span><strong>s* = {g.lockedS} m</strong></div>}
-              <div><span>Friction</span><strong>μ = {p.mu}</strong></div>
-              <div><span>Deceleration</span><strong>a = μg = {p.a} m/s²</strong></div>
+              <div className="is-key"><span>Move</span><strong>{p.move.emoji} {p.move.name}</strong></div>
+              <div><span>Ball mass</span><strong>m = {p.m} kg</strong></div>
+              {p.dir === 'findF'
+                ? <div className="is-key"><span>Acceleration</span><strong>a = {p.a} m/s²</strong></div>
+                : <div className="is-key"><span>Foot force</span><strong>F = {p.F} N</strong></div>}
             </div>
             <div className="soccer__method">
               <div className="soccer__method-head">
-                <span>Solve for the kick speed v₀</span>
+                <span>{p.dir === 'findF' ? 'Solve for the force F' : 'Solve for the acceleration a'}</span>
                 <button type="button" className="soccer__calc-toggle" onClick={() => setShowCalc((v) => !v)}>🧮 {showCalc ? 'Hide' : 'Calc'}</button>
               </div>
-              {scaffold === 'full' && (
-                <div className="soccer__steps">
-                  {isPace
-                    ? <code>v₀ = √(v*² + 2·a·d) = √({g.lockedVstar}² + 2·{p.a}·{p.d})</code>
-                    : <code>v₀ = √(2·a·s*) = √(2·{p.a}·{g.lockedS})</code>}
-                </div>
-              )}
-              {scaffold === 'partial' && (
-                <div className="soccer__steps">
-                  {isPace ? <code>v₀ = √(v*² + 2·a·d)</code> : <code>v₀ = √(2·a·s*)</code>}
-                </div>
-              )}
-              {scaffold === 'none' && (
-                <p className="soccer__tip">Recall v² = v₀² − 2·a·s with a = μg — use the calculator if you need it.</p>
-              )}
+              <div className="soccer__steps">
+                <code>{p.dir === 'findF' ? `F = m · a = ${p.m} · ${p.a}` : `a = F / m = ${p.F} / ${p.m}`}</code>
+              </div>
+              <p className="soccer__tip" style={{ margin: '6px 0 0' }}>{p.dir === 'findF' ? p.move.ctxF(p.a) : p.move.ctxA(p.F)}</p>
               <div className="soccer__inputs">
                 <label className="soccer__field">
-                  <span>Kick speed v₀ (m/s)</span>
+                  <span>{p.dir === 'findF' ? 'Force F (N)' : 'Acceleration a (m/s²)'}</span>
                   <input
                     type="text"
                     inputMode="decimal"
                     value={answerStr}
-                    placeholder={placeholder}
+                    placeholder={p.unit}
                     onChange={(e) => setAnswerStr(e.target.value)}
                   />
                 </label>
               </div>
+              <p className="soccer__tip" style={{ margin: '6px 0 0', fontSize: 11, opacity: 0.78 }}>Round to the nearest whole number (up or down is fine).</p>
             </div>
           </>
         )}
 
-        {phase === 'result' && outcome === 'connected' && !unlucky && !missData && (
-          <p className="soccer__tip">Weighted it perfectly: {isPace ? 'on his stride at the right pace' : 'dead in the open space'}. <b>Streak {streak}</b> · best {best}.</p>
+        {phase === 'result' && outcome === 'beat' && p && (
+          <p className="soccer__tip">Newton checks out: {p.dir === 'findF' ? `F = m·a = ${p.m}·${p.a} = ${p.F} N` : `a = F/m = ${p.F}/${p.m} = ${p.a} m/s²`} put the perfect weight on the {p.move.name.toLowerCase()}. <b>Streak {streak}</b> · best {best}.</p>
+        )}
+
+        {phase === 'result' && outcome === 'lost' && !robbed && p && (
+          <p className="soccer__tip">Not quite. {p.dir === 'findF' ? `F = m·a = ${p.m}·${p.a} = ${p.F} N` : `a = F/m = ${p.F}/${p.m} = ${p.a} m/s²`} was the answer. <b>Streak reset.</b></p>
         )}
 
         <div className="sim__controls">
           <div className="soccer__buttons">
-            {phase === 'meter' && <button type="button" className="btn btn--primary" onClick={lockMeter}>Lock it (Space)</button>}
-            {phase === 'solve' && <button type="button" className="btn btn--primary" onClick={playPass} disabled={!answerStr}>Play the pass ⚽</button>}
-            {phase === 'aim' && <button type="button" className="btn btn--primary" onClick={startMeter}>Start the meter ▸</button>}
-            {phase === 'fly' && <button type="button" className="btn btn--primary" disabled>Pass in flight…</button>}
+            {phase === 'menu' && <button type="button" className="btn btn--primary" disabled>Pick a move ▸</button>}
+            {phase === 'solve' && <button type="button" className="btn btn--primary" onClick={playMove} disabled={!answerStr}>Do the move ⚽</button>}
+            {phase === 'fly' && <button type="button" className="btn btn--primary" disabled>On the move…</button>}
             {phase === 'result' && <button type="button" className="btn btn--primary" onClick={nextRun}>Next run →</button>}
             <button type="button" className="btn btn--ghost" onClick={nextRun}>↻ Restart</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function interceptText(outcome: Outcome | null, solveFor: SolveFor): string {
-  if (solveFor === 'pace') {
-    if (outcome === 'over') return 'Too much weight, it ran through the space. Ease off the kick.'
-    return 'Underhit, it pulled up short of his run. Put more on it.'
-  }
-  if (outcome === 'over') return 'Too firm, it skidded past the open space. Ease off.'
-  return 'Too soft, it died before the space. Give it more.'
-}
-
-// ============================================================================
-// Post-miss remediation — an animated, fill-the-blank teaching lesson followed
-// by a "try for yourself" sandbox. Ported 1:1 from MotionSim's Remediation, with
-// the physics swapped to friction-decelerated passing (v² = v₀² − 2·a·s).
-// ============================================================================
-type Opt = { label: string; correct: boolean }
-type LStep = { n: string; cmp?: boolean; prompt: string; options: Opt[]; gate: 'check' | 'correct'; card: (blank: ReactNode) => ReactNode; solution: ReactNode }
-
-function Remediation({
-  data, onDone, setPreview, onShoot, sandboxBusy, sandboxResult,
-}: {
-  data: MissData
-  onDone: () => void
-  setPreview: (p: { active: boolean; value: number } | null) => void
-  onShoot: (value: number) => void
-  sandboxBusy: boolean
-  sandboxResult: { kind: 'goal' | 'miss'; text: string } | null
-}) {
-  const { play, solveFor, lockedVstar, lockedS, zone, used } = data
-  const isPace = solveFor === 'pace'
-  const lockVal = isPace ? lockedVstar : lockedS
-  const correct = isPace ? answerPace(play.a, play.d, lockedVstar) : answerDead(play.a, lockedS)
-  const unit = 'm/s'
-  const varName = 'kick speed v₀'
-  const lessonScaffold: 'full' | 'partial' | 'none' = data.diff < 0.33 ? 'full' : data.diff <= 0.66 ? 'partial' : 'none'
-
-  const predict = (value: number) => grade(value, solveFor, play.a, zone, lockVal)
-
-  const [view, setView] = useState<'lesson' | 'try'>('lesson')
-  const [stepIdx, setStepIdx] = useState(0)
-  const [val, setVal] = useState(used > 0 ? used : correct)
-  const [answered, setAnswered] = useState<boolean[]>(() => Array(4).fill(false))
-  const [pick, setPick] = useState<number | null>(null)
-  const [checked, setChecked] = useState(false)
-  const [revealed, setRevealed] = useState(false)
-  const [showLessonCalc, setShowLessonCalc] = useState(false)
-  const slots = useMemo(() => Array.from({ length: 4 }, () => Math.floor(Math.random() * 3)), [])
-  useEffect(() => { setPick(null); setChecked(false); setRevealed(false) }, [stepIdx])
-
-  const liveGrade = predict(val)
-  const inZone = liveGrade.outcome === 'connected'
-
-  // "What went wrong" verdict about the player's actual mis-weighted pass.
-  const missGrade = predict(used)
-  const verdict = isPace
-    ? (missGrade.sStop < play.d
-        ? `Your kick died at ${missGrade.sStop.toFixed(1)} m, short of his run at ${play.d} m.`
-        : `It reached him at ${missGrade.vArr.toFixed(1)} m/s, off the ${lockedVstar} m/s he wanted.`)
-    : (missGrade.sStop < lockedS
-        ? `Your pass came to rest at ${missGrade.sStop.toFixed(1)} m, short of the ${lockedS} m space.`
-        : `Your pass overran to ${missGrade.sStop.toFixed(1)} m, past the ${lockedS} m space.`)
-
-  const LEARN_LIMIT = 120
-  const [elapsed, setElapsed] = useState(0)
-  useEffect(() => {
-    const start = performance.now()
-    const id = window.setInterval(() => setElapsed((performance.now() - start) / 1000), 100)
-    return () => window.clearInterval(id)
-  }, [])
-  useEffect(() => () => setPreview(null), [setPreview])
-  useEffect(() => { if (view === 'try' && elapsed >= LEARN_LIMIT) onDone() }, [view, elapsed, onDone])
-  const barPct = Math.min(100, (elapsed / LEARN_LIMIT) * 100)
-  const timedOutSoon = view === 'try' && elapsed >= LEARN_LIMIT - 10
-
-  const sliderMin = 2
-  const sliderMax = 16
-
-  const enterTry = () => { setView('try'); setPreview({ active: true, value: val }) }
-  const backToLesson = () => { setView('lesson'); setPreview({ active: false, value: val }) }
-  const onSlide = (nv: number) => { setVal(nv); setPreview({ active: true, value: nv }) }
-
-  const learnBar = (
-    <div className={`soccer__learnbar${timedOutSoon ? ' is-ending' : ''}`}>
-      <span>⏱ {timedOutSoon ? `Auto-skip in ${Math.max(0, Math.ceil(LEARN_LIMIT - elapsed))}s` : 'Time spent learning'}</span>
-      <div className="soccer__learnbar-track"><div className="soccer__learnbar-fill" style={{ width: `${barPct}%` }} /></div>
-      <span className="soccer__learnbar-num">{elapsed.toFixed(0)}s</span>
-    </div>
-  )
-
-  // ---- Try-for-yourself HUD over the live scene + preview roll ----
-  if (view === 'try') {
-    const scored = sandboxResult?.kind === 'goal'
-    const lastShot = sandboxResult && sandboxResult.kind !== 'goal' ? sandboxResult : null
-    const liveTxt = sandboxBusy
-      ? '⚽ Pass on its way…'
-      : inZone
-        ? '✓ Lands right in the space, play it!'
-        : isPace
-          ? (liveGrade.sStop < play.d ? `dies at ${liveGrade.sStop.toFixed(1)} m · need ${play.d} m` : `arrives ${liveGrade.vArr.toFixed(1)} m/s · want ${lockedVstar}`)
-          : `rests at ${liveGrade.sStop.toFixed(1)} m · want ${lockedS} m`
-    return (
-      <div className="soccer__try">
-        <div className="soccer__try-givens">
-          <span>μ = {play.mu}</span>
-          <span>a = {play.a} m/s²</span>
-          {isPace
-            ? <><span>d = {play.d} m</span><span>wants v* = {lockedVstar} m/s (fixed)</span></>
-            : <span>target s* = {lockedS} m (fixed)</span>}
-        </div>
-        <div className="soccer__try-bar">
-          <div className="soccer__try-top">
-            <strong>🎯 Try for yourself: drag your {varName}, then play it</strong>
-            <span className={`soccer__try-verdict${inZone ? ' is-good' : ''}`}>{liveTxt}</span>
-          </div>
-          {lastShot && (
-            <div className="soccer__try-last soccer__try-last--miss">
-              <strong>🧤 Cut out!</strong> {lastShot.text} <em>(adjust and play again).</em>
-            </div>
-          )}
-          <label className="slider soccer__try-slider">
-            <span className="slider__label">
-              <span>Your {varName}</span>
-              <span className="slider__value">{val.toFixed(1)} {unit}{inZone ? '  ✓' : ''}</span>
-            </span>
-            <input type="range" min={sliderMin} max={sliderMax} step={0.1} value={val} disabled={sandboxBusy} onChange={(e) => onSlide(parseFloat(e.target.value))} />
-          </label>
-          {learnBar}
-          <div className="soccer__try-actions">
-            <button type="button" className="btn btn--ghost" onClick={backToLesson}>← Back to lesson</button>
-            <button type="button" className="btn btn--primary soccer__try-shoot" onClick={() => onShoot(val)} disabled={sandboxBusy}>{sandboxBusy ? 'Passing…' : '⚽ Play it!'}</button>
-            <button type="button" className="btn btn--ghost" onClick={onDone}>Skip / restart ↻</button>
-          </div>
-        </div>
-
-        {scored && (
-          <div className="soccer__try-congrats" onClick={onDone}>
-            <div className="soccer__try-congrats-card" onClick={(e) => e.stopPropagation()}>
-              <div className="soccer__try-congrats-emoji">🎉</div>
-              <h2>PERFECT WEIGHT!</h2>
-              <p>{sandboxResult?.text}</p>
-              <button type="button" className="btn btn--primary soccer__try-btn" onClick={onDone}>Play a fresh run →</button>
-              <span className="soccer__try-congrats-hint">click anywhere to start a new run</span>
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  // ---- Worked walkthrough built from the CORRECT kick ----
-  const r1 = (x: number) => Math.round(x * 10) / 10
-  const a = play.a
-  const twoAD = 2 * a * play.d           // pace: velocity² to overcome friction over d
-  const vStarSq = lockedVstar * lockedVstar
-  const v0sqPace = vStarSq + twoAD       // pace: required v₀²
-  const v0sqDead = 2 * a * lockedS       // dead: required v₀²
-  const finalSpeed = isPace ? r1(answerPace(a, play.d, lockedVstar)) : r1(answerDead(a, lockedS))
-
-  const ac = (x: number) => `${x.toFixed(1)} m/s²`
-  const sq = (x: number) => `${x.toFixed(1)} m²/s²`
-  const sp = (x: number) => `${x.toFixed(1)} m/s`
-
-  // The sim's own grader: would this candidate kick connect? Used to reject any
-  // distractor that would ALSO succeed, so the final step has one right answer.
-  const threadsV0 = (v: number) => grade(clamp(v, 0, 20), solveFor, a, zone, lockVal).outcome === 'connected'
-
-  const mkOpts = (
-    correctVal: number,
-    distractors: number[],
-    fmt: (x: number) => string,
-    offset: number,
-    threads?: (v: number) => boolean,
-  ): Opt[] => {
-    const correctLabel = fmt(correctVal)
-    const seen = new Set<string>([correctLabel])
-    const invalid = (v: number) => seen.has(fmt(v)) || (threads ? threads(v) : false)
-    const dist: string[] = []
-    for (const dv of distractors) {
-      let v = dv, guard = 0
-      while (invalid(v) && guard < 40) { v = v * 1.08 + 0.13; guard++ }
-      seen.add(fmt(v)); dist.push(fmt(v))
-    }
-    const opts: Opt[] = [{ label: correctLabel, correct: true }, ...dist.map((l) => ({ label: l, correct: false }))]
-    const k = offset % opts.length
-    return [...opts.slice(k), ...opts.slice(0, k)]
-  }
-
-  if (import.meta.env.DEV) {
-    const near = (x: number, y: number, tol: number) => Math.abs(x - y) <= tol
-    const grader = isPace ? answerPace(a, play.d, lockedVstar) : answerDead(a, lockedS)
-    console.assert(near(finalSpeed, grader, 0.6), `forces lesson: shown answer ${finalSpeed} far from grader ${grader.toFixed(2)}`)
-    console.assert(grade(grader, solveFor, a, zone, lockVal).outcome === 'connected', 'forces lesson: graded answer does not connect')
-  }
-
-  const steps: LStep[] = isPace
-    ? [
-        {
-          n: '1', prompt: 'First, how hard does friction brake the ball? a = μ·g',
-          options: mkOpts(a, [play.mu, a + 2], ac, slots[0]), gate: 'check',
-          card: (blank) => (<>
-            <div className="soccer__step-formula">a = μ · g</div>
-            <div className="soccer__step-plug">= {play.mu} · {G} = {blank}</div>
-          </>),
-          solution: <>a = μ · g = {play.mu} · {G} = <b>{ac(a)}</b></>,
-        },
-        {
-          n: '2', prompt: `How much speed² does friction strip over the ${play.d} m to him? (2·a·d)`,
-          options: mkOpts(twoAD, [a * play.d, 4 * a * play.d], sq, slots[1]), gate: 'check',
-          card: (blank) => (<>
-            <div className="soccer__step-formula">loss = 2 · a · d</div>
-            <div className="soccer__step-plug">= 2 · {a} · {play.d} = {blank}</div>
-          </>),
-          solution: <>2 · a · d = 2 · {a} · {play.d} = <b>{sq(twoAD)}</b></>,
-        },
-        {
-          n: '3', prompt: `He wants it arriving at v* = ${lockedVstar} m/s, so what must v₀² be?`,
-          options: mkOpts(v0sqPace, [twoAD, vStarSq], sq, slots[2]), gate: 'check',
-          card: (blank) => (<>
-            <div className="soccer__step-formula">v₀² = v*² + 2·a·d</div>
-            <div className="soccer__step-plug">= {vStarSq} + {twoAD} = {blank}</div>
-          </>),
-          solution: <>v*² + 2·a·d = {vStarSq} + {twoAD} = <b>{sq(v0sqPace)}</b></>,
-        },
-        {
-          n: '★', cmp: true, prompt: 'Now produce the answer: which kick speed v₀ threads it?',
-          options: mkOpts(finalSpeed, [used, r1(Math.sqrt(twoAD))], sp, slots[3], threadsV0), gate: 'correct',
-          card: (blank) => (<>
-            {lessonScaffold !== 'none' && <div className="soccer__step-formula">v₀ = √(v*² + 2·a·d)</div>}
-            {lessonScaffold === 'full' && (
-              <div className="soccer__step-recap">
-                <span className="soccer__recap-lead">Work it out:</span>
-                <div className="soccer__recap-eq">1) v*² = {vStarSq}</div>
-                <div className="soccer__recap-eq">2) 2·a·d = {twoAD}</div>
-                <div className="soccer__recap-eq soccer__recap-eq--final">3) v₀ = √{v0sqPace} = ?</div>
-              </div>
-            )}
-            {lessonScaffold === 'none' && <div className="soccer__step-recap"><span className="soccer__recap-lead">Recall v² = v₀² − 2·a·s and rearrange it yourself — the calculator is below.</span></div>}
-            <div className="soccer__step-plug">v₀ = {blank}</div>
-          </>),
-          solution: <>v₀ = √(v*² + 2·a·d) = √{v0sqPace} = <b>{sp(finalSpeed)}</b></>,
-        },
-      ]
-    : [
-        {
-          n: '1', prompt: 'First, how hard does friction brake the ball? a = μ·g',
-          options: mkOpts(a, [play.mu, a + 2], ac, slots[0]), gate: 'check',
-          card: (blank) => (<>
-            <div className="soccer__step-formula">a = μ · g</div>
-            <div className="soccer__step-plug">= {play.mu} · {G} = {blank}</div>
-          </>),
-          solution: <>a = μ · g = {play.mu} · {G} = <b>{ac(a)}</b></>,
-        },
-        {
-          n: '2', prompt: `To stop dead at s* = ${lockedS} m, what must v₀² be? (2·a·s*)`,
-          options: mkOpts(v0sqDead, [a * lockedS, 4 * a * lockedS], sq, slots[1]), gate: 'check',
-          card: (blank) => (<>
-            <div className="soccer__step-formula">v₀² = 2 · a · s*</div>
-            <div className="soccer__step-plug">= 2 · {a} · {lockedS} = {blank}</div>
-          </>),
-          solution: <>2 · a · s* = 2 · {a} · {lockedS} = <b>{sq(v0sqDead)}</b></>,
-        },
-        {
-          n: '★', cmp: true, prompt: 'Now produce the answer: which kick speed v₀ dies in the space?',
-          options: mkOpts(finalSpeed, [used, r1(Math.sqrt(a * lockedS))], sp, slots[2], threadsV0), gate: 'correct',
-          card: (blank) => (<>
-            {lessonScaffold !== 'none' && <div className="soccer__step-formula">v₀ = √(2·a·s*)</div>}
-            {lessonScaffold === 'full' && (
-              <div className="soccer__step-recap">
-                <span className="soccer__recap-lead">Work it out:</span>
-                <div className="soccer__recap-eq">1) a = {ac(a)}</div>
-                <div className="soccer__recap-eq">2) 2·a·s* = {v0sqDead}</div>
-                <div className="soccer__recap-eq soccer__recap-eq--final">3) v₀ = √{v0sqDead} = ?</div>
-              </div>
-            )}
-            {lessonScaffold === 'none' && <div className="soccer__step-recap"><span className="soccer__recap-lead">Recall a stopping ball loses v₀² over 2·a·s — rearrange it yourself, the calculator is below.</span></div>}
-            <div className="soccer__step-plug">v₀ = {blank}</div>
-          </>),
-          solution: <>v₀ = √(2·a·s*) = √{v0sqDead} = <b>{sp(finalSpeed)}</b></>,
-        },
-      ]
-
-  const N = steps.length
-  const cur = steps[stepIdx]
-  const last = stepIdx === N - 1
-  const stepDone = answered[stepIdx]
-  const pickedOpt = pick === null ? null : cur.options[pick]
-  const pickedCorrect = !!pickedOpt?.correct
-
-  const choose = (i: number) => { if (stepDone) return; setPick(i); setChecked(false) }
-  const checkAnswer = () => {
-    if (pick === null || stepDone) return
-    setChecked(true)
-    if (pickedCorrect) setAnswered((aa) => { const b = [...aa]; b[stepIdx] = true; return b })
-    else if (cur.gate === 'check') { setRevealed(true); setAnswered((aa) => { const b = [...aa]; b[stepIdx] = true; return b }) }
-  }
-  const blankSlot: ReactNode = pick === null
-    ? <span className="soccer__blank">?</span>
-    : <span className={`soccer__blank soccer__blank--filled${checked ? (pickedCorrect ? ' soccer__blank--ok' : ' soccer__blank--no') : ''}`}>{pickedOpt!.label}{checked ? (pickedCorrect ? ' ✓' : ' ✗') : ''}</span>
-  const showSolution = revealed || (checked && !pickedCorrect && cur.gate === 'check')
-
-  return (
-    <div className="soccer__lesson">
-      <div className="soccer__lesson-inner">
-        <div className="soccer__lesson-head">
-          <div className="soccer__lesson-emoji">🧤</div>
-          <div>
-            <h2 className="soccer__lesson-title">Defender cut it out!</h2>
-            <p className="soccer__lesson-sub">{verdict}</p>
-          </div>
-        </div>
-
-        <div className="soccer__lesson-chips">
-          <div className="chip"><span>friction</span><strong>μ = {play.mu}</strong></div>
-          <div className="chip"><span>deceleration</span><strong>a = {play.a} m/s²</strong></div>
-          {isPace
-            ? <div className="chip"><span>his space</span><strong>d = {play.d} m</strong></div>
-            : null}
-          <div className="chip chip--lock">
-            <span>{isPace ? 'wants pace' : 'dead target'}</span>
-            <strong>{isPace ? `v* = ${lockedVstar} m/s` : `s* = ${lockedS} m`}</strong>
-          </div>
-        </div>
-
-        <div className="soccer__stepper">
-          <div className="soccer__stepper-progress">
-            <span>Step {stepIdx + 1} of {N}</span>
-            <div className="soccer__stepper-dots">
-              {steps.map((_, i) => <i key={i} className={i === stepIdx ? 'is-on' : i < stepIdx ? 'is-done' : ''} />)}
-            </div>
-          </div>
-          <div key={stepIdx} className={`soccer__step soccer__step--big${cur.cmp ? ' soccer__step--cmp' : ''}`}>
-            <span className="soccer__step-n">{cur.n}</span>
-            <div className="soccer__step-body">{cur.card(blankSlot)}</div>
-          </div>
-
-          {showSolution && (
-            <div className="soccer__solution">
-              <span className="soccer__solution-tag">Here's the working</span>
-              <div className="soccer__solution-body">{cur.solution}</div>
-            </div>
-          )}
-
-          <div key={`q${stepIdx}`} className="soccer__quiz">
-            <div className="soccer__quiz-q">
-              <span className="soccer__quiz-tag">{last ? 'Solve it' : 'Fill the blank'}</span>
-              {cur.prompt}
-            </div>
-            <div className="soccer__quiz-opts">
-              {cur.options.map((o, i) => {
-                const chosen = pick === i
-                const stateCls = chosen
-                  ? (checked ? (o.correct ? ' is-correct' : ' is-wrong') : ' is-picked')
-                  : (stepDone && o.correct ? ' is-correct' : '')
-                return (
-                  <button key={i} type="button" className={`soccer__quiz-opt${stateCls}`} onClick={() => choose(i)} disabled={stepDone}>
-                    <span className="soccer__quiz-key">{String.fromCharCode(65 + i)}</span>{o.label}
-                  </button>
-                )
-              })}
-            </div>
-            <div className="soccer__quiz-foot">
-              <span className={`soccer__quiz-fb${!checked ? '' : pickedCorrect ? ' is-good' : ' is-bad'}`}>
-                {!checked
-                  ? (pick === null ? 'Pick the value for the blank, then check it.' : 'Locked in? Hit "Check answer".')
-                  : pickedCorrect
-                    ? (last ? '✓ Correct! You worked out the answer yourself.' : '✓ Correct! On you go.')
-                    : cur.gate === 'check'
-                      ? '✗ Not quite. Study the working below, then continue.'
-                      : '✗ Not quite. Try again, or reveal the worked solution.'}
-              </span>
-              <div className="soccer__quiz-actions">
-                {cur.gate === 'correct' && checked && !pickedCorrect && !revealed && (
-                  <button type="button" className="btn btn--ghost soccer__quiz-calc" onClick={() => setRevealed(true)}>Reveal solution</button>
-                )}
-                <button type="button" className="btn btn--ghost soccer__quiz-calc" onClick={() => setShowLessonCalc((s) => !s)}>🧮 {showLessonCalc ? 'Hide' : 'Calculator'}</button>
-                <button type="button" className="btn btn--primary soccer__quiz-check" onClick={checkAnswer} disabled={pick === null || stepDone}>{stepDone ? 'Checked ✓' : 'Check answer'}</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {showLessonCalc && <Calculator onClose={() => setShowLessonCalc(false)} />}
-
-        <div className="soccer__lesson-foot">
-          {learnBar}
-          <div className="soccer__lesson-actions">
-            <button type="button" className="btn btn--ghost" onClick={() => setStepIdx((i) => Math.max(0, i - 1))} disabled={stepIdx === 0}>← Back</button>
-            {!last ? (
-              <button type="button" className="btn btn--primary soccer__try-btn" onClick={() => setStepIdx((i) => Math.min(N - 1, i + 1))} disabled={!stepDone}>{stepDone ? 'Next →' : 'Answer to continue'}</button>
-            ) : (
-              <>
-                <button type="button" className="btn btn--ghost" onClick={onDone}>Skip explanation</button>
-                <button type="button" className="btn btn--primary soccer__try-btn" onClick={enterTry} disabled={!stepDone}>⚽ Try for yourself →</button>
-              </>
-            )}
           </div>
         </div>
       </div>
@@ -1179,22 +973,36 @@ function Remediation({
 // ============================================================================
 // Canvas drawing helpers (shared render kit with MotionSim / KinematicsSim)
 // ============================================================================
-type AtSFn = (p: Play, s: number, y: number, lateral?: number) => P2
-
+// `face` chooses which side of the head reads to the camera: "you" the dribbler
+// runs up-pitch (back to camera), the defender marks you (faces the camera).
+// `skinDark` is a deeper tone of the same skin used for cheek/jaw + limb shading.
 const TEAM_KIT = {
   jersey: '#2f6df0', jerseyDark: '#1f4ec2', jerseyHi: '#6c9bff', collar: '#0d2f7a',
   shorts: '#13234d', shortsDark: '#0c1834', sock: '#2f6df0', sockBand: '#ffffff',
-  boot: '#15171f', number: '#ffffff', num: 9, skin: '#e8b48a', hair: '#2c2016', hairStyle: 0,
+  boot: '#15171f', bootDark: '#05060a', number: '#ffffff', num: 9,
+  skin: '#e8b48a', skinDark: '#c8895f', hair: '#2c2016', hairStyle: 0, face: 'back' as 'back' | 'front',
 }
 const FOE_KIT = {
   jersey: '#ef4444', jerseyDark: '#b91c1c', jerseyHi: '#fca5a5', collar: '#7f1010',
   shorts: '#3a0d0d', shortsDark: '#250707', sock: '#ef4444', sockBand: '#ffe8e8',
-  boot: '#15171f', number: '#ffffff', num: 4, skin: '#d9a06b', hair: '#1a130c', hairStyle: 3,
+  boot: '#15171f', bootDark: '#05060a', number: '#ffffff', num: 4,
+  skin: '#b97a4e', skinDark: '#935b35', hair: '#1a130c', hairStyle: 3, face: 'front' as 'back' | 'front',
 }
 type Kit = typeof TEAM_KIT
 
-function drawHair(ctx: CanvasRenderingContext2D, cx: number, headY: number, headR: number, style: number, color: string) {
+function drawHair(ctx: CanvasRenderingContext2D, cx: number, headY: number, headR: number, style: number, color: string, back = false) {
   ctx.fillStyle = color
+  if (back) {
+    // back of the head: hair sheets down over most of the skull, no fringe gap
+    ctx.beginPath(); ctx.arc(cx, headY + headR * 0.06, headR * 1.04, Math.PI * 0.86, Math.PI * 2.14); ctx.fill()
+    ctx.beginPath(); ctx.ellipse(cx, headY + headR * 0.1, headR * 0.95, headR * 1.0, 0, 0, Math.PI * 2); ctx.fill()
+    if (style === 2) { ctx.beginPath(); ctx.arc(cx, headY - headR * 0.95, headR * 0.4, 0, Math.PI * 2); ctx.fill() }
+    if (style === 3) {
+      ctx.fillRect(cx - headR * 1.04, headY - headR * 0.1, headR * 0.32, headR * 1.0)
+      ctx.fillRect(cx + headR * 0.72, headY - headR * 0.1, headR * 0.32, headR * 1.0)
+    }
+    return
+  }
   if (style === 1) {
     ctx.beginPath(); ctx.arc(cx, headY - headR * 0.06, headR * 0.92, Math.PI * 1.02, Math.PI * 1.98); ctx.fill()
   } else if (style === 2) {
@@ -1224,94 +1032,207 @@ function spawnConfetti(g: Game, at: P2) {
   }
 }
 
-function drawSpace(ctx: CanvasRenderingContext2D, atS: AtSFn, p: Play, zone: number, dead: boolean, now: number) {
-  // No lane lines or distance markers — just the live "space" the ball should
-  // reach (pace) or die in (dead). The lane bearing changes every round.
-  const pulse = 1 + Math.sin(now / 260) * 0.08
-  const za = atS(p, zone - ZONE_HALF, 0.01, LANE_HALF), zb = atS(p, zone - ZONE_HALF, 0.01, -LANE_HALF)
-  const zc = atS(p, zone + ZONE_HALF, 0.01, -LANE_HALF), zd = atS(p, zone + ZONE_HALF, 0.01, LANE_HALF)
-  const ctr = atS(p, zone, 0.01)
-  const glowR = Math.max(20, LANE_HALF * ctr.scale * 1.4) * pulse
-  const glow = ctx.createRadialGradient(ctr.sx, ctr.sy, 4, ctr.sx, ctr.sy, glowR)
-  glow.addColorStop(0, 'rgba(54,224,127,0.5)'); glow.addColorStop(0.6, 'rgba(54,224,127,0.18)'); glow.addColorStop(1, 'rgba(54,224,127,0)')
-  ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(ctr.sx, ctr.sy, glowR, 0, Math.PI * 2); ctx.fill()
-  ctx.fillStyle = 'rgba(54,224,127,0.22)'
-  ctx.beginPath(); ctx.moveTo(za.sx, za.sy); ctx.lineTo(zb.sx, zb.sy); ctx.lineTo(zc.sx, zc.sy); ctx.lineTo(zd.sx, zd.sy); ctx.closePath(); ctx.fill()
-  ctx.strokeStyle = 'rgba(54,224,127,0.9)'; ctx.lineWidth = 2.5; ctx.stroke()
-  const lbl = atS(p, zone, 1.4)
-  ctx.fillStyle = '#eafff2'; ctx.font = '800 13px Plus Jakarta Sans, sans-serif'; ctx.textAlign = 'center'
-  ctx.fillText(dead ? 'open space' : 'the space', lbl.sx, lbl.sy)
-  ctx.textAlign = 'left'
-}
+// An optional pose that drives one foot to an exact screen point (the ball) and
+// leans the body into the touch, so a kick/reach reads as real contact rather
+// than a generic running gait.
+type PlayerAction = { footX: number; footY: number; lean: number }
 
-function drawPlayer(ctx: CanvasRenderingContext2D, atS: AtSFn, p: Play, s: number, lateral: number, kit: Kit, now: number, running: boolean, hasBall: boolean) {
-  const feet = atS(p, s, 0, lateral)
-  const head = atS(p, s, 1.84, lateral)
+// Draws a kitted player given his already-projected feet + head points. A won
+// ball rests on the GROUND at his feet (a player wins it to his feet, not hands).
+// When `action` is supplied, the near foot is planted on action.foot* (the ball)
+// and the upper body leans by action.lean — this is what sells foot-on-ball
+// contact and tight control.
+function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit, now: number, running: boolean, hasBall: boolean, action?: PlayerAction) {
   const scale = feet.scale
-  if (scale < 4) return
+  if (scale < 4 || scale > 360) return
   const ph = now / 80
   const bob = running ? Math.abs(Math.sin(ph)) * 0.055 * scale : 0
   const cx = feet.sx
   const footY = feet.sy - bob
   const headY = head.sy - bob
   const hipY = headY + (footY - headY) * 0.52
-  const shoulderY = headY + (footY - headY) * 0.3
   const wBody = Math.max(5, 0.4 * scale)
   const lw = Math.max(3, 0.15 * scale)
   const headR = Math.max(3.5, 0.17 * scale)
+  // shoulder line sits just below the head so the neck reads as a short stub
+  const shoulderY = headY + headR * 1.25
   const torsoH = hipY - shoulderY + 2
+  // body lean into the touch: hips + upper body shift, the support foot stays put
+  const leanX = action ? clamp(action.lean, -1, 1) * wBody * 0.55 : 0
+  const cxU = cx + leanX
+  const hipX = cx + leanX
+  // finer detail (face, seams, taper) only when the figure is big enough to read
+  const detail = scale > 24
+  const back = kit.face === 'back'
+
+  // A jointed limb: hip/shoulder -> mid joint (small perpendicular bow) -> end.
+  // Keeps the exact start AND end points; the bend just inserts a knee/elbow.
+  // Upper segment is drawn thicker than the lower one for a tapered look.
+  const limb = (
+    x0: number, y0: number, x1: number, y1: number,
+    bow: number, wUp: number, wLo: number, colUp: string, colLo: string,
+  ) => {
+    const dx = x1 - x0, dy = y1 - y0
+    const len = Math.hypot(dx, dy) || 1
+    const jx = (x0 + x1) / 2 + (-dy / len) * bow
+    const jy = (y0 + y1) / 2 + (dx / len) * bow
+    ctx.strokeStyle = colUp; ctx.lineWidth = wUp
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(jx, jy); ctx.stroke()
+    ctx.strokeStyle = colLo; ctx.lineWidth = wLo
+    ctx.beginPath(); ctx.moveTo(jx, jy); ctx.lineTo(x1, y1); ctx.stroke()
+    return { jx, jy }
+  }
 
   ctx.fillStyle = 'rgba(0,0,0,0.26)'
   ctx.beginPath(); ctx.ellipse(cx, feet.sy + 1, wBody * 0.95, wBody * 0.32, 0, 0, Math.PI * 2); ctx.fill()
 
-  ctx.lineCap = 'round'
-  const swing = running ? Math.sin(ph) * 0.28 * scale : wBody * 0.4
-  const lift = running ? Math.max(0, Math.cos(ph)) * 0.15 * scale : 0
-  const footLx = cx - swing, footLy = footY - lift
-  const footRx = cx + swing, footRy = footY
-  ctx.strokeStyle = kit.sock; ctx.lineWidth = lw
-  ctx.beginPath(); ctx.moveTo(cx, hipY); ctx.lineTo(footLx, footLy); ctx.stroke()
-  ctx.beginPath(); ctx.moveTo(cx, hipY); ctx.lineTo(footRx, footRy); ctx.stroke()
-  ctx.strokeStyle = kit.sockBand; ctx.lineWidth = lw * 0.95
-  ctx.beginPath(); ctx.moveTo(cx + (footLx - cx) * 0.42, hipY + (footLy - hipY) * 0.46); ctx.lineTo(cx + (footLx - cx) * 0.56, hipY + (footLy - hipY) * 0.6); ctx.stroke()
-  ctx.beginPath(); ctx.moveTo(cx + (footRx - cx) * 0.42, hipY + (footRy - hipY) * 0.46); ctx.lineTo(cx + (footRx - cx) * 0.56, hipY + (footRy - hipY) * 0.6); ctx.stroke()
-  ctx.fillStyle = kit.boot
-  ctx.beginPath(); ctx.ellipse(footRx, footRy, lw * 0.8, lw * 0.45, 0, 0, Math.PI * 2); ctx.fill()
-  ctx.beginPath(); ctx.ellipse(footLx, footLy, lw * 0.8, lw * 0.45, 0, 0, Math.PI * 2); ctx.fill()
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round'
+  let footLx: number, footLy: number, footRx: number, footRy: number
+  if (action) {
+    // the striking/control foot drives to the contact point; the other plants
+    // under the body for balance, so the touch lands with clear weight
+    const dir = Math.sign(action.footX - cx) || 1
+    footRx = action.footX; footRy = action.footY
+    footLx = cx - dir * wBody * 0.34; footLy = footY
+  } else {
+    const swing = running ? Math.sin(ph) * 0.28 * scale : wBody * 0.4
+    const lift = running ? Math.max(0, Math.cos(ph)) * 0.15 * scale : 0
+    footLx = cx - swing; footLy = footY - lift
+    footRx = cx + swing; footRy = footY
+  }
 
-  const shortsH = Math.max(3, torsoH * 0.32)
-  ctx.fillStyle = kit.shorts; roundRect(ctx, cx - wBody / 2, hipY - shortsH * 0.55, wBody, shortsH, Math.max(2, wBody * 0.18)); ctx.fill()
-  ctx.fillStyle = kit.shortsDark; ctx.fillRect(cx + wBody * 0.14, hipY - shortsH * 0.55, wBody * 0.36, shortsH)
+  // ---- legs: thigh + shin (equal-ish), only a slight knee bend; feet stay EXACT
+  const kneeBow = 0.025 * scale
+  const drawLeg = (fx: number, fy: number) => {
+    const side = Math.sign(fx - hipX) || 1
+    const { jx, jy } = limb(hipX, hipY, fx, fy, side * kneeBow, lw * 1.15, lw * 0.98, kit.sock, kit.sock)
+    // sock band just below the knee
+    ctx.strokeStyle = kit.sockBand; ctx.lineWidth = lw * 0.8
+    ctx.beginPath()
+    ctx.moveTo(jx + (fx - jx) * 0.28, jy + (fy - jy) * 0.28)
+    ctx.lineTo(jx + (fx - jx) * 0.42, jy + (fy - jy) * 0.42)
+    ctx.stroke()
+    // boot: darker, elongated, with a sole shadow
+    const bw = lw * 1.15, bh = lw * 0.5
+    ctx.fillStyle = kit.bootDark
+    ctx.beginPath(); ctx.ellipse(fx + side * bw * 0.35, fy + bh * 0.5, bw, bh * 0.6, 0, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = kit.boot
+    ctx.beginPath(); ctx.ellipse(fx + side * bw * 0.3, fy, bw, bh, 0, 0, Math.PI * 2); ctx.fill()
+  }
+  // draw the trailing leg first so the lead/contact leg overlaps it
+  if (Math.abs(footLx - hipX) > Math.abs(footRx - hipX)) { drawLeg(footRx, footRy); drawLeg(footLx, footLy) }
+  else { drawLeg(footLx, footLy); drawLeg(footRx, footRy) }
 
-  ctx.fillStyle = kit.jersey; roundRect(ctx, cx - wBody / 2, shoulderY, wBody, torsoH, Math.max(2, wBody * 0.3)); ctx.fill()
-  ctx.fillStyle = kit.jerseyDark; ctx.fillRect(cx + wBody * 0.16, shoulderY + 2, wBody * 0.34, torsoH - 2)
-  ctx.fillStyle = kit.jerseyHi; ctx.fillRect(cx - wBody * 0.4, shoulderY + torsoH * 0.12, wBody * 0.12, torsoH * 0.6)
+  // ---- neck: a SHORT skin stub (~0.25 headR tall) linking head to shoulders ----
+  const neckTop = headY + headR * 0.9
+  const neckW = headR * 0.8
+  ctx.fillStyle = kit.skin
+  ctx.beginPath()
+  ctx.moveTo(cxU - neckW * 0.78, neckTop); ctx.lineTo(cxU + neckW * 0.78, neckTop)
+  ctx.lineTo(cxU + neckW, shoulderY + 1); ctx.lineTo(cxU - neckW, shoulderY + 1)
+  ctx.closePath(); ctx.fill()
+  ctx.fillStyle = kit.skinDark
+  ctx.fillRect(cxU + neckW * 0.12, neckTop, neckW * 0.62, shoulderY + 1 - neckTop)
 
-  const armW = Math.max(2, 0.1 * scale)
-  const armSwing = running ? Math.sin(ph + Math.PI) * 0.18 * scale : 0
-  const handY = hasBall ? shoulderY + torsoH * 0.55 : shoulderY + wBody * 0.85
-  const handReach = hasBall ? wBody * 0.2 : wBody * 0.62
-  ctx.strokeStyle = kit.skin; ctx.lineWidth = armW
-  ctx.beginPath(); ctx.moveTo(cx - wBody * 0.5, shoulderY + 2); ctx.lineTo(cx - handReach - armSwing, handY); ctx.stroke()
-  ctx.beginPath(); ctx.moveTo(cx + wBody * 0.5, shoulderY + 2); ctx.lineTo(cx + handReach + armSwing, handY); ctx.stroke()
-  ctx.strokeStyle = kit.jerseyDark; ctx.lineWidth = armW * 1.5
-  ctx.beginPath(); ctx.moveTo(cx - wBody * 0.5, shoulderY + 3); ctx.lineTo(cx - wBody * 0.66, shoulderY + wBody * 0.34); ctx.stroke()
-  ctx.beginPath(); ctx.moveTo(cx + wBody * 0.5, shoulderY + 3); ctx.lineTo(cx + wBody * 0.66, shoulderY + wBody * 0.34); ctx.stroke()
+  // ---- torso: trapezoid (shoulders wider than waist) + shade stripe + edge hi
+  const shoulderW = wBody * 1.08
+  const waistW = wBody * 0.84
+  ctx.fillStyle = kit.jersey
+  ctx.beginPath()
+  ctx.moveTo(cxU - shoulderW / 2, shoulderY)
+  ctx.lineTo(cxU + shoulderW / 2, shoulderY)
+  ctx.lineTo(cxU + waistW / 2, hipY + 1)
+  ctx.lineTo(cxU - waistW / 2, hipY + 1)
+  ctx.closePath(); ctx.fill()
+  ctx.save(); ctx.clip()
+  ctx.fillStyle = kit.jerseyDark; ctx.fillRect(cxU + wBody * 0.12, shoulderY, wBody * 0.4, torsoH + 2)
+  ctx.fillStyle = kit.jerseyHi; ctx.fillRect(cxU - shoulderW * 0.46, shoulderY + torsoH * 0.1, wBody * 0.12, torsoH * 0.62)
+  ctx.restore()
 
-  ctx.fillStyle = kit.collar; ctx.fillRect(cx - wBody * 0.2, shoulderY, wBody * 0.4, Math.max(1.5, torsoH * 0.1))
-  if (wBody > 9 && !hasBall) {
+  // ---- shorts: team-coloured, clearly worn over the hips and tops of the thighs
+  const shortsTop = hipY - torsoH * 0.06
+  const shortsBot = hipY + torsoH * 0.3
+  const shortsW = wBody * 0.98
+  const notch = (shortsBot - shortsTop) * 0.5
+  ctx.fillStyle = kit.shorts
+  ctx.beginPath()
+  ctx.moveTo(cxU - shortsW / 2, shortsTop)
+  ctx.lineTo(cxU + shortsW / 2, shortsTop)
+  ctx.lineTo(cxU + shortsW / 2, shortsBot)
+  ctx.lineTo(cxU + shortsW * 0.13, shortsBot)
+  ctx.lineTo(cxU, shortsBot - notch)
+  ctx.lineTo(cxU - shortsW * 0.13, shortsBot)
+  ctx.lineTo(cxU - shortsW / 2, shortsBot)
+  ctx.closePath(); ctx.fill()
+  // shaded side + a hint of waistband
+  ctx.fillStyle = kit.shortsDark
+  ctx.fillRect(cxU + shortsW * 0.08, shortsTop, shortsW * 0.34, (shortsBot - notch) - shortsTop)
+  ctx.fillStyle = kit.jerseyHi
+  ctx.fillRect(cxU - shortsW / 2, shortsTop, shortsW, Math.max(1.5, torsoH * 0.05))
+
+  // ---- arms: upper-arm (sleeve) + forearm (skin), slight elbow bend + a hand --
+  const armW = Math.max(2, 0.105 * scale)
+  const armSwing = running ? Math.sin(ph + Math.PI) * 0.16 * scale : 0
+  const armBal = action ? -leanX * 0.5 : 0
+  const handY = shoulderY + torsoH * 0.82
+  const handReach = wBody * 0.5
+  const handR = Math.max(1.8, armW * 0.6)
+  const drawArm = (side: number, swing: number) => {
+    const sx = cxU + side * shoulderW * 0.46, sy = shoulderY + 2
+    const hx = cxU + side * handReach + swing + armBal, hy = handY
+    limb(sx, sy, hx, hy, side * armW * 0.45, armW * 1.3, armW * 1.02, kit.jersey, kit.skin)
+    ctx.fillStyle = kit.skin
+    ctx.beginPath(); ctx.arc(hx, hy, handR, 0, Math.PI * 2); ctx.fill()
+  }
+  drawArm(-1, -armSwing)
+  drawArm(1, armSwing)
+
+  ctx.fillStyle = kit.collar; ctx.fillRect(cxU - wBody * 0.2, shoulderY, wBody * 0.4, Math.max(1.5, torsoH * 0.1))
+  if (wBody > 9) {
     ctx.fillStyle = kit.number
     ctx.font = `800 ${Math.round(wBody * 0.5)}px Plus Jakarta Sans, sans-serif`
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
-    ctx.fillText(String(kit.num), cx, shoulderY + torsoH * 0.52)
+    ctx.fillText(String(kit.num), cxU, shoulderY + torsoH * 0.52)
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'
   }
 
-  if (hasBall) drawBall(ctx, cx, handY + wBody * 0.1, Math.max(4, BALL_R * scale * 0.9), now / 200, 0)
+  // Won ball rests on the GROUND at his feet.
+  if (hasBall) {
+    const br = Math.max(4, BALL_R * scale)
+    const bx = cx + wBody * 0.5
+    const by = feet.sy
+    ctx.fillStyle = 'rgba(0,0,0,0.3)'
+    ctx.beginPath(); ctx.ellipse(bx, by + 2, br * 1.2, br * 0.45, 0, 0, Math.PI * 2); ctx.fill()
+    drawBall(ctx, bx, by - br * 0.7, br, now / 320, 0)
+  }
 
-  ctx.fillStyle = kit.skin; ctx.beginPath(); ctx.arc(cx, headY, headR, 0, Math.PI * 2); ctx.fill()
-  drawHair(ctx, cx, headY, headR, kit.hairStyle, kit.hair)
-  ctx.lineCap = 'butt'
+  // ---- head + ears + hair, then face (only big and only when facing camera) ----
+  if (detail) {
+    ctx.fillStyle = kit.skin
+    ctx.beginPath(); ctx.arc(cxU - headR * 0.95, headY + headR * 0.05, headR * 0.28, 0, Math.PI * 2); ctx.fill()
+    ctx.beginPath(); ctx.arc(cxU + headR * 0.95, headY + headR * 0.05, headR * 0.28, 0, Math.PI * 2); ctx.fill()
+  }
+  ctx.fillStyle = kit.skin; ctx.beginPath(); ctx.arc(cxU, headY, headR, 0, Math.PI * 2); ctx.fill()
+  if (!back) {
+    // cheek/jaw shading down the shaded side of the face
+    ctx.save()
+    ctx.beginPath(); ctx.arc(cxU, headY, headR, 0, Math.PI * 2); ctx.clip()
+    ctx.fillStyle = kit.skinDark
+    ctx.beginPath(); ctx.ellipse(cxU + headR * 0.55, headY + headR * 0.2, headR * 0.7, headR, 0, 0, Math.PI * 2); ctx.fill()
+    ctx.restore()
+  }
+  drawHair(ctx, cxU, headY, headR, kit.hairStyle, kit.hair, back)
+  if (detail && !back) {
+    // brow line + two eyes, looking slightly down at the ball
+    const eyeDX = headR * 0.4, eyeY = headY + headR * 0.04, eyeR = Math.max(0.9, headR * 0.13)
+    ctx.strokeStyle = 'rgba(40,28,18,0.6)'; ctx.lineWidth = Math.max(1, headR * 0.1)
+    ctx.beginPath(); ctx.moveTo(cxU - eyeDX * 1.3, eyeY - headR * 0.28); ctx.lineTo(cxU - eyeDX * 0.4, eyeY - headR * 0.34); ctx.stroke()
+    ctx.beginPath(); ctx.moveTo(cxU + eyeDX * 0.4, eyeY - headR * 0.34); ctx.lineTo(cxU + eyeDX * 1.3, eyeY - headR * 0.28); ctx.stroke()
+    ctx.fillStyle = '#24180e'
+    ctx.beginPath(); ctx.arc(cxU - eyeDX, eyeY, eyeR, 0, Math.PI * 2); ctx.fill()
+    ctx.beginPath(); ctx.arc(cxU + eyeDX, eyeY, eyeR, 0, Math.PI * 2); ctx.fill()
+  }
+  ctx.lineCap = 'butt'; ctx.lineJoin = 'miter'
 }
 
 function drawBall(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, spin: number, squash = 0) {
@@ -1339,61 +1260,6 @@ function drawBall(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: numb
   ctx.restore()
 }
 
-// Live candidate roll on the lane during the try-for-yourself sandbox: a real
-// decelerating path traced to where the ball would come to rest (or be collected).
-function drawPreviewRoll(ctx: CanvasRenderingContext2D, atS: AtSFn, p: Play, v0: number, solveFor: SolveFor, zone: number, lockVal: number, now: number) {
-  const gr = grade(v0, solveFor, p.a, zone, lockVal)
-  const reach = Math.min(gr.sStop, POS_MAX)
-  const inZone = gr.outcome === 'connected'
-  const color = inZone ? '#3ef08a' : '#ff8fcf'
-  const N = 40
-  ctx.lineCap = 'round'
-  const trace = () => {
-    ctx.beginPath()
-    for (let i = 0; i <= N; i++) { const s = (i / N) * reach; const pt = atS(p, s, BALL_R); if (i === 0) ctx.moveTo(pt.sx, pt.sy); else ctx.lineTo(pt.sx, pt.sy) }
-  }
-  ctx.strokeStyle = inZone ? 'rgba(62,240,138,0.25)' : 'rgba(255,143,207,0.22)'; ctx.lineWidth = 11; trace(); ctx.stroke()
-  ctx.strokeStyle = color; ctx.lineWidth = 4; trace(); ctx.stroke()
-  for (let i = 2; i < N; i += 5) { const pt = atS(p, (i / N) * reach, BALL_R); ctx.fillStyle = color; ctx.beginPath(); ctx.arc(pt.sx, pt.sy, 2.6, 0, Math.PI * 2); ctx.fill() }
-  // marker at the receiver / target distance (pace mode shows d)
-  if (solveFor === 'pace') {
-    const dp = atS(p, Math.min(zone, POS_MAX), BALL_R)
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 2
-    ctx.beginPath(); ctx.arc(dp.sx, dp.sy, 7, 0, Math.PI * 2); ctx.stroke()
-  }
-  const ep = atS(p, reach, BALL_R)
-  const pulse = 1 + Math.sin(now / 180) * 0.18
-  ctx.strokeStyle = color; ctx.lineWidth = 3
-  ctx.beginPath(); ctx.arc(ep.sx, ep.sy, 9 * pulse, 0, Math.PI * 2); ctx.stroke()
-  ctx.fillStyle = color; ctx.beginPath(); ctx.arc(ep.sx, ep.sy, 4, 0, Math.PI * 2); ctx.fill()
-  if (inZone) {
-    ctx.textAlign = 'center'
-    ctx.fillStyle = '#0b3a22'; ctx.font = '800 24px "Baloo 2", "Plus Jakarta Sans", sans-serif'; ctx.fillText('PERFECT!', ep.sx + 1, ep.sy - 19)
-    ctx.fillStyle = '#5dffa6'; ctx.fillText('PERFECT!', ep.sx, ep.sy - 20)
-    ctx.textAlign = 'left'
-  }
-  ctx.lineCap = 'butt'
-}
-
-function drawMeter(ctx: CanvasRenderingContext2D, t: number, label: string, color: string) {
-  const bw = 380, bx = W / 2 - bw / 2, by = 20, bh = 26
-  ctx.fillStyle = 'rgba(8,12,28,0.86)'; roundRect(ctx, bx - 14, by - 14, bw + 28, bh + 64, 14); ctx.fill()
-  const grad = ctx.createLinearGradient(bx, 0, bx + bw, 0)
-  grad.addColorStop(0, '#3fb67a'); grad.addColorStop(0.5, color); grad.addColorStop(1, '#ff5c7a')
-  ctx.fillStyle = 'rgba(255,255,255,0.08)'; roundRect(ctx, bx, by, bw, bh, 8); ctx.fill()
-  ctx.fillStyle = grad; roundRect(ctx, bx, by, bw * t, bh, 8); ctx.fill()
-  const mx = bx + bw * t
-  ctx.fillStyle = '#fff'; roundRect(ctx, mx - 3, by - 6, 6, bh + 12, 3); ctx.fill()
-  ctx.beginPath(); ctx.moveTo(mx - 7, by - 6); ctx.lineTo(mx + 7, by - 6); ctx.lineTo(mx, by + 2); ctx.closePath(); ctx.fill()
-  ctx.font = '800 10px Plus Jakarta Sans, sans-serif'
-  ctx.textAlign = 'left'; ctx.fillStyle = '#7ef0a0'; ctx.fillText('SLOW', bx + 2, by + bh + 14)
-  ctx.textAlign = 'right'; ctx.fillStyle = '#ff8aa0'; ctx.fillText('FAST', bx + bw - 2, by + bh + 14)
-  ctx.textAlign = 'center'
-  ctx.fillStyle = color; ctx.font = '800 16px Plus Jakarta Sans, sans-serif'; ctx.fillText(label, W / 2, by + bh + 30)
-  ctx.fillStyle = '#cfd6ea'; ctx.font = '600 11px Inter, sans-serif'; ctx.fillText('SPACE / click to lock it in', W / 2, by + bh + 46)
-  ctx.textAlign = 'left'
-}
-
 function drawTimer(ctx: CanvasRenderingContext2D, left: number, total: number, label: string, color: string, urgent = false) {
   ctx.fillStyle = urgent ? 'rgba(78, 10, 24, 0.9)' : 'rgba(8,12,28,0.82)'
   roundRect(ctx, W / 2 - 170, 12, 340, urgent ? 64 : 50, 14); ctx.fill()
@@ -1402,7 +1268,7 @@ function drawTimer(ctx: CanvasRenderingContext2D, left: number, total: number, l
     roundRect(ctx, W / 2 - 170, 12, 340, 64, 14); ctx.stroke()
     ctx.textAlign = 'center'
     ctx.fillStyle = '#ffd7df'; ctx.font = '900 10px Plus Jakarta Sans, sans-serif'
-    ctx.fillText('PASS WINDOW CLOSING', W / 2, 24)
+    ctx.fillText('WINDOW CLOSING', W / 2, 24)
   }
   ctx.textAlign = 'center'; ctx.fillStyle = color; ctx.font = '800 22px Plus Jakarta Sans, sans-serif'
   const txt = total >= 90 ? `${Math.floor(left / 60)}:${String(Math.floor(left % 60)).padStart(2, '0')}` : `${left.toFixed(1)}s`
@@ -1411,14 +1277,6 @@ function drawTimer(ctx: CanvasRenderingContext2D, left: number, total: number, l
   const by = urgent ? 66 : 56
   ctx.fillStyle = 'rgba(255,255,255,0.15)'; roundRect(ctx, W / 2 - 150, by, 300, 4, 2); ctx.fill()
   ctx.fillStyle = color; roundRect(ctx, W / 2 - 150, by, 300 * clamp(left / total, 0, 1), 4, 2); ctx.fill()
-  ctx.textAlign = 'left'
-}
-
-function drawTopLabel(ctx: CanvasRenderingContext2D, title: string, sub: string) {
-  ctx.fillStyle = 'rgba(8,12,28,0.82)'; roundRect(ctx, W / 2 - 200, 12, 400, 50, 14); ctx.fill()
-  ctx.textAlign = 'center'
-  ctx.fillStyle = '#ffe14d'; ctx.font = '800 18px Plus Jakarta Sans, sans-serif'; ctx.fillText(title, W / 2, 33)
-  ctx.fillStyle = '#cfd6ea'; ctx.font = '600 11px Inter, sans-serif'; ctx.fillText(sub, W / 2, 51)
   ctx.textAlign = 'left'
 }
 

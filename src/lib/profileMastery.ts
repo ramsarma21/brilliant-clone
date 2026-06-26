@@ -9,6 +9,7 @@ type MasteryPayload = {
   energy_mastered: boolean
   circuits_mastered: boolean
   momentum_mastered: boolean
+  impulse_mastered: boolean
 }
 
 export function unitStatusToProfileMastery(unitStatus: Record<string, UnitStatus>): MasteryPayload {
@@ -19,6 +20,7 @@ export function unitStatusToProfileMastery(unitStatus: Record<string, UnitStatus
     energy_mastered: unitStatus.energy === 'mastered',
     circuits_mastered: unitStatus.circuits === 'mastered',
     momentum_mastered: unitStatus.momentum === 'mastered',
+    impulse_mastered: unitStatus.impulse === 'mastered',
   }
 }
 

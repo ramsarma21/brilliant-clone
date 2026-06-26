@@ -15,7 +15,12 @@ const BALL_R = 0.11
 const W = 900
 const H = 560
 const HORIZON = H * 0.4
-const EYE_Y = 1.6
+// Third-person camera: pulled back behind the kicker (CAM_BACK metres) and raised
+// (EYE_Y) for a slightly elevated over-the-shoulder view, so the player's own avatar
+// is always visible standing behind the ball. CAM_BACK is applied to camera-space
+// depth inside `project`; every screen->world inverse must subtract it back out.
+const CAM_BACK = 6
+const EYE_Y = 2.4
 const FOCAL = 560
 
 // ---- Gameplay tuning (penalty shootout) ----
@@ -25,6 +30,17 @@ const SOLVE_MIN_MS = 30000   // hardest shot (D=1): 30 seconds
 const SOLVE_WARN_MS = 30000  // last 30 seconds get an urgent red countdown
 const TARGET_R = 0.28 // m — land inside this (small, strict) circle to score
 const METER_RATE = 0.45 // base meter sweep rate (per second) at the easy end; ramps to 1.4× at the hard end
+
+// ---- Strike animation timeline (visual only) ----
+// The kick plays as ONE timeline anchored on the ball launch: a quick plant of the
+// support foot + backswing of the kicking leg (STRIKE_WINDUP) before the boot meets
+// the ball at the CONTACT frame, then an eased follow-through (STRIKE_FOLLOW). The ball
+// does NOT move until contact, so the strike reads as a real hit with clear contact.
+// KICK_CONTACT_FRAC is where contact lands on the 0->1 pose timeline. None of this
+// touches the physics, the predicted outcome, or where the ball ends up.
+const STRIKE_WINDUP = 0.16
+const STRIKE_FOLLOW = 0.34
+const KICK_CONTACT_FRAC = STRIKE_WINDUP / (STRIKE_WINDUP + STRIKE_FOLLOW)
 
 type P2 = { sx: number; sy: number; scale: number }
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v))
@@ -87,11 +103,23 @@ type Phase = 'aim' | 'meter' | 'solve' | 'fly' | 'result'
 
 // The keeper wears a clearly different kit (amber) with emphasised padded gloves.
 // (The outfield-defender kit/variety palettes were archived to dribbleRunup.archive.txt.)
+// Keeper is a clearly DIFFERENT person from the taker: darker skin, near-black
+// cropped hair, amber kit. (skinShade = darker side tone; hair for the back of head.)
 const GK_KIT = {
   jersey: '#ffd23f', jerseyDark: '#d99316', jerseyHi: '#ffe27a',
   collar: '#7a4e07', shorts: '#1b1f2a', sock: '#ffd23f', sockBand: '#1b1f2a',
-  boot: '#11141d', glove: '#ffffff', gloveCuff: '#ff5c7a', skin: '#e8b48a',
+  boot: '#11141d', glove: '#ffffff', gloveCuff: '#ff5c7a', gloveLine: '#aab3c2',
+  skin: '#9c6b43', skinShade: '#7a5232', hair: '#16131a',
 }
+// The penalty taker (our player) wears an outfield kit, drawn in the SAME flat-shape
+// style as the keeper so the figures match. We see his back (he faces the goal).
+// Lighter skin + dark-brown hair so he reads as a different player from the keeper.
+const KICKER_KIT = {
+  jersey: '#2f6df0', jerseyDark: '#1d4ec0', jerseyHi: '#6f9bff',
+  shorts: '#eef2fb', sock: '#2f6df0', sockBand: '#ffffff',
+  boot: '#11141d', skin: '#edbb90', skinShade: '#cf9869', hair: '#3a2616',
+}
+type KickerMode = 'idle' | 'kick' | 'celebrate' | 'react'
 type Ball = { x: number; y: number; z: number; vx: number; vy: number; vz: number; spin: number; squash: number }
 type Result = { kind: 'goal' | 'save' | 'miss'; text: string; lucky?: boolean }
 type Review = { angle: number; force: number; d: number; h: number; vx: number; vy: number; t: number; y: number; dist: number; kind: 'goal' | 'save' | 'miss' }
@@ -137,6 +165,13 @@ type Game = {
   launchAngle: number
   goalZ: number
   flyT: number
+  // Strike windup: the ball is created at the spot the instant the player strikes, but
+  // does NOT begin flight until `windupT` reaches STRIKE_WINDUP. At that contact frame
+  // `struck` flips true (flight integration starts) and `contactAt` records the time so
+  // the draw loop can flash the hit. This keeps ball launch perfectly synced to contact.
+  windupT: number
+  struck: boolean
+  contactAt: number
   impactT: number
   diveStart: number
   diveDur: number
@@ -202,7 +237,7 @@ const newGame = (dist: number): Game => ({
   aimStart: 0, shotDist: dist, cross: { x: 0, y: 1.2 }, target: null, shotD: dist - RELEASE.z,
   solveStart: 0, aimX: 0, meterStart: 0, meterT: 0, meterDir: 1, solveFor: 'v', lockedV: 22,
   ball: null, trail: [], force: 22, launchAngle: 18, goalZ: dist, resolved: false,
-  flyT: 0, impactT: 0, diveStart: 0, diveDur: 0.42,
+  flyT: 0, windupT: 0, struck: false, contactAt: 0, impactT: 0, diveStart: 0, diveDur: 0.42,
   caught: false, pending: null, holdUntil: 0, dive: null, netShake: 0,
   scored: false, netBulge: 0, particles: [],
   sandbox: false, sandboxResetAt: 0,
@@ -278,7 +313,7 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
 
   // ---- projection helpers ----
   const project = useCallback((x: number, y: number, z: number): P2 => {
-    const cz = Math.max(0.05, z)
+    const cz = Math.max(0.05, z + CAM_BACK) // camera sits CAM_BACK metres behind the player
     const scale = FOCAL / cz
     return { sx: W / 2 + x * scale, sy: HORIZON - (y - EYE_Y) * scale, scale }
   }, [])
@@ -378,7 +413,8 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
     const vUp = f * Math.sin(a)
     const tCross = vForward > 0.1 ? g.shotD / vForward : 999
     const vLat = (g.target.x - g.playerX) / tCross // auto-aimed at your chosen spot
-    g.ball = { x: g.playerX, y: RELEASE.y, z: RELEASE.z, vx: vLat, vy: vUp, vz: vForward, spin: 0, squash: 0.32 }
+    // The ball sits undisturbed (squash 0) until the boot reaches it at the contact frame.
+    g.ball = { x: g.playerX, y: RELEASE.y, z: RELEASE.z, vx: vLat, vy: vUp, vz: vForward, spin: 0, squash: 0 }
     g.trail = []
     g.force = f; g.launchAngle = angleVal; g.resolved = false; g.phase = 'fly'
 
@@ -410,10 +446,14 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
       g.luckFail = !(Math.random() < scoreChance)
     }
 
-    g.flyT = 0; g.impactT = impactT; g.diveDur = 0.42
-    g.diveStart = Math.max(0, impactT - g.diveDur)
+    g.flyT = 0; g.windupT = 0; g.struck = false; g.contactAt = 0
+    g.impactT = impactT; g.diveDur = 0.42
+    // The keeper times his dive so the gloves arrive as the ball reaches the line. On a
+    // shot that beats him he commits a touch late, so he just misses the save.
+    const beaten = impKind === 'goal' && !g.luckFail
+    g.diveStart = Math.max(0, impactT - g.diveDur * (beaten ? 0.72 : 1))
     g.dive = impKind === 'miss' ? null
-      : { dir: impX >= 0 ? 1 : -1, x: impX, y: Math.max(0.3, impY), z: impZ, t: 0, beaten: impKind === 'goal' && !g.luckFail }
+      : { dir: impX >= 0 ? 1 : -1, x: impX, y: Math.max(0.3, impY), z: impZ, t: 0, beaten }
 
     if (soundRef.current) { sfx.current.ensure(); sfx.current.kick() }
     setPhase('fly')
@@ -436,7 +476,7 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
     const vUp = f * Math.sin(a)
     const tCross = vForward > 0.1 ? g.shotD / vForward : 999
     const vLat = (g.target.x - g.playerX) / tCross
-    g.ball = { x: g.playerX, y: RELEASE.y, z: RELEASE.z, vx: vLat, vy: vUp, vz: vForward, spin: 0, squash: 0.32 }
+    g.ball = { x: g.playerX, y: RELEASE.y, z: RELEASE.z, vx: vLat, vy: vUp, vz: vForward, spin: 0, squash: 0 }
     g.trail = []; g.particles = []; g.netShake = 0; g.netBulge = 0
     g.force = f; g.launchAngle = angleVal
     g.resolved = false; g.caught = false; g.scored = false; g.pending = null; g.holdUntil = 0
@@ -456,10 +496,12 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
       impKind = !inFrame ? 'miss' : Math.abs(impY - g.target.h) <= TARGET_R ? 'goal' : 'save'
     }
     g.shotKind = impKind // sandbox scores deterministically (no luck): shotKind drives it
-    g.flyT = 0; g.impactT = impactT; g.diveDur = 0.42
-    g.diveStart = Math.max(0, impactT - g.diveDur)
+    g.flyT = 0; g.windupT = 0; g.struck = false; g.contactAt = 0
+    g.impactT = impactT; g.diveDur = 0.42
+    const beaten = impKind === 'goal'
+    g.diveStart = Math.max(0, impactT - g.diveDur * (beaten ? 0.72 : 1))
     g.dive = impKind === 'miss' ? null
-      : { dir: impX >= 0 ? 1 : -1, x: impX, y: Math.max(0.3, impY), z: impZ, t: 0, beaten: impKind === 'goal' }
+      : { dir: impX >= 0 ? 1 : -1, x: impX, y: Math.max(0.3, impY), z: impZ, t: 0, beaten }
 
     previewRef.current = { active: false, value } // hide the aiming arc while it flies
     if (soundRef.current) { sfx.current.ensure(); sfx.current.kick() }
@@ -494,7 +536,9 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
     const sx = ((e.clientX - r.left) / r.width) * W
     const sy = ((e.clientY - r.top) / r.height) * H
     if (g.phase === 'aim') {
-      const scale = FOCAL / Math.max(0.05, g.shotDist)
+      // Inverse of `project`: the aim plane sits at depth g.shotDist, so camera-space
+      // depth is g.shotDist + CAM_BACK (must mirror the forward projection exactly).
+      const scale = FOCAL / Math.max(0.05, g.shotDist + CAM_BACK)
       const worldRelX = (sx - W / 2) / scale
       const worldY = EYE_Y - (sy - HORIZON) / scale
       const absX = clamp(worldRelX + g.playerX, -GOAL_W_HALF + 0.25, GOAL_W_HALF - 0.25)
@@ -635,15 +679,53 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
       const br = Math.max(4, BALL_R * bp.scale)
       drawBall(ctx, bp.sx, bp.sy, br, g.ball.spin, g.ball.squash)
     } else {
-      // The ball rests on the penalty spot until the strike — drawn low and centred in
-      // the first-person view (a viewmodel ball sitting still on the turf).
-      const groundY = H - 36
-      const vr = 40
-      const cxs = W / 2
-      const cys = groundY - 6
+      // The ball rests on the penalty spot until the strike — now drawn in world space
+      // (third-person) so the kicker avatar can stand behind it. Same spot it launches
+      // from, so there is no visual jump at the strike.
+      const rest = rel(0, RELEASE.y, RELEASE.z)
+      const rsh = rel(0, 0.01, RELEASE.z)
+      const rr = Math.max(5, BALL_R * rest.scale)
       ctx.fillStyle = 'rgba(0,0,0,0.32)'
-      ctx.beginPath(); ctx.ellipse(cxs, groundY + 8, vr * 1.15, vr * 0.34, 0, 0, Math.PI * 2); ctx.fill()
-      drawBall(ctx, cxs, cys, vr, now / 400, 0)
+      ctx.beginPath(); ctx.ellipse(rsh.sx, rsh.sy, rr * 1.2, rr * 0.42, 0, 0, Math.PI * 2); ctx.fill()
+      drawBall(ctx, rest.sx, rest.sy, rr, now / 400, 0)
+    }
+
+    // ---- Contact flash ---- a quick white burst at the spot the boot meets the ball,
+    // drawn for ~130 ms from the contact frame so the strike reads as a real hit.
+    if (!preview && g.contactAt && now - g.contactAt < 130) {
+      const cf = rel(0, RELEASE.y, RELEASE.z)
+      const fp = clamp((now - g.contactAt) / 130, 0, 1)
+      const fr = Math.max(5, BALL_R * cf.scale)
+      ctx.save()
+      ctx.globalAlpha = (1 - fp) * 0.85
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2.5
+      ctx.beginPath(); ctx.arc(cf.sx, cf.sy, fr * (0.9 + fp * 2.1), 0, Math.PI * 2); ctx.stroke()
+      ctx.lineWidth = 2
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2 + 0.3
+        const r0 = fr * (1 + fp * 1.4), r1 = fr * (1.5 + fp * 2.6)
+        ctx.beginPath(); ctx.moveTo(cf.sx + Math.cos(a) * r0, cf.sy + Math.sin(a) * r0); ctx.lineTo(cf.sx + Math.cos(a) * r1, cf.sy + Math.sin(a) * r1); ctx.stroke()
+      }
+      ctx.restore()
+    }
+
+    // ---- Kicker avatar (always visible, third-person) ----
+    // The player's own figure stands just behind the ball, facing downfield. He idles
+    // through aim/meter/solve, strides into a kick while the ball is in flight, and
+    // reacts at the result. Drawn AFTER the ball so this foreground figure occludes it.
+    {
+      let mode: KickerMode = 'idle'
+      let kt = 0
+      if (g.phase === 'fly') {
+        mode = 'kick'
+        // ONE pose timeline: windup maps to [0, contact], follow-through to [contact, 1],
+        // so the leg accelerates into the ball exactly at the launch (struck) frame.
+        kt = g.struck
+          ? KICK_CONTACT_FRAC + clamp(g.flyT / STRIKE_FOLLOW, 0, 1) * (1 - KICK_CONTACT_FRAC)
+          : clamp(g.windupT / STRIKE_WINDUP, 0, 1) * KICK_CONTACT_FRAC
+      }
+      else if (g.phase === 'result') mode = (g.shotKind === 'goal' && !g.luckFail) ? 'celebrate' : 'react'
+      drawKicker(ctx, rel, mode, kt, now)
     }
 
     // ---- Vignette ----
@@ -729,7 +811,29 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
         if (g.solveElapsedMs >= g.solveMs) act.shoot()
       }
 
-      if (g.phase === 'fly' && g.ball && !g.caught) {
+      if (g.phase === 'fly' && g.ball && !g.caught && !g.struck) {
+        // WINDUP: plant + backswing while the ball stays on the spot (flight not begun).
+        // At the contact frame the boot meets the ball — flip `struck`, pop a squash +
+        // scuff puff + flash so the hit reads, and only THEN does the flight clock run.
+        g.windupT += dt
+        if (g.windupT >= STRIKE_WINDUP) {
+          g.struck = true
+          g.contactAt = now
+          g.ball.squash = 0.42
+          const cp = rel(g.ball.x, g.ball.y, g.ball.z)
+          for (let i = 0; i < 9; i++) {
+            const a = -Math.PI / 2 + (Math.random() - 0.5) * 1.7
+            const sp = 45 + Math.random() * 95
+            g.particles.push({
+              x: cp.sx + (Math.random() - 0.5) * 6, y: cp.sy + (Math.random() - 0.5) * 5,
+              vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 28,
+              life: 0.16 + Math.random() * 0.16, max: 0.34,
+              color: i % 3 === 0 ? 'rgba(214,232,200,0.9)' : 'rgba(255,255,255,0.85)',
+              size: 2 + Math.random() * 3, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 9,
+            })
+          }
+        }
+      } else if (g.phase === 'fly' && g.ball && !g.caught) {
         g.flyT += dt
         // ONE pre-planned dive timeline — the keeper is already moving to meet the ball.
         if (g.dive) g.dive.t = clamp((g.flyT - g.diveStart) / g.diveDur, 0, 1)
@@ -785,7 +889,19 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
               const hy = Math.max(0.25, Math.min(CROSSBAR - 0.1, y))
               g.caught = true; if (g.dive) g.dive.t = 1
               g.ball.x = x; g.ball.y = hy; g.ball.z = g.goalZ - 0.06
-              g.ball.vx = g.ball.vy = g.ball.vz = 0; g.ball.squash = 0
+              g.ball.vx = g.ball.vy = g.ball.vz = 0; g.ball.squash = 0.4
+              // a small puff where the gloves meet the ball, so the save reads as contact
+              const cp = rel(x, hy, g.goalZ - 0.06)
+              for (let i = 0; i < 8; i++) {
+                const a = Math.random() * Math.PI * 2
+                const sp = 40 + Math.random() * 90
+                g.particles.push({
+                  x: cp.sx + (Math.random() - 0.5) * 6, y: cp.sy + (Math.random() - 0.5) * 6,
+                  vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 30,
+                  life: 0.16 + Math.random() * 0.16, max: 0.34,
+                  color: 'rgba(255,255,255,0.85)', size: 2 + Math.random() * 3, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 9,
+                })
+              }
               if (g.shotKind === 'goal') {
                 // correct but unlucky → dedicated message, NO lesson (`lucky` skips it)
                 g.pending = { res: { kind: 'save', text: 'Unlucky, you shot it well, but the goalie saved it anyway. Aiming nearer the corners makes it harder to save.', lucky: true }, review }
@@ -895,14 +1011,6 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
             <span>{message.text}</span>
           </div>
         )}
-        {phase === 'aim' && (
-          <div className="soccer__prompt">Penalty kick! Click the spot in the goal you want to hit. Corners are tougher to save, but harder to solve.</div>
-        )}
-        {phase === 'meter' && (
-          <div className="soccer__prompt">
-            Meter sweeps EASY → HARD, then rebounds once back to EASY. <kbd>Space</kbd> or click to lock it (miss it and it returns to EASY and locks there). Your pick becomes a given; then solve for the rest.
-          </div>
-        )}
         {phase === 'solve' && showCalc && <Calculator onClose={() => setShowCalc(false)} />}
 
         {phase === 'result' && message && message.kind !== 'goal' && (
@@ -967,9 +1075,6 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
                   <code>set y = h ⟶ quadratic in tanθ, solve for θ</code>
                 </div>
               )
-            )}
-            {scaffold === 'none' && (
-              <p className="soccer__tip">Hard shot: no hints. Recall the method, or open the calculator (it drains time 1.25×).</p>
             )}
             <div className="soccer__inputs">
               <label className="soccer__field">
@@ -1507,6 +1612,78 @@ function drawGoal(ctx: CanvasRenderingContext2D, rel: RelFn, z: number, shake: n
 // (drawHair + drawRunner — the outfield-defender figures — were archived to
 // dribbleRunup.archive.txt when this sim became a penalty shootout.)
 
+// ---- Shared figure-skinning helpers (pure re-skin; never move anchors) ----
+// A two-segment limb that STARTS at (x0,y0) and ENDS EXACTLY at (x1,y1) — so the
+// kick contact foot / keeper glove targets stay put — with a small perpendicular
+// "bow" at the mid joint (elbow/knee bend) and a slight upper→lower taper. Relies on
+// the caller's round lineCap so the joint reads smoothly. `bend` is the joint's
+// position along the limb (0.5 = midpoint).
+function jointedLimb(ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number, bow: number, wTop: number, wBot: number, color: string, bend = 0.5) {
+  const dx = x1 - x0, dy = y1 - y0
+  const len = Math.hypot(dx, dy) || 1
+  const jx = x0 + dx * bend - (dy / len) * bow
+  const jy = y0 + dy * bend + (dx / len) * bow
+  ctx.strokeStyle = color
+  ctx.lineWidth = wTop; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(jx, jy); ctx.stroke()
+  ctx.lineWidth = wBot; ctx.beginPath(); ctx.moveTo(jx, jy); ctx.lineTo(x1, y1); ctx.stroke()
+}
+
+// The BACK of a head (these figures look away from the camera, so NO face): a skin
+// sphere mostly covered by a hair cap with a thin skin nape, plus — when big enough —
+// small skin ears and a faint neck crease. Draw the neck BEFORE calling this.
+function drawBackHead(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, skin: string, hair: string, detail: boolean) {
+  if (detail) {
+    ctx.fillStyle = skin
+    ctx.beginPath(); ctx.ellipse(x - r * 0.92, y + r * 0.05, r * 0.22, r * 0.34, 0, 0, Math.PI * 2); ctx.fill()
+    ctx.beginPath(); ctx.ellipse(x + r * 0.92, y + r * 0.05, r * 0.22, r * 0.34, 0, 0, Math.PI * 2); ctx.fill()
+  }
+  ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill()
+  // hair covers most of the skull, leaving a small skin nape at the lower rear
+  ctx.fillStyle = hair; ctx.beginPath(); ctx.arc(x, y - r * 0.08, r * 0.99, Math.PI * 0.74, Math.PI * 2.26); ctx.fill()
+  if (detail) {
+    ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = Math.max(1, r * 0.12); ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.arc(x, y + r * 0.62, r * 0.42, Math.PI * 0.18, Math.PI * 0.82); ctx.stroke()
+  }
+}
+
+// A torso whose shoulders are wider than the waist (slight taper). Rounded corners.
+function taperedTorso(ctx: CanvasRenderingContext2D, cx: number, top: number, bottom: number, halfTop: number, halfBot: number) {
+  const r = Math.min(halfTop, halfBot) * 0.5
+  ctx.beginPath()
+  ctx.moveTo(cx - halfTop + r, top)
+  ctx.lineTo(cx + halfTop - r, top)
+  ctx.quadraticCurveTo(cx + halfTop, top, cx + halfTop, top + r)
+  ctx.lineTo(cx + halfBot, bottom - r)
+  ctx.quadraticCurveTo(cx + halfBot, bottom, cx + halfBot - r, bottom)
+  ctx.lineTo(cx - halfBot + r, bottom)
+  ctx.quadraticCurveTo(cx - halfBot, bottom, cx - halfBot, bottom - r)
+  ctx.lineTo(cx - halfTop, top + r)
+  ctx.quadraticCurveTo(cx - halfTop, top, cx - halfTop + r, top)
+  ctx.closePath()
+}
+
+// A compact, realistic GK glove: a padded palm/back (rounded rect) with a few finger
+// ridges and a wrist cuff band. `ang` is the direction the fingers point (screen
+// radians); sized by `hr` (hand radius) so it stays proportional — not a giant circle.
+function drawGkGlove(ctx: CanvasRenderingContext2D, x: number, y: number, hr: number, ang: number, detail: boolean) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(ang + Math.PI / 2)
+  // wrist cuff band at the base (toward the forearm)
+  ctx.fillStyle = GK_KIT.gloveCuff
+  roundRect(ctx, -hr * 0.8, hr * 0.5, hr * 1.6, hr * 0.66, hr * 0.3); ctx.fill()
+  // padded palm / back of hand
+  ctx.fillStyle = GK_KIT.glove; ctx.strokeStyle = GK_KIT.gloveLine; ctx.lineWidth = Math.max(1, hr * 0.16)
+  roundRect(ctx, -hr * 0.85, -hr * 1.1, hr * 1.7, hr * 1.7, hr * 0.55); ctx.fill(); ctx.stroke()
+  // thumb nub on one side
+  ctx.fillStyle = GK_KIT.glove
+  ctx.beginPath(); ctx.ellipse(-hr * 0.9, hr * 0.12, hr * 0.34, hr * 0.48, 0.4, 0, Math.PI * 2); ctx.fill()
+  if (detail) {
+    // finger grooves near the fingertips
+    ctx.strokeStyle = GK_KIT.gloveLine; ctx.lineWidth = Math.max(1, hr * 0.12); ctx.lineCap = 'round'
+    for (const fx of [-hr * 0.42, 0, hr * 0.42]) { ctx.beginPath(); ctx.moveTo(fx, -hr * 1.0); ctx.lineTo(fx, -hr * 0.35); ctx.stroke() }
+  }
+  ctx.restore()
+}
+
 // The goalkeeper: a ready stance that shuffles, then a dramatic dive on a save.
 function drawKeeper(ctx: CanvasRenderingContext2D, rel: RelFn, z: number, dive: { dir: number; t: number; x: number; y: number; z: number; beaten?: boolean } | null, now: number, rush: { x: number; z: number; carrying: boolean; intensity?: number } | null = null) {
   const baseFeet = rel(0, 0, z)
@@ -1535,35 +1712,38 @@ function drawKeeper(ctx: CanvasRenderingContext2D, rel: RelFn, z: number, dive: 
     ctx.fillStyle = 'rgba(0,0,0,0.26)'
     ctx.beginPath(); ctx.ellipse(cx, feet.sy + 1, w, w * 0.32, 0, 0, Math.PI * 2); ctx.fill()
     ctx.lineCap = 'round'
-    // legs (GK socks) + boots
-    ctx.strokeStyle = GK_KIT.sock; ctx.lineWidth = lw
-    ctx.beginPath(); ctx.moveTo(cx, hipY); ctx.lineTo(cx - swing, footY - liftL); ctx.stroke()
-    ctx.beginPath(); ctx.moveTo(cx, hipY); ctx.lineTo(cx + swing, footY); ctx.stroke()
+    const detail = s > 16
+    // legs (GK socks, thigh≈shin with a slight knee bend) + elongated boots
+    const lFx = cx - swing, lFy = footY - liftL, rFx = cx + swing, rFy = footY
+    jointedLimb(ctx, cx, hipY, rFx, rFy, lw * 0.22, lw, lw * 0.85, GK_KIT.sock)
+    jointedLimb(ctx, cx, hipY, lFx, lFy, lw * 0.22, lw, lw * 0.85, GK_KIT.sock)
     ctx.fillStyle = GK_KIT.boot
-    ctx.beginPath(); ctx.ellipse(cx + swing, footY, lw * 0.8, lw * 0.45, 0, 0, Math.PI * 2); ctx.fill()
-    ctx.beginPath(); ctx.ellipse(cx - swing, footY - liftL, lw * 0.8, lw * 0.45, 0, 0, Math.PI * 2); ctx.fill()
-    // shorts band
-    const shortsH = Math.max(3, torsoH * 0.32)
-    ctx.fillStyle = GK_KIT.shorts; roundRect(ctx, cx - w / 2, hipY - shortsH * 0.55, w, shortsH, Math.max(2, w * 0.18)); ctx.fill()
-    // jersey
-    ctx.fillStyle = GK_KIT.jersey; roundRect(ctx, cx - w / 2, shoulderY, w, torsoH, Math.max(2, w * 0.3)); ctx.fill()
+    ctx.beginPath(); ctx.ellipse(rFx, rFy, lw * 0.95, lw * 0.42, 0, 0, Math.PI * 2); ctx.fill()
+    ctx.beginPath(); ctx.ellipse(lFx, lFy, lw * 0.95, lw * 0.42, 0, 0, Math.PI * 2); ctx.fill()
+    // jersey (shoulders wider than waist) + shade stripe + edge highlight
+    taperedTorso(ctx, cx, shoulderY, hipY + 1, w * 0.5, w * 0.4); ctx.fillStyle = GK_KIT.jersey; ctx.fill()
+    ctx.save(); ctx.clip()
     ctx.fillStyle = GK_KIT.jerseyDark; ctx.fillRect(cx + w * 0.16, shoulderY + 2, w * 0.34, torsoH - 2)
-    // arms reach down to the ball, or cradle it at the chest once carrying
+    ctx.fillStyle = GK_KIT.jerseyHi; ctx.fillRect(cx - w * 0.42, shoulderY + torsoH * 0.12, w * 0.1, torsoH * 0.5)
+    ctx.restore()
+    // shorts over the hips + tops of the thighs (drawn after the jersey so they read)
+    const shortsH = Math.max(3, torsoH * 0.42)
+    ctx.fillStyle = GK_KIT.shorts; roundRect(ctx, cx - w * 0.5, hipY - shortsH * 0.42, w, shortsH, Math.max(2, w * 0.2)); ctx.fill()
+    ctx.fillStyle = 'rgba(0,0,0,0.16)'; ctx.fillRect(cx - 0.6, hipY - shortsH * 0.42, 1.2, shortsH)
+    // short neck stub + head sitting just above the shoulders
+    const neckH = headR * 0.22, headCY = shoulderY - neckH - headR
+    ctx.strokeStyle = GK_KIT.skinShade; ctx.lineWidth = headR; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(cx, shoulderY + 1); ctx.lineTo(cx, headCY + headR * 0.6); ctx.stroke()
+    // arms reach down to the ball, or cradle it at the chest once carrying (slight elbow)
     const handY = rush.carrying ? shoulderY + w * 0.72 : footY - liftL * 0.5
     const armW = Math.max(2.5, 0.11 * s)
-    ctx.strokeStyle = GK_KIT.skin; ctx.lineWidth = armW
-    ctx.beginPath(); ctx.moveTo(cx - w * 0.42, shoulderY + 3); ctx.lineTo(cx - w * 0.22, handY); ctx.stroke()
-    ctx.beginPath(); ctx.moveTo(cx + w * 0.42, shoulderY + 3); ctx.lineTo(cx + w * 0.22, handY); ctx.stroke()
-    const gloveR = Math.max(3.5, w * 0.4)
-    for (const gx of [cx - w * 0.22, cx + w * 0.22]) {
-      ctx.fillStyle = GK_KIT.gloveCuff; ctx.beginPath(); ctx.arc(gx, handY, gloveR * 1.18, 0, Math.PI * 2); ctx.fill()
-      ctx.fillStyle = GK_KIT.glove; ctx.strokeStyle = '#c3cad6'; ctx.lineWidth = 1.5
-      ctx.beginPath(); ctx.arc(gx, handY, gloveR, 0, Math.PI * 2); ctx.fill(); ctx.stroke()
-    }
+    jointedLimb(ctx, cx - w * 0.44, shoulderY + 3, cx - w * 0.22, handY, armW * 0.35, armW, armW * 0.85, GK_KIT.skin)
+    jointedLimb(ctx, cx + w * 0.44, shoulderY + 3, cx + w * 0.22, handY, -armW * 0.35, armW, armW * 0.85, GK_KIT.skin)
+    const gAng = rush.carrying ? -Math.PI / 2 : Math.PI / 2
+    drawGkGlove(ctx, cx - w * 0.22, handY, w * 0.32, gAng, detail)
+    drawGkGlove(ctx, cx + w * 0.22, handY, w * 0.32, gAng, detail)
     if (rush.carrying) drawBall(ctx, cx, handY, Math.max(4, BALL_R * s), now / 200, 0)
-    // head + short hair
-    ctx.fillStyle = GK_KIT.skin; ctx.beginPath(); ctx.arc(cx, headY, headR, 0, Math.PI * 2); ctx.fill()
-    ctx.fillStyle = '#2c2016'; ctx.beginPath(); ctx.arc(cx, headY - headR * 0.18, headR, Math.PI * 1.04, Math.PI * 1.96); ctx.fill()
+    drawBackHead(ctx, cx, headCY, headR, GK_KIT.skin, GK_KIT.hair, detail)
     ctx.lineCap = 'butt'
     return
   }
@@ -1571,9 +1751,17 @@ function drawKeeper(ctx: CanvasRenderingContext2D, rel: RelFn, z: number, dive: 
     // A real dive: the keeper launches off the ground and his whole body (fixed
     // length, not stretched) leaps across and rotates from upright to horizontal,
     // arms reaching out so the gloves land right on the ball.
-    const e = 1 - Math.pow(1 - dive.t, 2) // ease-out
+    // Two-stage dive so the keeper reads clearly reactive: a quick anticipation LOAD
+    // (gather + weight shift toward the shot side) then an eased LEAP across to the ball.
+    const load = clamp(dive.t / 0.18, 0, 1)          // 0->1 gather/crouch before launch
+    const leap = clamp((dive.t - 0.18) / 0.82, 0, 1) // 0->1 the dive itself
+    const e = 1 - Math.pow(1 - leap, 2.2) // ease-out leap
     const sp = rel(dive.x, Math.max(0.3, dive.y), dive.z) // the ball / save point (may be off the line)
-    const base = rel(0, 0.95, z) // standing chest height
+    const base0 = rel(0, 0.95, z) // standing chest height
+    // anticipation crouch: a small dip + lean toward the dive side during the load that
+    // eases out as the leap takes over, so the gather flows into the dive (no pop).
+    const dip = Math.sin(load * Math.PI) * (1 - leap)
+    const base = { sx: base0.sx + dive.dir * wBody * 0.4 * load * (1 - leap), sy: base0.sy + dip * wBody * 0.5 }
     // stretching ground shadow as he leaves his feet
     const gsh = rel(dive.x * e, 0.01, z)
     ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.2)'
@@ -1589,9 +1777,10 @@ function drawKeeper(ctx: CanvasRenderingContext2D, rel: RelFn, z: number, dive: 
     const cy = base.sy + (aim.sy - base.sy) * e * 0.8 - lift
     const gx = base.sx + (aim.sx - base.sx) * e
     const gy = base.sy + (aim.sy - base.sy) * e - lift * 0.4
-    // rotate from upright (−90°) toward the dive aim
-    const targetAng = Math.atan2(aim.sy - base.sy, aim.sx - base.sx)
-    const ang = -Math.PI / 2 + (targetAng + Math.PI / 2) * e
+    // rotate from upright (−90°) to roughly HORIZONTAL on the dive side — a real
+    // sideways dive that never rotates past horizontal, so he can't flip upside down.
+    const horizAng = aim.sx >= base.sx ? 0 : -Math.PI
+    const ang = -Math.PI / 2 + (horizAng + Math.PI / 2) * e
     const leadX = cx + Math.cos(ang) * L * 0.5, leadY = cy + Math.sin(ang) * L * 0.5
     const tailX = cx - Math.cos(ang) * L * 0.5, tailY = cy - Math.sin(ang) * L * 0.5
     const perp = ang + Math.PI / 2
@@ -1600,21 +1789,25 @@ function drawKeeper(ctx: CanvasRenderingContext2D, rel: RelFn, z: number, dive: 
     ctx.strokeStyle = GK_KIT.sock; ctx.lineWidth = Math.max(3, 0.13 * scale)
     ctx.beginPath(); ctx.moveTo(tailX, tailY); ctx.lineTo(tailX - Math.cos(ang) * wBody * 1.3 + Math.cos(perp) * wBody * 0.5, tailY - Math.sin(ang) * wBody * 1.3 + Math.sin(perp) * wBody * 0.5); ctx.stroke()
     ctx.beginPath(); ctx.moveTo(tailX, tailY); ctx.lineTo(tailX - Math.cos(ang) * wBody * 1.5 - Math.cos(perp) * wBody * 0.5, tailY - Math.sin(ang) * wBody * 1.5 - Math.sin(perp) * wBody * 0.5); ctx.stroke()
-    // torso (constant length capsule) in the GK kit, with a shade stripe
+    // torso (constant length capsule) in the GK kit, with a shade stripe + hip shorts
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(ang)
     ctx.fillStyle = GK_KIT.jersey; roundRect(ctx, -L / 2, -wBody * 0.55, L, wBody * 1.1, wBody * 0.5); ctx.fill()
     ctx.fillStyle = GK_KIT.jerseyDark; ctx.fillRect(-L / 2 + 2, wBody * 0.1, L - 4, wBody * 0.34)
+    // shorts over the hip (tail) end + tops of the trailing thighs
+    ctx.fillStyle = GK_KIT.shorts; roundRect(ctx, -L / 2 - wBody * 0.1, -wBody * 0.6, L * 0.36, wBody * 1.2, wBody * 0.4); ctx.fill()
     ctx.restore()
-    // head at the leading end
-    ctx.fillStyle = GK_KIT.skin; ctx.beginPath(); ctx.arc(leadX, leadY, Math.max(3, 0.17 * scale), 0, Math.PI * 2); ctx.fill()
-    // arms + emphasised padded gloves (white pad, coloured cuff)
+    // head at the leading end — back of the head (no face), with a SHORT neck stub;
+    // rotated with the body so the hair stays on the rear mid-dive.
+    const headRk = Math.max(3, 0.17 * scale)
+    const detail = scale > 16
+    ctx.save(); ctx.translate(leadX, leadY); ctx.rotate(ang + Math.PI / 2)
+    ctx.strokeStyle = GK_KIT.skinShade; ctx.lineWidth = headRk * 0.95; ctx.lineCap = 'round'
+    ctx.beginPath(); ctx.moveTo(0, headRk * 0.55); ctx.lineTo(0, headRk * 0.85); ctx.stroke()
+    drawBackHead(ctx, 0, 0, headRk, GK_KIT.skin, GK_KIT.hair, detail)
+    ctx.restore()
+    // arms + realistic padded gloves reaching out along the arm
     const shx = cx + Math.cos(ang) * L * 0.32, shy = cy + Math.sin(ang) * L * 0.32
-    const gloveR = Math.max(4.5, wBody * 0.7)
-    const drawGlove = (px: number, py: number) => {
-      ctx.fillStyle = GK_KIT.gloveCuff; ctx.beginPath(); ctx.arc(px, py, gloveR * 1.18, 0, Math.PI * 2); ctx.fill()
-      ctx.fillStyle = GK_KIT.glove; ctx.strokeStyle = '#c3cad6'; ctx.lineWidth = 2
-      ctx.beginPath(); ctx.arc(px, py, gloveR, 0, Math.PI * 2); ctx.fill(); ctx.stroke()
-    }
+    const hr = Math.max(3.5, wBody * 0.5)
     ctx.strokeStyle = GK_KIT.jersey; ctx.lineWidth = Math.max(3, 0.12 * scale)
     if (beaten) {
       // arms flung wide, gloves grasping at thin air as the ball beats him
@@ -1623,12 +1816,13 @@ function drawKeeper(ctx: CanvasRenderingContext2D, rel: RelFn, z: number, dive: 
       const g2x = gx - Math.cos(perp) * spread, g2y = gy - Math.sin(perp) * spread
       ctx.beginPath(); ctx.moveTo(shx + Math.cos(perp) * wBody * 0.3, shy + Math.sin(perp) * wBody * 0.3); ctx.lineTo(g1x, g1y); ctx.stroke()
       ctx.beginPath(); ctx.moveTo(shx - Math.cos(perp) * wBody * 0.3, shy - Math.sin(perp) * wBody * 0.3); ctx.lineTo(g2x, g2y); ctx.stroke()
-      drawGlove(g1x, g1y); drawGlove(g2x, g2y)
+      drawGkGlove(ctx, g1x, g1y, hr, Math.atan2(g1y - shy, g1x - shx), detail)
+      drawGkGlove(ctx, g2x, g2y, hr, Math.atan2(g2y - shy, g2x - shx), detail)
     } else {
       // both gloves clamp onto the ball
       ctx.beginPath(); ctx.moveTo(shx + Math.cos(perp) * wBody * 0.3, shy + Math.sin(perp) * wBody * 0.3); ctx.lineTo(gx, gy); ctx.stroke()
       ctx.beginPath(); ctx.moveTo(shx - Math.cos(perp) * wBody * 0.3, shy - Math.sin(perp) * wBody * 0.3); ctx.lineTo(gx, gy); ctx.stroke()
-      drawGlove(gx, gy)
+      drawGkGlove(ctx, gx, gy, hr, Math.atan2(gy - shy, gx - shx), detail)
     }
     ctx.lineCap = 'butt'
     return
@@ -1650,28 +1844,22 @@ function drawKeeper(ctx: CanvasRenderingContext2D, rel: RelFn, z: number, dive: 
   ctx.beginPath(); ctx.ellipse(cx, feet.sy + 1, wBody, wBody * 0.32, 0, 0, Math.PI * 2); ctx.fill()
 
   const torsoH = hipY - shoulderY + 2
+  const detail = scale > 16
   ctx.lineCap = 'round'
-  // legs: GK socks down to rounded boots
-  ctx.strokeStyle = GK_KIT.sock; ctx.lineWidth = lw
-  ctx.beginPath(); ctx.moveTo(cx, hipY); ctx.lineTo(cx - wBody * 0.5, footY); ctx.stroke()
-  ctx.beginPath(); ctx.moveTo(cx, hipY); ctx.lineTo(cx + wBody * 0.5, footY); ctx.stroke()
-  ctx.strokeStyle = GK_KIT.sockBand; ctx.lineWidth = lw * 0.9
-  ctx.beginPath(); ctx.moveTo(cx - wBody * 0.32, hipY + (footY - hipY) * 0.52); ctx.lineTo(cx - wBody * 0.4, hipY + (footY - hipY) * 0.68); ctx.stroke()
-  ctx.beginPath(); ctx.moveTo(cx + wBody * 0.32, hipY + (footY - hipY) * 0.52); ctx.lineTo(cx + wBody * 0.4, hipY + (footY - hipY) * 0.68); ctx.stroke()
+  // legs: thigh≈shin with a slight knee bend, GK socks down to elongated boots
+  const lFx = cx - wBody * 0.5, rFx = cx + wBody * 0.5
+  jointedLimb(ctx, cx, hipY, lFx, footY, lw * 0.22, lw, lw * 0.85, GK_KIT.sock)
+  jointedLimb(ctx, cx, hipY, rFx, footY, -lw * 0.22, lw, lw * 0.85, GK_KIT.sock)
   ctx.fillStyle = GK_KIT.boot
-  ctx.beginPath(); ctx.ellipse(cx - wBody * 0.5, footY, lw * 0.7, lw * 0.4, 0, 0, Math.PI * 2); ctx.fill()
-  ctx.beginPath(); ctx.ellipse(cx + wBody * 0.5, footY, lw * 0.7, lw * 0.4, 0, 0, Math.PI * 2); ctx.fill()
+  ctx.beginPath(); ctx.ellipse(lFx, footY, lw * 0.85, lw * 0.4, 0, 0, Math.PI * 2); ctx.fill()
+  ctx.beginPath(); ctx.ellipse(rFx, footY, lw * 0.85, lw * 0.4, 0, 0, Math.PI * 2); ctx.fill()
 
-  // shorts band across the hips
-  const shortsH = Math.max(3, torsoH * 0.34)
-  ctx.fillStyle = GK_KIT.shorts
-  roundRect(ctx, cx - wBody / 2, hipY - shortsH * 0.5, wBody, shortsH, Math.max(2, wBody * 0.18)); ctx.fill()
-
-  // jersey (keeper amber) — flat fill + shade stripe + light edge
-  ctx.fillStyle = GK_KIT.jersey
-  roundRect(ctx, cx - wBody / 2, shoulderY, wBody, torsoH, Math.max(2, wBody * 0.3)); ctx.fill()
+  // jersey (shoulders wider than waist) — flat fill + shade stripe + light edge
+  taperedTorso(ctx, cx, shoulderY, hipY + 1, wBody * 0.5, wBody * 0.4); ctx.fillStyle = GK_KIT.jersey; ctx.fill()
+  ctx.save(); ctx.clip()
   ctx.fillStyle = GK_KIT.jerseyDark; ctx.fillRect(cx + wBody * 0.16, shoulderY + 2, wBody * 0.34, torsoH - 2)
-  ctx.fillStyle = GK_KIT.jerseyHi; ctx.fillRect(cx - wBody * 0.4, shoulderY + torsoH * 0.12, wBody * 0.12, torsoH * 0.55)
+  ctx.fillStyle = GK_KIT.jerseyHi; ctx.fillRect(cx - wBody * 0.42, shoulderY + torsoH * 0.12, wBody * 0.1, torsoH * 0.5)
+  ctx.restore()
   // collar + GK number 1
   ctx.fillStyle = GK_KIT.collar; ctx.fillRect(cx - wBody * 0.2, shoulderY, wBody * 0.4, Math.max(1.5, torsoH * 0.1))
   if (wBody > 9) {
@@ -1681,20 +1869,174 @@ function drawKeeper(ctx: CanvasRenderingContext2D, rel: RelFn, z: number, dive: 
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'
   }
 
-  // ready arms out + emphasised padded gloves (white pad, pink cuff)
+  // shorts over the hips + tops of the thighs (after the jersey so they read clearly)
+  const shortsH = Math.max(3, torsoH * 0.42)
+  ctx.fillStyle = GK_KIT.shorts
+  roundRect(ctx, cx - wBody * 0.5, hipY - shortsH * 0.42, wBody, shortsH, Math.max(2, wBody * 0.2)); ctx.fill()
+  ctx.fillStyle = 'rgba(0,0,0,0.16)'; ctx.fillRect(cx - 0.6, hipY - shortsH * 0.42, 1.2, shortsH)
+
+  // short neck stub + head sitting just above the shoulders
+  const neckH = headR * 0.22, headCY = shoulderY - neckH - headR
+  ctx.strokeStyle = GK_KIT.skinShade; ctx.lineWidth = headR; ctx.lineCap = 'round'
+  ctx.beginPath(); ctx.moveTo(cx, shoulderY + 1); ctx.lineTo(cx, headCY + headR * 0.6); ctx.stroke()
+
+  // ready arms out (upper-arm + forearm, slight elbow) + realistic padded gloves
   const armY = shoulderY + wBody * 0.5
-  ctx.strokeStyle = GK_KIT.skin; ctx.lineWidth = Math.max(2, 0.1 * scale)
-  ctx.beginPath(); ctx.moveTo(cx - wBody / 2, shoulderY + 2); ctx.lineTo(cx - wBody * 1.15, armY); ctx.stroke()
-  ctx.beginPath(); ctx.moveTo(cx + wBody / 2, shoulderY + 2); ctx.lineTo(cx + wBody * 1.15, armY); ctx.stroke()
-  const gloveR = Math.max(3.4, wBody * 0.42)
-  for (const gxh of [cx - wBody * 1.15, cx + wBody * 1.15]) {
-    ctx.fillStyle = GK_KIT.gloveCuff; ctx.beginPath(); ctx.arc(gxh, armY, gloveR * 1.2, 0, Math.PI * 2); ctx.fill()
-    ctx.fillStyle = GK_KIT.glove; ctx.strokeStyle = '#c3cad6'; ctx.lineWidth = 1.5
-    ctx.beginPath(); ctx.arc(gxh, armY, gloveR, 0, Math.PI * 2); ctx.fill(); ctx.stroke()
+  const armW = Math.max(2, 0.1 * scale)
+  jointedLimb(ctx, cx - wBody * 0.46, shoulderY + 2, cx - wBody * 1.15, armY, armW * 0.3, armW, armW * 0.85, GK_KIT.skin)
+  jointedLimb(ctx, cx + wBody * 0.46, shoulderY + 2, cx + wBody * 1.15, armY, -armW * 0.3, armW, armW * 0.85, GK_KIT.skin)
+  drawGkGlove(ctx, cx - wBody * 1.15, armY, wBody * 0.36, -Math.PI / 2, detail)
+  drawGkGlove(ctx, cx + wBody * 1.15, armY, wBody * 0.36, -Math.PI / 2, detail)
+  drawBackHead(ctx, cx, headCY, headR, GK_KIT.skin, GK_KIT.hair, detail)
+  ctx.lineCap = 'butt'
+}
+
+// The penalty taker — our player's avatar, ALWAYS on screen in the third-person view.
+// Drawn back-to-camera (facing the goal) in the same flat-shape style as the keeper.
+// Stands just left of centre and behind the ball so he never covers the ball or the
+// goal mouth. `mode` picks the pose; `t` (0->1) drives the kick stride during flight.
+function drawKicker(ctx: CanvasRenderingContext2D, rel: RelFn, mode: KickerMode, t: number, now: number) {
+  const KX = -0.85 // slightly left of the ball so the goal mouth + ball stay clear
+  const KZ = 0     // the player's world depth (projects to the lower-centre foreground)
+  const feet = rel(KX, 0, KZ)
+  const scale = feet.scale
+  const w = Math.max(7, 0.4 * scale)
+  const lw = Math.max(3, 0.15 * scale)
+  const headR = Math.max(4, 0.17 * scale)
+
+  // Pose parameters. Idle: gentle plant + bob. Kick: lean in, plant left, swing the
+  // right leg through, arms counter-balance. Celebrate: small jump, arms up. React:
+  // shoulders dropped, hands toward the hips.
+  const idleBob = mode === 'idle' ? Math.abs(Math.sin(now / 360)) * 0.04 * scale : 0
+  const sway = mode === 'idle' ? Math.sin(now / 540) * 0.18 : 0
+  const jump = mode === 'celebrate' ? Math.abs(Math.sin(now / 200)) * 0.14 * scale : 0
+
+  // ---- Strike envelope (kick only) ----
+  // ONE timeline split at the CONTACT frame (t = KICK_CONTACT_FRAC): a quick plant +
+  // backswing that accelerates the leg into the ball (ease-IN), then an eased follow-
+  // through that decelerates (ease-OUT). The caller maps real time onto `t` so contact
+  // lines up exactly with the ball launch. Weight shifts onto the plant foot and the
+  // body leans/loads into the strike so the figure does not look stiff.
+  const CF = KICK_CONTACT_FRAC
+  const inWindup = t <= CF
+  const wu = clamp(t / CF, 0, 1)                                  // 0->1 across the windup
+  const fu = inWindup ? 0 : clamp((t - CF) / (1 - CF), 0, 1)      // 0->1 across the follow-through
+  const fe = 1 - Math.pow(1 - fu, 2)                              // ease-out (decelerate) follow-through
+  // body lean toward the goal: accelerates into contact, then eases back a touch
+  const lean = mode === 'kick' ? w * 0.5 * (inWindup ? wu * wu : 1 - fe * 0.18) : 0
+  // plant compression: the support leg loads as the foot plants, releasing after contact
+  const crouch = mode === 'kick' ? (inWindup ? Math.sin(wu * Math.PI) * scale * 0.05 : (1 - fe) * scale * 0.03) : 0
+  // arm counter-balance swing tracks the leg drive
+  const armS = mode === 'kick' ? (inWindup ? wu * wu : 1) : 0
+
+  const totalH = 1.78
+  const headWorld = rel(KX, totalH, KZ)
+  const cx = feet.sx + sway
+  const footY = feet.sy - idleBob - jump
+  const headY = headWorld.sy - idleBob - jump + crouch
+  const hipY = headY + (footY - headY) * 0.55
+  const shoulderY = headY + (footY - headY) * 0.32
+  const torsoH = hipY - shoulderY + 2
+
+  // Where the resting ball projects — the kicking boot is driven to THIS point at the
+  // contact frame so the strike visibly meets the ball (no floaty gap before launch).
+  const ball0 = rel(0, RELEASE.y, RELEASE.z)
+  const reachC = (ball0.sx - cx) / w        // horizontal reach to the ball, in w units
+  const liftC = (footY - ball0.sy) / w      // vertical lift to the ball, in w units
+
+  // ground shadow (fixed at the feet, ignores the jump so the lift reads)
+  ctx.fillStyle = 'rgba(0,0,0,0.26)'
+  ctx.beginPath(); ctx.ellipse(feet.sx, feet.sy + 1, w * 1.05, w * 0.34, 0, 0, Math.PI * 2); ctx.fill()
+
+  ctx.lineCap = 'round'
+
+  // ---- Legs (drawn first; the swinging leg can pass in front of the torso on a kick) ----
+  // Right foot is the kicking foot (positive x toward the goal-side stride).
+  let lFootX = cx - w * 0.42, lFootY = footY
+  let rFootX = cx + w * 0.42, rFootY = footY
+  if (mode === 'kick') {
+    // plant the support (left) foot; the kicking (right) leg cocks back then accelerates
+    // through the ball at contact and follows through up and across.
+    lFootX = cx - w * 0.5; lFootY = footY
+    let swing: number, lift: number
+    if (inWindup) {
+      if (wu < 0.4) { const a = wu / 0.4; swing = 0.42 + (-0.35 - 0.42) * (a * a); lift = (a * a) * 0.18 }
+      else { const a = (wu - 0.4) / 0.6; swing = -0.35 + (reachC + 0.35) * (a * a); lift = 0.18 + (liftC - 0.18) * (a * a) }
+    } else {
+      swing = reachC + fe * (reachC * 0.5 + 0.9)
+      lift = liftC + fe * 1.7
+    }
+    rFootX = cx + w * swing
+    rFootY = footY - w * lift
+  } else if (mode === 'react') {
+    lFootX = cx - w * 0.55; rFootX = cx + w * 0.55
   }
-  // head + short hair
-  ctx.fillStyle = GK_KIT.skin; ctx.beginPath(); ctx.arc(cx, headY, headR, 0, Math.PI * 2); ctx.fill()
-  ctx.fillStyle = '#2c2016'; ctx.beginPath(); ctx.arc(cx, headY - headR * 0.18, headR, Math.PI * 1.04, Math.PI * 1.96); ctx.fill()
+  const hipX = cx + lean * 0.4
+  const detail = scale > 16
+  // legs: thigh≈shin with a slight knee bend; the END (foot) stays EXACTLY where the
+  // pose put it so the kick contact frame still meets the ball.
+  jointedLimb(ctx, hipX, hipY, lFootX, lFootY, lw * 0.22, lw, lw * 0.85, KICKER_KIT.sock)
+  jointedLimb(ctx, hipX, hipY, rFootX, rFootY, mode === 'kick' ? lw * 0.12 : -lw * 0.22, lw, lw * 0.85, KICKER_KIT.sock)
+  // sock band on the plant leg
+  if (detail) {
+    ctx.strokeStyle = KICKER_KIT.sockBand; ctx.lineWidth = lw * 0.7
+    ctx.beginPath(); ctx.moveTo(hipX + (lFootX - hipX) * 0.6, hipY + (lFootY - hipY) * 0.6); ctx.lineTo(hipX + (lFootX - hipX) * 0.72, hipY + (lFootY - hipY) * 0.72); ctx.stroke()
+  }
+  // distinct darker, elongated boots
+  ctx.fillStyle = KICKER_KIT.boot
+  ctx.beginPath(); ctx.ellipse(lFootX, lFootY, lw * 0.98, lw * 0.42, 0, 0, Math.PI * 2); ctx.fill()
+  ctx.beginPath(); ctx.ellipse(rFootX, rFootY, lw * 0.98, lw * 0.42, mode === 'kick' ? -0.5 : 0, 0, Math.PI * 2); ctx.fill()
+
+  // ---- Jersey + shorts (back view) ----
+  const bodyX = cx + lean
+  const shortsH = Math.max(3, torsoH * 0.42)
+  const headX = bodyX + (mode === 'kick' ? lean * 0.3 : 0)
+  // jersey: shoulders wider than waist (slight taper)
+  taperedTorso(ctx, bodyX, shoulderY, hipY + 1, w * 0.5, w * 0.4); ctx.fillStyle = KICKER_KIT.jersey; ctx.fill()
+  // shade + highlight stripes for form (clipped to the jersey)
+  ctx.save(); ctx.clip()
+  ctx.fillStyle = KICKER_KIT.jerseyDark; ctx.fillRect(bodyX + w * 0.14, shoulderY + 2, w * 0.34, torsoH - 2)
+  ctx.fillStyle = KICKER_KIT.jerseyHi; ctx.fillRect(bodyX - w * 0.42, shoulderY + torsoH * 0.12, w * 0.1, torsoH * 0.5)
+  ctx.restore()
+  // squad number on the back
+  if (w > 9) {
+    ctx.fillStyle = '#eaf1ff'; ctx.font = `800 ${Math.round(w * 0.5)}px Plus Jakarta Sans, sans-serif`
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+    ctx.fillText('9', bodyX, shoulderY + torsoH * 0.5)
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'
+  }
+  // shorts over the hips + tops of the thighs (after the jersey so they read clearly)
+  ctx.fillStyle = KICKER_KIT.shorts
+  roundRect(ctx, bodyX - w * 0.5, hipY - shortsH * 0.42, w, shortsH, Math.max(2, w * 0.2)); ctx.fill()
+  ctx.fillStyle = 'rgba(0,0,0,0.12)'; ctx.fillRect(bodyX - 0.6, hipY - shortsH * 0.42, 1.2, shortsH)
+  // short neck stub + head sitting just above the shoulders
+  const neckH = headR * 0.22, headCY = shoulderY - neckH - headR
+  ctx.strokeStyle = KICKER_KIT.skinShade; ctx.lineWidth = headR; ctx.lineCap = 'round'
+  ctx.beginPath(); ctx.moveTo(headX, shoulderY + 1); ctx.lineTo(headX, headCY + headR * 0.6); ctx.stroke()
+
+  // ---- Arms (upper-arm ≈ forearm with a slight elbow), posed per mode ----
+  const armW = Math.max(2.5, 0.11 * scale)
+  const shL = bodyX - w * 0.42, shR = bodyX + w * 0.42, shY = shoulderY + 3
+  let eLx: number, eLy: number, eRx: number, eRy: number
+  if (mode === 'celebrate') {
+    eLx = bodyX - w * 0.7; eLy = shoulderY - w * 1.1; eRx = bodyX + w * 0.7; eRy = shoulderY - w * 1.1
+  } else if (mode === 'react') {
+    eLx = bodyX - w * 0.62; eLy = hipY - shortsH * 0.4; eRx = bodyX + w * 0.62; eRy = hipY - shortsH * 0.4
+  } else if (mode === 'kick') {
+    eLx = bodyX - w * (0.7 + armS * 0.6); eLy = shoulderY + w * 0.2; eRx = bodyX + w * (0.5 + armS * 0.4); eRy = shoulderY + w * 0.5
+  } else {
+    eLx = bodyX - w * 0.5; eLy = hipY; eRx = bodyX + w * 0.5; eRy = hipY
+  }
+  jointedLimb(ctx, shL, shY, eLx, eLy, armW * 0.3, armW, armW * 0.85, KICKER_KIT.skin)
+  jointedLimb(ctx, shR, shY, eRx, eRy, -armW * 0.3, armW, armW * 0.85, KICKER_KIT.skin)
+  // small skin hands at the arm ends
+  const handR = armW * 0.7
+  ctx.fillStyle = KICKER_KIT.skin
+  ctx.beginPath(); ctx.arc(eLx, eLy, handR, 0, Math.PI * 2); ctx.fill()
+  ctx.beginPath(); ctx.arc(eRx, eRy, handR, 0, Math.PI * 2); ctx.fill()
+
+  // ---- Head (back of the head: hair cap + neck crease, NO face) ----
+  drawBackHead(ctx, headX, headCY, headR, KICKER_KIT.skin, KICKER_KIT.hair, detail)
   ctx.lineCap = 'butt'
 }
 

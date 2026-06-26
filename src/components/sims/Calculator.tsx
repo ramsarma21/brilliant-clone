@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 // A tiny, friendly scientific calculator. Trig works in DEGREES (angles here
 // are in degrees), so students can plug θ straight in.
@@ -108,21 +108,25 @@ export function Calculator({ onClose }: { onClose: () => void }) {
   // from it (e.g. cos(15) = 0.966, then × 20 → 0.966 × 20, not cos(15) × 20).
   const [justEval, setJustEval] = useState(false)
 
-  const press = (k: typeof KEYS[number]) => {
-    if (k.kind === 'del') { setJustEval(false); setExpr((e) => e.slice(0, -1)); return }
-    if (!k.ins) return
-    const ins = k.ins
+  const insert = useCallback((ins: string, kind?: string) => {
     if (justEval) {
       setJustEval(false)
       setResult('')
       // An operator keeps building on the just-computed value; anything else
       // (a digit, function, paren) starts a fresh calculation.
-      setExpr((e) => (k.kind === 'op' ? e + ins : ins))
+      setExpr((e) => (kind === 'op' ? e + ins : ins))
       return
     }
     setExpr((e) => e + ins)
+  }, [justEval])
+  const del = useCallback(() => { setJustEval(false); setExpr((e) => e.slice(0, -1)) }, [])
+  const clear = useCallback(() => { setExpr(''); setResult(''); setJustEval(false) }, [])
+  const press = (k: typeof KEYS[number]) => {
+    if (k.kind === 'del') { del(); return }
+    if (!k.ins) return
+    insert(k.ins, k.kind)
   }
-  const equals = () => {
+  const equals = useCallback(() => {
     if (!expr.trim()) return
     const v = evaluate(expr)
     if (Number.isFinite(v)) {
@@ -133,7 +137,41 @@ export function Calculator({ onClose }: { onClose: () => void }) {
     } else {
       setResult('oops!')
     }
-  }
+  }, [expr])
+
+  // Physical keyboard support so the calc is fast to use: digits/operators type
+  // straight in, Enter/= evaluates, Backspace deletes, Esc closes. We ignore
+  // keystrokes while a text field is focused (e.g. the answer box) so typing an
+  // answer never leaks into the calculator.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey || e.altKey) return
+      const el = document.activeElement as HTMLElement | null
+      const tag = el?.tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el?.isContentEditable) return
+      const k = e.key
+      if (k >= '0' && k <= '9') { insert(k); e.preventDefault(); return }
+      switch (k) {
+        case '.': insert('.'); break
+        case '+': insert('+', 'op'); break
+        case '-': insert('−', 'op'); break
+        case '*': case 'x': case 'X': insert('×', 'op'); break
+        case '/': insert('÷', 'op'); break
+        case '^': insert('^', 'op'); break
+        case '(': insert('('); break
+        case ')': insert(')'); break
+        case '=': case 'Enter': equals(); break
+        case 'Backspace': del(); break
+        case 'Delete': clear(); break
+        case 'c': case 'C': clear(); break
+        case 'Escape': onClose(); break
+        default: return
+      }
+      e.preventDefault()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [insert, equals, del, clear, onClose])
 
   return (
     <div className="calc">

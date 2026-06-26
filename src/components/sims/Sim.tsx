@@ -5,7 +5,8 @@ import { KinematicsSim } from './KinematicsSim'
 import { MotionSim } from './MotionSim'
 import { ForcesSim } from './ForcesSim'
 import { EnergySim } from './EnergySim'
-import { CircuitsSim } from './CircuitsSim'
+import { DefenseSim } from './DefenseSim'
+import { GoalieSim } from './GoalieSim'
 
 type Props = SimProps & { sim: SimKey }
 
@@ -21,8 +22,10 @@ export function Sim({ sim, ...rest }: Props) {
       return <ForcesSim {...rest} />
     case 'energy':
       return <EnergySim {...rest} />
-    case 'circuits':
-      return <CircuitsSim {...rest} />
+    case 'defense':
+      return <DefenseSim {...rest} />
+    case 'goalie':
+      return <GoalieSim {...rest} />
     default:
       return null
   }
