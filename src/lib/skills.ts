@@ -1,19 +1,34 @@
 import type { PlayerSkills, SkillDef, SkillId } from '../types'
 
-// The six trainable skills, one per physics unit. `primaryConceptTag` is the
-// concept an in-match question of this skill draws from by default.
+// The FIVE offered trainable skills/units: Kinematics → Momentum (Defending).
+// These drive the player card skills, the gating test (4 per unit = 20 questions),
+// proficiency rollups, and the schedule.
 export const SKILLS: SkillDef[] = [
   { id: 'kinematics', name: 'Shooting', action: 'Take a shot', primaryConceptTag: 'projectile-range' },
   { id: 'motion-graphs', name: 'Passing', action: 'Play a through-ball', primaryConceptTag: 'graph-slope-as-velocity' },
   { id: 'forces', name: 'Dribbling', action: 'Beat your man', primaryConceptTag: 'force-net-force' },
   { id: 'energy', name: 'Heading', action: 'Win the header', primaryConceptTag: 'energy-conservation' },
   { id: 'momentum', name: 'Defending', action: 'Win the ball', primaryConceptTag: 'momentum-collisions' },
-  { id: 'impulse', name: 'Goalkeeping', action: 'Make the save', primaryConceptTag: 'impulse-momentum' },
 ]
 
+// Goalkeeping (impulse) is RETAINED in code (the keeper sim + its lesson/quiz still
+// build and resolve via SKILLS_BY_ID) but is NOT offered as a unit, so it never
+// appears on the card, in the test, or in the schedule.
+const GOALKEEPING: SkillDef = {
+  id: 'impulse',
+  name: 'Goalkeeping',
+  action: 'Make the save',
+  primaryConceptTag: 'impulse-momentum',
+}
+
+/** Every skill definition, including the unoffered goalkeeping (for keeper-sim lookups). */
+export const ALL_SKILLS: SkillDef[] = [...SKILLS, GOALKEEPING]
+
+/** Offered skill ids only (5). Drives the card, the test, and proficiency. */
 export const SKILL_IDS: SkillId[] = SKILLS.map((s) => s.id)
+/** Lookups cover ALL skills so retained keeper code can still resolve 'impulse'. */
 export const SKILLS_BY_ID: Record<SkillId, SkillDef> = Object.fromEntries(
-  SKILLS.map((s) => [s.id, s]),
+  ALL_SKILLS.map((s) => [s.id, s]),
 ) as Record<SkillId, SkillDef>
 
 export const STARTING_RATING = 50
@@ -26,7 +41,7 @@ export function defaultSkills(): PlayerSkills {
   return out
 }
 
-/** Overall rating = rounded average across the six skills. */
+/** Overall rating = rounded average across the five offered skills. */
 export function overallRating(skills: PlayerSkills): number {
   const vals = SKILL_IDS.map((id) => skills[id] ?? STARTING_RATING)
   return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length)

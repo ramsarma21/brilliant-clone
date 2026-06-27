@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { SimProps } from './types'
+import type { JerseyPattern } from '../../types'
 import { Calculator } from './Calculator'
 import { fetchKinematicsHighScore, saveKinematicsHighScore } from '../../lib/scores'
+import { usePlayerKit, shade } from '../../lib/playerKit'
+import { bodyMetrics, drawPlayerLegs, drawPlayerShorts, drawPlayerArms, idleHands } from '../../lib/playerCanvas'
 
 // ---- World (meters) ----
 const G = 9.8
@@ -38,8 +41,8 @@ const METER_RATE = 0.45 // base meter sweep rate (per second) at the easy end; r
 // does NOT move until contact, so the strike reads as a real hit with clear contact.
 // KICK_CONTACT_FRAC is where contact lands on the 0->1 pose timeline. None of this
 // touches the physics, the predicted outcome, or where the ball ends up.
-const STRIKE_WINDUP = 0.16
-const STRIKE_FOLLOW = 0.34
+const STRIKE_WINDUP = 0.26  // long enough that the plant + backswing actually reads
+const STRIKE_FOLLOW = 0.40  // eased follow-through after the boot meets the ball
 const KICK_CONTACT_FRAC = STRIKE_WINDUP / (STRIKE_WINDUP + STRIKE_FOLLOW)
 
 type P2 = { sx: number; sy: number; scale: number }
@@ -112,13 +115,20 @@ const GK_KIT = {
   skin: '#9c6b43', skinShade: '#7a5232', hair: '#16131a',
 }
 // The penalty taker (our player) wears an outfield kit, drawn in the SAME flat-shape
-// style as the keeper so the figures match. We see his back (he faces the goal).
+// style as the keeper so the figures match. We see his back (he faces the goal). This
+// is only the BASE/default kit: at runtime it is passed through usePlayerKit(KICKER_KIT)
+// which merges the equipped loadout's COLOURS (jersey/shorts/socks/boots/number) over it
+// while preserving the structural fields (skin/skinShade/hair). The merged kit is what
+// drawKicker actually reads, so equipping a different loadout on the player card visibly
+// re-skins this taker. (The keeper above stays a distinct, hardcoded person.)
 // Lighter skin + dark-brown hair so he reads as a different player from the keeper.
 const KICKER_KIT = {
-  jersey: '#2f6df0', jerseyDark: '#1d4ec0', jerseyHi: '#6f9bff',
-  shorts: '#eef2fb', sock: '#2f6df0', sockBand: '#ffffff',
-  boot: '#11141d', skin: '#edbb90', skinShade: '#cf9869', hair: '#3a2616',
+  jersey: '#2f6df0', jerseyDark: '#1d4ec0', jerseyHi: '#6f9bff', collar: '#1b3f8f',
+  shorts: '#eef2fb', shortsDark: '#c7d2e6', sock: '#f1f4fa', sockBand: '#cdd6e6',
+  boot: '#11141d', bootDark: '#05060a', number: '#eaf1ff',
+  skin: '#edbb90', skinShade: '#cf9869', hair: '#3a2616',
 }
+type KickerKit = typeof KICKER_KIT
 type KickerMode = 'idle' | 'kick' | 'celebrate' | 'react'
 type Ball = { x: number; y: number; z: number; vx: number; vy: number; vz: number; spin: number; squash: number }
 type Result = { kind: 'goal' | 'save' | 'miss'; text: string; lucky?: boolean }
@@ -266,6 +276,14 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const answer = parseNum(answerStr)
   // Alternates each run: 'v' = meter sets the angle, solve for force; 'angle' = meter sets the force, solve for angle.
   const solveModeRef = useRef<'v' | 'angle'>('v')
+
+  // UNIVERSAL player kit: the penalty taker is drawn from the LIVE equipped loadout so
+  // changing the player card updates this drill globally. We mirror the hook's value into
+  // a ref each render so the rAF draw loop (drawKicker) reads the current kit without
+  // re-subscribing. The keeper (GK_KIT) stays a distinct, hardcoded amber-kit person.
+  const kickerKit = usePlayerKit(KICKER_KIT)
+  const kitRef = useRef<KickerKit>(KICKER_KIT)
+  kitRef.current = kickerKit
 
   const sfx = useRef<Sfx>(new Sfx())
   const soundRef = useRef(sound); soundRef.current = sound
@@ -455,7 +473,9 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
     g.dive = impKind === 'miss' ? null
       : { dir: impX >= 0 ? 1 : -1, x: impX, y: Math.max(0.3, impY), z: impZ, t: 0, beaten }
 
-    if (soundRef.current) { sfx.current.ensure(); sfx.current.kick() }
+    // Warm the audio context now, but the kick SOUND plays at the contact frame (when
+    // the boot actually meets the ball) so it stays synced to the visible strike.
+    if (soundRef.current) sfx.current.ensure()
     setPhase('fly')
   }, [])
 
@@ -504,7 +524,8 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
       : { dir: impX >= 0 ? 1 : -1, x: impX, y: Math.max(0.3, impY), z: impZ, t: 0, beaten }
 
     previewRef.current = { active: false, value } // hide the aiming arc while it flies
-    if (soundRef.current) { sfx.current.ensure(); sfx.current.kick() }
+    // Warm the audio context now; the kick SOUND fires at the contact frame (below).
+    if (soundRef.current) sfx.current.ensure()
     setSandboxBusy(true); setSandboxResult(null)
   }, [])
 
@@ -725,7 +746,7 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
           : clamp(g.windupT / STRIKE_WINDUP, 0, 1) * KICK_CONTACT_FRAC
       }
       else if (g.phase === 'result') mode = (g.shotKind === 'goal' && !g.luckFail) ? 'celebrate' : 'react'
-      drawKicker(ctx, rel, mode, kt, now)
+      drawKicker(ctx, rel, mode, kt, now, kitRef.current)
     }
 
     // ---- Vignette ----
@@ -819,6 +840,9 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
         if (g.windupT >= STRIKE_WINDUP) {
           g.struck = true
           g.contactAt = now
+          // Kick sound fires HERE — at the boot/ball contact frame — so it lands with the
+          // visible strike and the start of flight, not early at the windup start.
+          if (soundRef.current) sfx.current.kick()
           g.ball.squash = 0.42
           const cp = rel(g.ball.x, g.ball.y, g.ball.z)
           for (let i = 0; i < 9; i++) {
@@ -1618,13 +1642,16 @@ function drawGoal(ctx: CanvasRenderingContext2D, rel: RelFn, z: number, shake: n
 // "bow" at the mid joint (elbow/knee bend) and a slight upper→lower taper. Relies on
 // the caller's round lineCap so the joint reads smoothly. `bend` is the joint's
 // position along the limb (0.5 = midpoint).
-function jointedLimb(ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number, bow: number, wTop: number, wBot: number, color: string, bend = 0.5) {
+function jointedLimb(ctx: CanvasRenderingContext2D, x0: number, y0: number, x1: number, y1: number, bow: number, wTop: number, wBot: number, color: string, bend = 0.5, colorBot = color) {
   const dx = x1 - x0, dy = y1 - y0
   const len = Math.hypot(dx, dy) || 1
   const jx = x0 + dx * bend - (dy / len) * bow
   const jy = y0 + dy * bend + (dx / len) * bow
+  // top segment (thigh / upper arm) in `color`, bottom segment (shin / forearm) in
+  // `colorBot` — lets a leg read as a skin thigh into a (white) sock without two calls.
   ctx.strokeStyle = color
   ctx.lineWidth = wTop; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(jx, jy); ctx.stroke()
+  ctx.strokeStyle = colorBot
   ctx.lineWidth = wBot; ctx.beginPath(); ctx.moveTo(jx, jy); ctx.lineTo(x1, y1); ctx.stroke()
 }
 
@@ -1891,18 +1918,125 @@ function drawKeeper(ctx: CanvasRenderingContext2D, rel: RelFn, z: number, dive: 
   ctx.lineCap = 'butt'
 }
 
+// Render the equipped jersey DESIGN in `accent` over the (already clipped) torso. Only the
+// loadout's pattern/accent reach this — every other body colour is the sim's own kit. The
+// caller must have built the torso path and called ctx.clip() first.
+function drawJerseyPattern(
+  ctx: CanvasRenderingContext2D, pattern: JerseyPattern, accent: string,
+  cx: number, top: number, bottom: number, w: number,
+) {
+  const left = cx - w * 0.55, right = cx + w * 0.55
+  const width = right - left, height = bottom - top
+  ctx.fillStyle = accent
+  if (pattern === 'stripes') {
+    const n = 3, sw = width * 0.13
+    for (let i = 0; i < n; i++) {
+      const bx = cx + (i - (n - 1) / 2) * width * 0.27 - sw / 2
+      ctx.fillRect(bx, top, sw, height)
+    }
+  } else if (pattern === 'hoops') {
+    const bh = height * 0.13
+    for (let i = 0; i < 3; i++) ctx.fillRect(left, top + height * (0.2 + i * 0.28), width, bh)
+  } else if (pattern === 'sash') {
+    const sashW = width * 0.28
+    ctx.beginPath()
+    ctx.moveTo(left, bottom); ctx.lineTo(left + sashW, bottom)
+    ctx.lineTo(right, top); ctx.lineTo(right - sashW, top)
+    ctx.closePath(); ctx.fill()
+  } else if (pattern === 'halves') {
+    ctx.fillRect(cx, top, right - cx, height)
+  } else if (pattern === 'galaxy') {
+    // deterministic scattered flecks (stable across frames so they don't shimmer)
+    let seed = 7.13
+    const rnd = () => { seed = Math.sin(seed * 91.317) * 47.219; return seed - Math.floor(seed) }
+    for (let i = 0; i < 18; i++) {
+      const fx = left + rnd() * width, fy = top + rnd() * height, fr = width * (0.025 + rnd() * 0.03)
+      ctx.beginPath(); ctx.arc(fx, fy, fr, 0, Math.PI * 2); ctx.fill()
+    }
+  }
+}
+
 // The penalty taker — our player's avatar, ALWAYS on screen in the third-person view.
 // Drawn back-to-camera (facing the goal) in the same flat-shape style as the keeper.
 // Stands just left of centre and behind the ball so he never covers the ball or the
 // goal mouth. `mode` picks the pose; `t` (0->1) drives the kick stride during flight.
-function drawKicker(ctx: CanvasRenderingContext2D, rel: RelFn, mode: KickerMode, t: number, now: number) {
+// Skin tone for the bare thigh — matches playerCanvas' internal SKIN so a leg drawn here
+// is seamless with the shared drawPlayerLegs used in the other poses.
+const KICK_SKIN = '#e8b58c'
+
+// A single leg drawn as a FIXED-LENGTH two-bone limb (thigh + shin) with a real bending
+// knee, so it NEVER stretches the way a midpoint-knee line does when the foot swings far.
+// `legLen` is constant (the standing hip→foot distance); the knee is placed by 2-bone IK
+// and always bows FORWARD (toward +x / the goal) so it reads as a kick. A foot target
+// beyond reach is CLAMPED to legLen from the hip (the leg stays the same length, the knee
+// simply straightens). Visually identical to drawPlayerLegs: skin thigh → sock shin →
+// optional sock cuff → boot ellipse.
+function drawKickLeg(
+  ctx: CanvasRenderingContext2D,
+  hipX: number, hipY: number,
+  footX: number, footY: number,
+  legLen: number, legW: number,
+  sock: string, boot: string, bootDark: string,
+  detail: boolean, kicking: boolean,
+) {
+  const thigh = legLen * 0.5
+  const shin = legLen * 0.5
+  let dx = footX - hipX, dy = footY - hipY
+  let dist = Math.hypot(dx, dy) || 1e-3
+  let fx = footX, fy = footY
+  if (dist > legLen) {                       // never stretch: clamp the foot to legLen
+    const s = legLen / dist
+    fx = hipX + dx * s; fy = hipY + dy * s
+    dx = fx - hipX; dy = fy - hipY; dist = legLen
+  }
+  // 2-bone IK for the knee. `a` = distance from the hip to the knee's projection on the
+  // hip→foot axis; `hgt` = how far the knee sits off that axis (the bend).
+  const ux = dx / dist, uy = dy / dist
+  const a = (dist * dist + thigh * thigh - shin * shin) / (2 * dist)
+  const hgt = Math.sqrt(Math.max(0, thigh * thigh - a * a))
+  let px = -uy, py = ux                      // perpendicular; flip so the knee bows toward +x
+  if (px < 0) { px = -px; py = -py }
+  const kx = hipX + ux * a + px * hgt
+  const ky = hipY + uy * a + py * hgt
+
+  ctx.lineCap = 'round'
+  ctx.strokeStyle = KICK_SKIN; ctx.lineWidth = legW * 1.06          // thigh (skin)
+  ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(kx, ky); ctx.stroke()
+  ctx.strokeStyle = sock; ctx.lineWidth = legW * 0.92               // shin (sock = jersey)
+  ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(fx, fy); ctx.stroke()
+  if (detail) {                                                     // sock cuff band
+    ctx.strokeStyle = shade(sock, -0.2); ctx.lineWidth = legW * 0.92
+    ctx.beginPath()
+    ctx.moveTo(kx + (fx - kx) * 0.1, ky + (fy - ky) * 0.1)
+    ctx.lineTo(kx + (fx - kx) * 0.24, ky + (fy - ky) * 0.24)
+    ctx.stroke()
+  }
+  // Boot: the kicking foot points along the swing (the shin direction); the plant foot
+  // sits roughly flat with the small horizontal tilt drawPlayerLegs uses.
+  const bootAngle = kicking
+    ? Math.atan2(fy - ky, fx - kx)
+    : Math.max(-1, Math.min(1, (fx - hipX) / (legW * 4.6))) * 0.32
+  ctx.save(); ctx.translate(fx, fy); ctx.rotate(bootAngle)
+  ctx.fillStyle = boot
+  ctx.beginPath(); ctx.ellipse(0, 0, legW * 1.12, legW * 0.46, 0, 0, Math.PI * 2); ctx.fill()
+  ctx.fillStyle = bootDark                                          // toe cap
+  ctx.beginPath(); ctx.ellipse(legW * 0.78, legW * 0.05, legW * 0.5, legW * 0.34, 0, 0, Math.PI * 2); ctx.fill()
+  if (detail) {                                                     // sole shade
+    ctx.fillStyle = bootDark
+    ctx.beginPath(); ctx.ellipse(0, legW * 0.32, legW * 1.05, legW * 0.15, 0, 0, Math.PI * 2); ctx.fill()
+  }
+  ctx.restore()
+}
+
+function drawKicker(ctx: CanvasRenderingContext2D, rel: RelFn, mode: KickerMode, t: number, now: number, kit: KickerKit) {
   const KX = -0.85 // slightly left of the ball so the goal mouth + ball stay clear
   const KZ = 0     // the player's world depth (projects to the lower-centre foreground)
   const feet = rel(KX, 0, KZ)
   const scale = feet.scale
+  // `w` stays scale-based: it only drives HORIZONTAL pose offsets (lean, arm swing,
+  // decorative jersey shading clipped to the torso). All visible BODY dimensions come
+  // from the canonical build (`m`) computed below once `headY`/`footY` are known.
   const w = Math.max(7, 0.4 * scale)
-  const lw = Math.max(3, 0.15 * scale)
-  const headR = Math.max(4, 0.17 * scale)
 
   // Pose parameters. Idle: gentle plant + bob. Kick: lean in, plant left, swing the
   // right leg through, arms counter-balance. Celebrate: small jump, arms up. React:
@@ -1934,8 +2068,14 @@ function drawKicker(ctx: CanvasRenderingContext2D, rel: RelFn, mode: KickerMode,
   const cx = feet.sx + sway
   const footY = feet.sy - idleBob - jump
   const headY = headWorld.sy - idleBob - jump + crouch
-  const hipY = headY + (footY - headY) * 0.55
-  const shoulderY = headY + (footY - headY) * 0.32
+  // Canonical athletic build shared with the card + every other drill. `headY` is the
+  // top-of-head (crown) anchor and `footY` the feet, so the head/torso/leg ratios match
+  // everywhere. Only the pose (foot anchors, lean, sway, swing) stays sim-specific.
+  const m = bodyMetrics(headY, footY)
+  const lw = m.legW
+  const headR = m.headR
+  const hipY = m.hipY
+  const shoulderY = m.shoulderY
   const torsoH = hipY - shoulderY + 2
 
   // Where the resting ball projects — the kicking boot is driven to THIS point at the
@@ -1959,12 +2099,29 @@ function drawKicker(ctx: CanvasRenderingContext2D, rel: RelFn, mode: KickerMode,
     // through the ball at contact and follows through up and across.
     lFootX = cx - w * 0.5; lFootY = footY
     let swing: number, lift: number
+    const COCK = -0.4 // how far the kicking foot cocks back behind the plant foot
+    const COCK_LIFT = 0.95 // how high the heel rises at the top of the backswing (folds the knee)
     if (inWindup) {
-      if (wu < 0.4) { const a = wu / 0.4; swing = 0.42 + (-0.35 - 0.42) * (a * a); lift = (a * a) * 0.18 }
-      else { const a = (wu - 0.4) / 0.6; swing = -0.35 + (reachC + 0.35) * (a * a); lift = 0.18 + (liftC - 0.18) * (a * a) }
+      if (wu < 0.45) {
+        // Backswing: the kicking leg swings back and the heel lifts (ease-OUT, so it
+        // decelerates at the top of the cock-back before whipping down).
+        const a = wu / 0.45
+        const e = 1 - (1 - a) * (1 - a)
+        swing = 0.42 + (COCK - 0.42) * e
+        lift = COCK_LIFT * e
+      } else {
+        // Down-swing: the boot accelerates (ease-IN) from the cocked position straight
+        // onto the ball, arriving exactly at contact (wu = 1 ⇒ t = CF).
+        const a = (wu - 0.45) / 0.55
+        const e = a * a
+        swing = COCK + (reachC - COCK) * e
+        lift = COCK_LIFT + (liftC - COCK_LIFT) * e
+      }
     } else {
-      swing = reachC + fe * (reachC * 0.5 + 0.9)
-      lift = liftC + fe * 1.7
+      // Follow-through: SHORT + crisp. The boot continues just a touch past the ball and
+      // lifts only slightly, decelerating (ease-OUT) — no big leg-up-to-horizontal swing.
+      swing = reachC + fe * 0.35
+      lift = liftC + fe * 0.5
     }
     rFootX = cx + w * swing
     rFootY = footY - w * lift
@@ -1973,70 +2130,94 @@ function drawKicker(ctx: CanvasRenderingContext2D, rel: RelFn, mode: KickerMode,
   }
   const hipX = cx + lean * 0.4
   const detail = scale > 16
-  // legs: thigh≈shin with a slight knee bend; the END (foot) stays EXACTLY where the
-  // pose put it so the kick contact frame still meets the ball.
-  jointedLimb(ctx, hipX, hipY, lFootX, lFootY, lw * 0.22, lw, lw * 0.85, KICKER_KIT.sock)
-  jointedLimb(ctx, hipX, hipY, rFootX, rFootY, mode === 'kick' ? lw * 0.12 : -lw * 0.22, lw, lw * 0.85, KICKER_KIT.sock)
-  // sock band on the plant leg
-  if (detail) {
-    ctx.strokeStyle = KICKER_KIT.sockBand; ctx.lineWidth = lw * 0.7
-    ctx.beginPath(); ctx.moveTo(hipX + (lFootX - hipX) * 0.6, hipY + (lFootY - hipY) * 0.6); ctx.lineTo(hipX + (lFootX - hipX) * 0.72, hipY + (lFootY - hipY) * 0.72); ctx.stroke()
+  // Standardised lower body: the SAME shared renderer is used across every drill so YOUR
+  // PLAYER looks identical. The foot anchors are exactly the ones the pose computed above,
+  // so the kick contact frame is unchanged; the shared helper owns the hip spread, skin,
+  // socks (= jersey colour), boots and (later) the white shorts.
+  const pose = {
+    hipX, hipY,
+    lFootX, lFootY, rFootX, rFootY,
+    legW: lw,
+    sock: kit.sock,
+    boot: kit.boot,
+    bootDark: (kit as { bootDark?: string }).bootDark ?? kit.boot,
+    detail,
   }
-  // distinct darker, elongated boots
-  ctx.fillStyle = KICKER_KIT.boot
-  ctx.beginPath(); ctx.ellipse(lFootX, lFootY, lw * 0.98, lw * 0.42, 0, 0, Math.PI * 2); ctx.fill()
-  ctx.beginPath(); ctx.ellipse(rFootX, rFootY, lw * 0.98, lw * 0.42, mode === 'kick' ? -0.5 : 0, 0, Math.PI * 2); ctx.fill()
+  // legs + boots (drawn BEFORE the torso so the swinging leg can pass in front on a kick)
+  if (mode === 'kick') {
+    // The kick uses fixed-length two-bone legs so the swinging leg bends at the knee and
+    // never stretches. legLen = the standing hip→foot distance (constant); the plant leg
+    // stays near-straight while the kicking leg folds on the cock-back, drives through the
+    // ball at contact, and rises on the follow-through (clamped to legLen, so it stays the
+    // same length). Foot anchors are exactly the ones the pose computed, so the contact
+    // frame (ball launch) is unchanged.
+    const half = lw * 1.15
+    const legLen = footY - hipY
+    const bootDark = pose.bootDark
+    drawKickLeg(ctx, hipX - half, hipY, pose.lFootX, pose.lFootY, legLen, lw, kit.sock, kit.boot, bootDark, detail, false)
+    drawKickLeg(ctx, hipX + half, hipY, pose.rFootX, pose.rFootY, legLen, lw, kit.sock, kit.boot, bootDark, detail, true)
+  } else {
+    drawPlayerLegs(ctx, pose)
+  }
 
   // ---- Jersey + shorts (back view) ----
   const bodyX = cx + lean
   const shortsH = Math.max(3, torsoH * 0.42)
   const headX = bodyX + (mode === 'kick' ? lean * 0.3 : 0)
   // jersey: shoulders wider than waist (slight taper)
-  taperedTorso(ctx, bodyX, shoulderY, hipY + 1, w * 0.5, w * 0.4); ctx.fillStyle = KICKER_KIT.jersey; ctx.fill()
-  // shade + highlight stripes for form (clipped to the jersey)
+  taperedTorso(ctx, bodyX, shoulderY, hipY + 1, m.shoulderW / 2, m.waistW / 2); ctx.fillStyle = kit.jersey; ctx.fill()
+  // form shading + the loadout's DESIGN (pattern in the accent colour), all clipped to the
+  // jersey shape. pattern/accent are merged onto the kit by usePlayerKit even though
+  // KICKER_KIT doesn't declare them, so read them defensively.
+  const pattern = ((kit as { pattern?: JerseyPattern }).pattern) ?? 'plain'
+  const accent = ((kit as { accent?: string }).accent) ?? kit.jerseyDark
   ctx.save(); ctx.clip()
-  ctx.fillStyle = KICKER_KIT.jerseyDark; ctx.fillRect(bodyX + w * 0.14, shoulderY + 2, w * 0.34, torsoH - 2)
-  ctx.fillStyle = KICKER_KIT.jerseyHi; ctx.fillRect(bodyX - w * 0.42, shoulderY + torsoH * 0.12, w * 0.1, torsoH * 0.5)
+  ctx.fillStyle = kit.jerseyDark; ctx.fillRect(bodyX + w * 0.14, shoulderY + 2, w * 0.34, torsoH - 2)
+  ctx.fillStyle = kit.jerseyHi; ctx.fillRect(bodyX - w * 0.42, shoulderY + torsoH * 0.12, w * 0.1, torsoH * 0.5)
+  drawJerseyPattern(ctx, pattern, accent, bodyX, shoulderY, hipY + 1, w)
   ctx.restore()
   // squad number on the back
   if (w > 9) {
-    ctx.fillStyle = '#eaf1ff'; ctx.font = `800 ${Math.round(w * 0.5)}px Plus Jakarta Sans, sans-serif`
+    ctx.fillStyle = kit.number; ctx.font = `800 ${Math.round(w * 0.5)}px Plus Jakarta Sans, sans-serif`
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
     ctx.fillText('9', bodyX, shoulderY + torsoH * 0.5)
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'
   }
-  // shorts over the hips + tops of the thighs (after the jersey so they read clearly)
-  ctx.fillStyle = KICKER_KIT.shorts
-  roundRect(ctx, bodyX - w * 0.5, hipY - shortsH * 0.42, w, shortsH, Math.max(2, w * 0.2)); ctx.fill()
-  ctx.fillStyle = 'rgba(0,0,0,0.12)'; ctx.fillRect(bodyX - 0.6, hipY - shortsH * 0.42, 1.2, shortsH)
+  // ---- Shorts (back view) ----
+  // White football shorts via the shared renderer (same pose object as the legs), drawn
+  // AFTER the torso so the waistband sits over the jersey.
+  drawPlayerShorts(ctx, pose)
+  ctx.lineCap = 'butt'
   // short neck stub + head sitting just above the shoulders
-  const neckH = headR * 0.22, headCY = shoulderY - neckH - headR
-  ctx.strokeStyle = KICKER_KIT.skinShade; ctx.lineWidth = headR; ctx.lineCap = 'round'
+  // short neck stub between the shoulders and the head bottom (height ~ m.neckH)
+  const headCY = m.headCY
+  ctx.strokeStyle = kit.skinShade; ctx.lineWidth = headR; ctx.lineCap = 'round'
   ctx.beginPath(); ctx.moveTo(headX, shoulderY + 1); ctx.lineTo(headX, headCY + headR * 0.6); ctx.stroke()
 
-  // ---- Arms (upper-arm ≈ forearm with a slight elbow), posed per mode ----
-  const armW = Math.max(2.5, 0.11 * scale)
-  const shL = bodyX - w * 0.42, shR = bodyX + w * 0.42, shY = shoulderY + 3
-  let eLx: number, eLy: number, eRx: number, eRy: number
+  // ---- Arms (standardised shared renderer: jersey SLEEVE + skin forearm + hand) ----
+  // Base hand placement comes from the shared idle pose so every drill starts from the SAME
+  // arm position, then THIS sim's per-mode animation (kick swing / celebrate raise / react
+  // to hips) is layered on top of those idle hands. Drawn AFTER the torso + shorts so the
+  // sleeves sit over the shoulders.
+  const hands = idleHands(bodyX, m)
   if (mode === 'celebrate') {
-    eLx = bodyX - w * 0.7; eLy = shoulderY - w * 1.1; eRx = bodyX + w * 0.7; eRy = shoulderY - w * 1.1
+    hands.lHandX = bodyX - w * 0.7; hands.lHandY = shoulderY - w * 1.1
+    hands.rHandX = bodyX + w * 0.7; hands.rHandY = shoulderY - w * 1.1
   } else if (mode === 'react') {
-    eLx = bodyX - w * 0.62; eLy = hipY - shortsH * 0.4; eRx = bodyX + w * 0.62; eRy = hipY - shortsH * 0.4
+    hands.lHandX = bodyX - w * 0.62; hands.lHandY = hipY - shortsH * 0.4
+    hands.rHandX = bodyX + w * 0.62; hands.rHandY = hipY - shortsH * 0.4
   } else if (mode === 'kick') {
-    eLx = bodyX - w * (0.7 + armS * 0.6); eLy = shoulderY + w * 0.2; eRx = bodyX + w * (0.5 + armS * 0.4); eRy = shoulderY + w * 0.5
-  } else {
-    eLx = bodyX - w * 0.5; eLy = hipY; eRx = bodyX + w * 0.5; eRy = hipY
+    hands.lHandX = bodyX - w * (0.7 + armS * 0.6); hands.lHandY = shoulderY + w * 0.2
+    hands.rHandX = bodyX + w * (0.5 + armS * 0.4); hands.rHandY = shoulderY + w * 0.5
   }
-  jointedLimb(ctx, shL, shY, eLx, eLy, armW * 0.3, armW, armW * 0.85, KICKER_KIT.skin)
-  jointedLimb(ctx, shR, shY, eRx, eRy, -armW * 0.3, armW, armW * 0.85, KICKER_KIT.skin)
-  // small skin hands at the arm ends
-  const handR = armW * 0.7
-  ctx.fillStyle = KICKER_KIT.skin
-  ctx.beginPath(); ctx.arc(eLx, eLy, handR, 0, Math.PI * 2); ctx.fill()
-  ctx.beginPath(); ctx.arc(eRx, eRy, handR, 0, Math.PI * 2); ctx.fill()
+  drawPlayerArms(ctx, {
+    cx: bodyX, shoulderY: m.shoulderY, shoulderW: m.shoulderW, armW: m.armW,
+    lHandX: hands.lHandX, lHandY: hands.lHandY, rHandX: hands.rHandX, rHandY: hands.rHandY,
+    sleeve: kit.jersey, sleeveDark: kit.jerseyDark,
+  })
 
   // ---- Head (back of the head: hair cap + neck crease, NO face) ----
-  drawBackHead(ctx, headX, headCY, headR, KICKER_KIT.skin, KICKER_KIT.hair, detail)
+  drawBackHead(ctx, headX, headCY, headR, kit.skin, kit.hair, detail)
   ctx.lineCap = 'butt'
 }
 

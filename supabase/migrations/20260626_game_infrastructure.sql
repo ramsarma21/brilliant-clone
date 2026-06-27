@@ -48,6 +48,9 @@ create table if not exists public.question_bank (
   correct_choice   text not null,
   correct_value    numeric,
   given            jsonb,
+  formulas         jsonb,
+  diagram          jsonb,
+  check_rel        text,
   explanation      text,
   created_at       timestamptz not null default now()
 );

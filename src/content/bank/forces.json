@@ -1,0 +1,3837 @@
+[
+  {
+    "id": "for-1",
+    "unitId": "forces",
+    "conceptTag": "units",
+    "difficulty": 1,
+    "prompt": "What is the SI unit of force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Watt (W)"
+      },
+      {
+        "id": "b",
+        "label": "Pascal (Pa)"
+      },
+      {
+        "id": "c",
+        "label": "Newton (N)"
+      },
+      {
+        "id": "d",
+        "label": "Joule (J)"
+      }
+    ],
+    "correctChoiceId": "c",
+    "explanation": "1 N = 1 kg·m/s², the SI unit of force."
+  },
+  {
+    "id": "for-2",
+    "unitId": "forces",
+    "conceptTag": "newton-second-law",
+    "difficulty": 1,
+    "prompt": "Which equation is Newton’s second law?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "F = m a"
+      },
+      {
+        "id": "b",
+        "label": "F = m / a"
+      },
+      {
+        "id": "c",
+        "label": "F = a / m"
+      },
+      {
+        "id": "d",
+        "label": "F = m + a"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "Net force equals mass times acceleration: F = ma."
+  },
+  {
+    "id": "for-3",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 1,
+    "prompt": "A 2 kg ball is pushed with an acceleration of 3 m/s². What net force acts on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 N"
+      },
+      {
+        "id": "b",
+        "label": "6 N"
+      },
+      {
+        "id": "c",
+        "label": "0.67 N"
+      },
+      {
+        "id": "d",
+        "label": "1.5 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 6,
+    "given": {
+      "m": 2,
+      "a": 3
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 2×3 = 6 N."
+  },
+  {
+    "id": "for-4",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 1,
+    "prompt": "A 5 kg ball is pushed with an acceleration of 2 m/s². What net force acts on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 N"
+      },
+      {
+        "id": "b",
+        "label": "7 N"
+      },
+      {
+        "id": "c",
+        "label": "2.5 N"
+      },
+      {
+        "id": "d",
+        "label": "0.4 N"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 10,
+    "given": {
+      "m": 5,
+      "a": 2
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 5×2 = 10 N."
+  },
+  {
+    "id": "for-5",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 1,
+    "prompt": "A 1 kg ball is pushed with an acceleration of 10 m/s². What net force acts on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "11 N"
+      },
+      {
+        "id": "b",
+        "label": "10 N"
+      },
+      {
+        "id": "c",
+        "label": "12 N"
+      },
+      {
+        "id": "d",
+        "label": "0.1 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "m": 1,
+      "a": 10
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 1×10 = 10 N."
+  },
+  {
+    "id": "for-6",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 1,
+    "prompt": "A 4 kg ball is pushed with an acceleration of 5 m/s². What net force acts on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "9 N"
+      },
+      {
+        "id": "b",
+        "label": "1.25 N"
+      },
+      {
+        "id": "c",
+        "label": "0.8 N"
+      },
+      {
+        "id": "d",
+        "label": "20 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 20,
+    "given": {
+      "m": 4,
+      "a": 5
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 4×5 = 20 N."
+  },
+  {
+    "id": "for-7",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 1,
+    "prompt": "A 3 kg ball is pushed with an acceleration of 4 m/s². What net force acts on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "7 N"
+      },
+      {
+        "id": "b",
+        "label": "1.33 N"
+      },
+      {
+        "id": "c",
+        "label": "12 N"
+      },
+      {
+        "id": "d",
+        "label": "0.75 N"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 12,
+    "given": {
+      "m": 3,
+      "a": 4
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 3×4 = 12 N."
+  },
+  {
+    "id": "for-8",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 1,
+    "prompt": "A 10 kg ball is pushed with an acceleration of 2 m/s². What net force acts on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.2 N"
+      },
+      {
+        "id": "b",
+        "label": "12 N"
+      },
+      {
+        "id": "c",
+        "label": "5 N"
+      },
+      {
+        "id": "d",
+        "label": "20 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 20,
+    "given": {
+      "m": 10,
+      "a": 2
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 10×2 = 20 N."
+  },
+  {
+    "id": "for-9",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 1,
+    "prompt": "A 2 kg ball is pushed with an acceleration of 5 m/s². What net force acts on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.4 N"
+      },
+      {
+        "id": "b",
+        "label": "10 N"
+      },
+      {
+        "id": "c",
+        "label": "7 N"
+      },
+      {
+        "id": "d",
+        "label": "2.5 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "m": 2,
+      "a": 5
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 2×5 = 10 N."
+  },
+  {
+    "id": "for-10",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 1,
+    "prompt": "A 6 kg ball is pushed with an acceleration of 3 m/s². What net force acts on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.5 N"
+      },
+      {
+        "id": "b",
+        "label": "18 N"
+      },
+      {
+        "id": "c",
+        "label": "2 N"
+      },
+      {
+        "id": "d",
+        "label": "9 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 18,
+    "given": {
+      "m": 6,
+      "a": 3
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 6×3 = 18 N."
+  },
+  {
+    "id": "for-11",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 1,
+    "prompt": "A 8 kg ball is pushed with an acceleration of 2 m/s². What net force acts on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.25 N"
+      },
+      {
+        "id": "b",
+        "label": "4 N"
+      },
+      {
+        "id": "c",
+        "label": "10 N"
+      },
+      {
+        "id": "d",
+        "label": "16 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 16,
+    "given": {
+      "m": 8,
+      "a": 2
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 8×2 = 16 N."
+  },
+  {
+    "id": "for-12",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 1,
+    "prompt": "A 2 kg ball is pushed with an acceleration of 4 m/s². What net force acts on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.5 N"
+      },
+      {
+        "id": "b",
+        "label": "6 N"
+      },
+      {
+        "id": "c",
+        "label": "8 N"
+      },
+      {
+        "id": "d",
+        "label": "2 N"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 8,
+    "given": {
+      "m": 2,
+      "a": 4
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 2×4 = 8 N."
+  },
+  {
+    "id": "for-13",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 1,
+    "prompt": "A 5 kg ball is pushed with an acceleration of 3 m/s². What net force acts on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "8 N"
+      },
+      {
+        "id": "b",
+        "label": "0.6 N"
+      },
+      {
+        "id": "c",
+        "label": "1.67 N"
+      },
+      {
+        "id": "d",
+        "label": "15 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 15,
+    "given": {
+      "m": 5,
+      "a": 3
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 5×3 = 15 N."
+  },
+  {
+    "id": "for-14",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 1,
+    "prompt": "A 3 kg ball is pushed with an acceleration of 6 m/s². What net force acts on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "9 N"
+      },
+      {
+        "id": "b",
+        "label": "18 N"
+      },
+      {
+        "id": "c",
+        "label": "2 N"
+      },
+      {
+        "id": "d",
+        "label": "0.5 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 18,
+    "given": {
+      "m": 3,
+      "a": 6
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 3×6 = 18 N."
+  },
+  {
+    "id": "for-15",
+    "unitId": "forces",
+    "conceptTag": "weight",
+    "difficulty": 1,
+    "prompt": "What is the weight of a 1 kg object near Earth's surface? (g = 10 m/s²)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "11 N"
+      },
+      {
+        "id": "b",
+        "label": "1 N"
+      },
+      {
+        "id": "c",
+        "label": "10 N"
+      },
+      {
+        "id": "d",
+        "label": "0.1 N"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 10,
+    "given": {
+      "m": 1,
+      "g": 10
+    },
+    "formulas": [
+      "W = m g"
+    ],
+    "explanation": "W = mg = 1×10 = 10 N."
+  },
+  {
+    "id": "for-16",
+    "unitId": "forces",
+    "conceptTag": "weight",
+    "difficulty": 1,
+    "prompt": "What is the weight of a 2 kg object near Earth's surface? (g = 10 m/s²)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "2 N"
+      },
+      {
+        "id": "b",
+        "label": "0.2 N"
+      },
+      {
+        "id": "c",
+        "label": "12 N"
+      },
+      {
+        "id": "d",
+        "label": "20 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 20,
+    "given": {
+      "m": 2,
+      "g": 10
+    },
+    "formulas": [
+      "W = m g"
+    ],
+    "explanation": "W = mg = 2×10 = 20 N."
+  },
+  {
+    "id": "for-17",
+    "unitId": "forces",
+    "conceptTag": "weight",
+    "difficulty": 1,
+    "prompt": "What is the weight of a 5 kg object near Earth's surface? (g = 10 m/s²)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "15 N"
+      },
+      {
+        "id": "b",
+        "label": "50 N"
+      },
+      {
+        "id": "c",
+        "label": "0.5 N"
+      },
+      {
+        "id": "d",
+        "label": "5 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 50,
+    "given": {
+      "m": 5,
+      "g": 10
+    },
+    "formulas": [
+      "W = m g"
+    ],
+    "explanation": "W = mg = 5×10 = 50 N."
+  },
+  {
+    "id": "for-18",
+    "unitId": "forces",
+    "conceptTag": "weight",
+    "difficulty": 1,
+    "prompt": "What is the weight of a 10 kg object near Earth's surface? (g = 10 m/s²)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 N"
+      },
+      {
+        "id": "b",
+        "label": "100 N"
+      },
+      {
+        "id": "c",
+        "label": "20 N"
+      },
+      {
+        "id": "d",
+        "label": "1 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 100,
+    "given": {
+      "m": 10,
+      "g": 10
+    },
+    "formulas": [
+      "W = m g"
+    ],
+    "explanation": "W = mg = 10×10 = 100 N."
+  },
+  {
+    "id": "for-19",
+    "unitId": "forces",
+    "conceptTag": "weight",
+    "difficulty": 1,
+    "prompt": "What is the weight of a 3 kg object near Earth's surface? (g = 10 m/s²)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.3 N"
+      },
+      {
+        "id": "b",
+        "label": "30 N"
+      },
+      {
+        "id": "c",
+        "label": "3 N"
+      },
+      {
+        "id": "d",
+        "label": "13 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 30,
+    "given": {
+      "m": 3,
+      "g": 10
+    },
+    "formulas": [
+      "W = m g"
+    ],
+    "explanation": "W = mg = 3×10 = 30 N."
+  },
+  {
+    "id": "for-20",
+    "unitId": "forces",
+    "conceptTag": "weight",
+    "difficulty": 1,
+    "prompt": "What is the weight of a 4 kg object near Earth's surface? (g = 10 m/s²)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.4 N"
+      },
+      {
+        "id": "b",
+        "label": "14 N"
+      },
+      {
+        "id": "c",
+        "label": "40 N"
+      },
+      {
+        "id": "d",
+        "label": "4 N"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 40,
+    "given": {
+      "m": 4,
+      "g": 10
+    },
+    "formulas": [
+      "W = m g"
+    ],
+    "explanation": "W = mg = 4×10 = 40 N."
+  },
+  {
+    "id": "for-21",
+    "unitId": "forces",
+    "conceptTag": "weight",
+    "difficulty": 1,
+    "prompt": "What is the weight of a 6 kg object near Earth's surface? (g = 10 m/s²)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.6 N"
+      },
+      {
+        "id": "b",
+        "label": "60 N"
+      },
+      {
+        "id": "c",
+        "label": "6 N"
+      },
+      {
+        "id": "d",
+        "label": "16 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 60,
+    "given": {
+      "m": 6,
+      "g": 10
+    },
+    "formulas": [
+      "W = m g"
+    ],
+    "explanation": "W = mg = 6×10 = 60 N."
+  },
+  {
+    "id": "for-22",
+    "unitId": "forces",
+    "conceptTag": "weight",
+    "difficulty": 1,
+    "prompt": "What is the weight of a 8 kg object near Earth's surface? (g = 10 m/s²)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "18 N"
+      },
+      {
+        "id": "b",
+        "label": "80 N"
+      },
+      {
+        "id": "c",
+        "label": "8 N"
+      },
+      {
+        "id": "d",
+        "label": "0.8 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 80,
+    "given": {
+      "m": 8,
+      "g": 10
+    },
+    "formulas": [
+      "W = m g"
+    ],
+    "explanation": "W = mg = 8×10 = 80 N."
+  },
+  {
+    "id": "for-23",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 2,
+    "prompt": "A 0.5 kg ball accelerates at 8 m/s². What net force is required?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "8 N"
+      },
+      {
+        "id": "b",
+        "label": "0.06 N"
+      },
+      {
+        "id": "c",
+        "label": "8.5 N"
+      },
+      {
+        "id": "d",
+        "label": "4 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 4,
+    "given": {
+      "m": 0.5,
+      "a": 8
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 0.5×8 = 4 N."
+  },
+  {
+    "id": "for-24",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 2,
+    "prompt": "A 2 kg ball accelerates at 6 m/s². What net force is required?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "24 N"
+      },
+      {
+        "id": "b",
+        "label": "8 N"
+      },
+      {
+        "id": "c",
+        "label": "0.33 N"
+      },
+      {
+        "id": "d",
+        "label": "12 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 12,
+    "given": {
+      "m": 2,
+      "a": 6
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 2×6 = 12 N."
+  },
+  {
+    "id": "for-25",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 2,
+    "prompt": "A 5 kg ball accelerates at 4 m/s². What net force is required?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 N"
+      },
+      {
+        "id": "b",
+        "label": "1.25 N"
+      },
+      {
+        "id": "c",
+        "label": "9 N"
+      },
+      {
+        "id": "d",
+        "label": "40 N"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 20,
+    "given": {
+      "m": 5,
+      "a": 4
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 5×4 = 20 N."
+  },
+  {
+    "id": "for-26",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 2,
+    "prompt": "A 4 kg ball accelerates at 3 m/s². What net force is required?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "7 N"
+      },
+      {
+        "id": "b",
+        "label": "12 N"
+      },
+      {
+        "id": "c",
+        "label": "1.33 N"
+      },
+      {
+        "id": "d",
+        "label": "24 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 12,
+    "given": {
+      "m": 4,
+      "a": 3
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 4×3 = 12 N."
+  },
+  {
+    "id": "for-27",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 2,
+    "prompt": "A 8 kg ball accelerates at 5 m/s². What net force is required?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "40 N"
+      },
+      {
+        "id": "b",
+        "label": "1.6 N"
+      },
+      {
+        "id": "c",
+        "label": "80 N"
+      },
+      {
+        "id": "d",
+        "label": "13 N"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 40,
+    "given": {
+      "m": 8,
+      "a": 5
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 8×5 = 40 N."
+  },
+  {
+    "id": "for-28",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 2,
+    "prompt": "A 2.5 kg ball accelerates at 4 m/s². What net force is required?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 N"
+      },
+      {
+        "id": "b",
+        "label": "6.5 N"
+      },
+      {
+        "id": "c",
+        "label": "0.63 N"
+      },
+      {
+        "id": "d",
+        "label": "10 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 10,
+    "given": {
+      "m": 2.5,
+      "a": 4
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 2.5×4 = 10 N."
+  },
+  {
+    "id": "for-29",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 2,
+    "prompt": "A 6 kg ball accelerates at 5 m/s². What net force is required?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "11 N"
+      },
+      {
+        "id": "b",
+        "label": "1.2 N"
+      },
+      {
+        "id": "c",
+        "label": "30 N"
+      },
+      {
+        "id": "d",
+        "label": "60 N"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 30,
+    "given": {
+      "m": 6,
+      "a": 5
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 6×5 = 30 N."
+  },
+  {
+    "id": "for-30",
+    "unitId": "forces",
+    "conceptTag": "force-net-force",
+    "difficulty": 2,
+    "prompt": "A 1.5 kg ball accelerates at 6 m/s². What net force is required?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "18 N"
+      },
+      {
+        "id": "b",
+        "label": "9 N"
+      },
+      {
+        "id": "c",
+        "label": "7.5 N"
+      },
+      {
+        "id": "d",
+        "label": "0.25 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 9,
+    "given": {
+      "m": 1.5,
+      "a": 6
+    },
+    "formulas": [
+      "F = m a"
+    ],
+    "explanation": "F = ma = 1.5×6 = 9 N."
+  },
+  {
+    "id": "for-31",
+    "unitId": "forces",
+    "conceptTag": "force-acceleration",
+    "difficulty": 2,
+    "prompt": "A net force of 20 N acts on a 4 kg ball. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "0.2 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "16 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "80 m/s²"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 5,
+    "given": {
+      "F": 20,
+      "m": 4
+    },
+    "formulas": [
+      "a = F / m"
+    ],
+    "explanation": "a = F/m = 20/4 = 5 m/s²."
+  },
+  {
+    "id": "for-32",
+    "unitId": "forces",
+    "conceptTag": "force-acceleration",
+    "difficulty": 2,
+    "prompt": "A net force of 30 N acts on a 5 kg ball. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "25 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "0.17 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "150 m/s²"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 6,
+    "given": {
+      "F": 30,
+      "m": 5
+    },
+    "formulas": [
+      "a = F / m"
+    ],
+    "explanation": "a = F/m = 30/5 = 6 m/s²."
+  },
+  {
+    "id": "for-33",
+    "unitId": "forces",
+    "conceptTag": "force-acceleration",
+    "difficulty": 2,
+    "prompt": "A net force of 50 N acts on a 10 kg ball. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "500 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "0.2 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "5 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "40 m/s²"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 5,
+    "given": {
+      "F": 50,
+      "m": 10
+    },
+    "formulas": [
+      "a = F / m"
+    ],
+    "explanation": "a = F/m = 50/10 = 5 m/s²."
+  },
+  {
+    "id": "for-34",
+    "unitId": "forces",
+    "conceptTag": "force-acceleration",
+    "difficulty": 2,
+    "prompt": "A net force of 12 N acts on a 3 kg ball. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "4 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "0.25 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "36 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "9 m/s²"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 4,
+    "given": {
+      "F": 12,
+      "m": 3
+    },
+    "formulas": [
+      "a = F / m"
+    ],
+    "explanation": "a = F/m = 12/3 = 4 m/s²."
+  },
+  {
+    "id": "for-35",
+    "unitId": "forces",
+    "conceptTag": "force-acceleration",
+    "difficulty": 2,
+    "prompt": "A net force of 40 N acts on a 8 kg ball. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "320 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "5 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "32 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "0.2 m/s²"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 5,
+    "given": {
+      "F": 40,
+      "m": 8
+    },
+    "formulas": [
+      "a = F / m"
+    ],
+    "explanation": "a = F/m = 40/8 = 5 m/s²."
+  },
+  {
+    "id": "for-36",
+    "unitId": "forces",
+    "conceptTag": "force-acceleration",
+    "difficulty": 2,
+    "prompt": "A net force of 18 N acts on a 6 kg ball. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "12 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "108 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "3 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "0.33 m/s²"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 3,
+    "given": {
+      "F": 18,
+      "m": 6
+    },
+    "formulas": [
+      "a = F / m"
+    ],
+    "explanation": "a = F/m = 18/6 = 3 m/s²."
+  },
+  {
+    "id": "for-37",
+    "unitId": "forces",
+    "conceptTag": "force-acceleration",
+    "difficulty": 2,
+    "prompt": "A net force of 24 N acts on a 4 kg ball. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.17 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "6 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "20 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "96 m/s²"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 6,
+    "given": {
+      "F": 24,
+      "m": 4
+    },
+    "formulas": [
+      "a = F / m"
+    ],
+    "explanation": "a = F/m = 24/4 = 6 m/s²."
+  },
+  {
+    "id": "for-38",
+    "unitId": "forces",
+    "conceptTag": "force-acceleration",
+    "difficulty": 2,
+    "prompt": "A net force of 15 N acts on a 5 kg ball. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "3 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "0.33 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "75 m/s²"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 3,
+    "given": {
+      "F": 15,
+      "m": 5
+    },
+    "formulas": [
+      "a = F / m"
+    ],
+    "explanation": "a = F/m = 15/5 = 3 m/s²."
+  },
+  {
+    "id": "for-39",
+    "unitId": "forces",
+    "conceptTag": "force-mass",
+    "difficulty": 2,
+    "prompt": "A net force of 20 N gives an object an acceleration of 5 m/s². What is its mass?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "4 kg"
+      },
+      {
+        "id": "b",
+        "label": "0.25 kg"
+      },
+      {
+        "id": "c",
+        "label": "15 kg"
+      },
+      {
+        "id": "d",
+        "label": "100 kg"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 4,
+    "given": {
+      "F": 20,
+      "a": 5
+    },
+    "formulas": [
+      "m = F / a"
+    ],
+    "explanation": "m = F/a = 20/5 = 4 kg."
+  },
+  {
+    "id": "for-40",
+    "unitId": "forces",
+    "conceptTag": "force-mass",
+    "difficulty": 2,
+    "prompt": "A net force of 30 N gives an object an acceleration of 6 m/s². What is its mass?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "24 kg"
+      },
+      {
+        "id": "b",
+        "label": "180 kg"
+      },
+      {
+        "id": "c",
+        "label": "5 kg"
+      },
+      {
+        "id": "d",
+        "label": "0.2 kg"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 5,
+    "given": {
+      "F": 30,
+      "a": 6
+    },
+    "formulas": [
+      "m = F / a"
+    ],
+    "explanation": "m = F/a = 30/6 = 5 kg."
+  },
+  {
+    "id": "for-41",
+    "unitId": "forces",
+    "conceptTag": "force-mass",
+    "difficulty": 2,
+    "prompt": "A net force of 40 N gives an object an acceleration of 8 m/s². What is its mass?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.2 kg"
+      },
+      {
+        "id": "b",
+        "label": "5 kg"
+      },
+      {
+        "id": "c",
+        "label": "32 kg"
+      },
+      {
+        "id": "d",
+        "label": "320 kg"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 5,
+    "given": {
+      "F": 40,
+      "a": 8
+    },
+    "formulas": [
+      "m = F / a"
+    ],
+    "explanation": "m = F/a = 40/8 = 5 kg."
+  },
+  {
+    "id": "for-42",
+    "unitId": "forces",
+    "conceptTag": "force-mass",
+    "difficulty": 2,
+    "prompt": "A net force of 12 N gives an object an acceleration of 4 m/s². What is its mass?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "48 kg"
+      },
+      {
+        "id": "b",
+        "label": "8 kg"
+      },
+      {
+        "id": "c",
+        "label": "3 kg"
+      },
+      {
+        "id": "d",
+        "label": "0.33 kg"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 3,
+    "given": {
+      "F": 12,
+      "a": 4
+    },
+    "formulas": [
+      "m = F / a"
+    ],
+    "explanation": "m = F/a = 12/4 = 3 kg."
+  },
+  {
+    "id": "for-43",
+    "unitId": "forces",
+    "conceptTag": "force-mass",
+    "difficulty": 2,
+    "prompt": "A net force of 50 N gives an object an acceleration of 10 m/s². What is its mass?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.2 kg"
+      },
+      {
+        "id": "b",
+        "label": "500 kg"
+      },
+      {
+        "id": "c",
+        "label": "40 kg"
+      },
+      {
+        "id": "d",
+        "label": "5 kg"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 5,
+    "given": {
+      "F": 50,
+      "a": 10
+    },
+    "formulas": [
+      "m = F / a"
+    ],
+    "explanation": "m = F/a = 50/10 = 5 kg."
+  },
+  {
+    "id": "for-44",
+    "unitId": "forces",
+    "conceptTag": "force-mass",
+    "difficulty": 2,
+    "prompt": "A net force of 24 N gives an object an acceleration of 4 m/s². What is its mass?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.17 kg"
+      },
+      {
+        "id": "b",
+        "label": "96 kg"
+      },
+      {
+        "id": "c",
+        "label": "6 kg"
+      },
+      {
+        "id": "d",
+        "label": "20 kg"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 6,
+    "given": {
+      "F": 24,
+      "a": 4
+    },
+    "formulas": [
+      "m = F / a"
+    ],
+    "explanation": "m = F/a = 24/4 = 6 kg."
+  },
+  {
+    "id": "for-45",
+    "unitId": "forces",
+    "conceptTag": "net-force",
+    "difficulty": 3,
+    "prompt": "A 3 kg ball is pushed forward with 20 N while friction pushes back with 5 N. What is the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "25 N"
+      },
+      {
+        "id": "b",
+        "label": "5 N"
+      },
+      {
+        "id": "c",
+        "label": "15 N"
+      },
+      {
+        "id": "d",
+        "label": "20 N"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 15,
+    "given": {
+      "f1": 20,
+      "f2": 5
+    },
+    "formulas": [
+      "F_net = ΣF"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "ball",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "20 N"
+          },
+          {
+            "dir": "left",
+            "label": "5 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "F_net = 20 − 5 = 15 N (forward)."
+  },
+  {
+    "id": "for-46",
+    "unitId": "forces",
+    "conceptTag": "net-force",
+    "difficulty": 3,
+    "prompt": "A 4 kg ball is pushed forward with 30 N while friction pushes back with 10 N. What is the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "40 N"
+      },
+      {
+        "id": "b",
+        "label": "5 N"
+      },
+      {
+        "id": "c",
+        "label": "20 N"
+      },
+      {
+        "id": "d",
+        "label": "30 N"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 20,
+    "given": {
+      "f1": 30,
+      "f2": 10
+    },
+    "formulas": [
+      "F_net = ΣF"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "ball",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "30 N"
+          },
+          {
+            "dir": "left",
+            "label": "10 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "F_net = 30 − 10 = 20 N (forward)."
+  },
+  {
+    "id": "for-47",
+    "unitId": "forces",
+    "conceptTag": "net-force",
+    "difficulty": 3,
+    "prompt": "A 5 kg ball is pushed forward with 50 N while friction pushes back with 20 N. What is the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 N"
+      },
+      {
+        "id": "b",
+        "label": "6 N"
+      },
+      {
+        "id": "c",
+        "label": "70 N"
+      },
+      {
+        "id": "d",
+        "label": "50 N"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 30,
+    "given": {
+      "f1": 50,
+      "f2": 20
+    },
+    "formulas": [
+      "F_net = ΣF"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "ball",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "50 N"
+          },
+          {
+            "dir": "left",
+            "label": "20 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "F_net = 50 − 20 = 30 N (forward)."
+  },
+  {
+    "id": "for-48",
+    "unitId": "forces",
+    "conceptTag": "net-force",
+    "difficulty": 3,
+    "prompt": "A 2 kg ball is pushed forward with 18 N while friction pushes back with 6 N. What is the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6 N"
+      },
+      {
+        "id": "b",
+        "label": "12 N"
+      },
+      {
+        "id": "c",
+        "label": "18 N"
+      },
+      {
+        "id": "d",
+        "label": "24 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 12,
+    "given": {
+      "f1": 18,
+      "f2": 6
+    },
+    "formulas": [
+      "F_net = ΣF"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "ball",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "18 N"
+          },
+          {
+            "dir": "left",
+            "label": "6 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "F_net = 18 − 6 = 12 N (forward)."
+  },
+  {
+    "id": "for-49",
+    "unitId": "forces",
+    "conceptTag": "net-force",
+    "difficulty": 3,
+    "prompt": "A 6 kg ball is pushed forward with 40 N while friction pushes back with 10 N. What is the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "50 N"
+      },
+      {
+        "id": "b",
+        "label": "40 N"
+      },
+      {
+        "id": "c",
+        "label": "30 N"
+      },
+      {
+        "id": "d",
+        "label": "5 N"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 30,
+    "given": {
+      "f1": 40,
+      "f2": 10
+    },
+    "formulas": [
+      "F_net = ΣF"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "ball",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "40 N"
+          },
+          {
+            "dir": "left",
+            "label": "10 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "F_net = 40 − 10 = 30 N (forward)."
+  },
+  {
+    "id": "for-50",
+    "unitId": "forces",
+    "conceptTag": "net-force",
+    "difficulty": 3,
+    "prompt": "A 4 kg ball is pushed forward with 25 N while friction pushes back with 5 N. What is the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 N"
+      },
+      {
+        "id": "b",
+        "label": "20 N"
+      },
+      {
+        "id": "c",
+        "label": "25 N"
+      },
+      {
+        "id": "d",
+        "label": "5 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 20,
+    "given": {
+      "f1": 25,
+      "f2": 5
+    },
+    "formulas": [
+      "F_net = ΣF"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "ball",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "25 N"
+          },
+          {
+            "dir": "left",
+            "label": "5 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "F_net = 25 − 5 = 20 N (forward)."
+  },
+  {
+    "id": "for-51",
+    "unitId": "forces",
+    "conceptTag": "net-force",
+    "difficulty": 3,
+    "prompt": "A 5 kg ball is pushed forward with 35 N while friction pushes back with 15 N. What is the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "35 N"
+      },
+      {
+        "id": "b",
+        "label": "4 N"
+      },
+      {
+        "id": "c",
+        "label": "20 N"
+      },
+      {
+        "id": "d",
+        "label": "50 N"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 20,
+    "given": {
+      "f1": 35,
+      "f2": 15
+    },
+    "formulas": [
+      "F_net = ΣF"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "ball",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "35 N"
+          },
+          {
+            "dir": "left",
+            "label": "15 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "F_net = 35 − 15 = 20 N (forward)."
+  },
+  {
+    "id": "for-52",
+    "unitId": "forces",
+    "conceptTag": "net-force",
+    "difficulty": 3,
+    "prompt": "A 4 kg ball is pushed forward with 28 N while friction pushes back with 8 N. What is the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 N"
+      },
+      {
+        "id": "b",
+        "label": "36 N"
+      },
+      {
+        "id": "c",
+        "label": "28 N"
+      },
+      {
+        "id": "d",
+        "label": "20 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 20,
+    "given": {
+      "f1": 28,
+      "f2": 8
+    },
+    "formulas": [
+      "F_net = ΣF"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "ball",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "28 N"
+          },
+          {
+            "dir": "left",
+            "label": "8 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "F_net = 28 − 8 = 20 N (forward)."
+  },
+  {
+    "id": "for-53",
+    "unitId": "forces",
+    "conceptTag": "net-force",
+    "difficulty": 3,
+    "prompt": "A 4 kg ball is pushed forward with 22 N while friction pushes back with 2 N. What is the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 N"
+      },
+      {
+        "id": "b",
+        "label": "24 N"
+      },
+      {
+        "id": "c",
+        "label": "22 N"
+      },
+      {
+        "id": "d",
+        "label": "20 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 20,
+    "given": {
+      "f1": 22,
+      "f2": 2
+    },
+    "formulas": [
+      "F_net = ΣF"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "ball",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "22 N"
+          },
+          {
+            "dir": "left",
+            "label": "2 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "F_net = 22 − 2 = 20 N (forward)."
+  },
+  {
+    "id": "for-54",
+    "unitId": "forces",
+    "conceptTag": "net-force",
+    "difficulty": 3,
+    "prompt": "A 8 kg ball is pushed forward with 44 N while friction pushes back with 4 N. What is the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 N"
+      },
+      {
+        "id": "b",
+        "label": "48 N"
+      },
+      {
+        "id": "c",
+        "label": "40 N"
+      },
+      {
+        "id": "d",
+        "label": "44 N"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 40,
+    "given": {
+      "f1": 44,
+      "f2": 4
+    },
+    "formulas": [
+      "F_net = ΣF"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "ball",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "44 N"
+          },
+          {
+            "dir": "left",
+            "label": "4 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "F_net = 44 − 4 = 40 N (forward)."
+  },
+  {
+    "id": "for-55",
+    "unitId": "forces",
+    "conceptTag": "friction",
+    "difficulty": 3,
+    "prompt": "A 4 kg ball sits on turf with coefficient of friction μ = 0.5. What is the maximum friction force? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "40.5 N"
+      },
+      {
+        "id": "b",
+        "label": "2 N"
+      },
+      {
+        "id": "c",
+        "label": "40 N"
+      },
+      {
+        "id": "d",
+        "label": "20 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 20,
+    "given": {
+      "mu": 0.5,
+      "m": 4,
+      "g": 10
+    },
+    "formulas": [
+      "f = μ N",
+      "N = m g"
+    ],
+    "explanation": "N = mg = 40 N, so f = μN = 0.5×40 = 20 N."
+  },
+  {
+    "id": "for-56",
+    "unitId": "forces",
+    "conceptTag": "friction",
+    "difficulty": 3,
+    "prompt": "A 10 kg ball sits on turf with coefficient of friction μ = 0.2. What is the maximum friction force? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "2 N"
+      },
+      {
+        "id": "b",
+        "label": "100 N"
+      },
+      {
+        "id": "c",
+        "label": "20 N"
+      },
+      {
+        "id": "d",
+        "label": "100.2 N"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 20,
+    "given": {
+      "mu": 0.2,
+      "m": 10,
+      "g": 10
+    },
+    "formulas": [
+      "f = μ N",
+      "N = m g"
+    ],
+    "explanation": "N = mg = 100 N, so f = μN = 0.2×100 = 20 N."
+  },
+  {
+    "id": "for-57",
+    "unitId": "forces",
+    "conceptTag": "friction",
+    "difficulty": 3,
+    "prompt": "A 5 kg ball sits on turf with coefficient of friction μ = 0.1. What is the maximum friction force? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "50 N"
+      },
+      {
+        "id": "b",
+        "label": "0.5 N"
+      },
+      {
+        "id": "c",
+        "label": "50.1 N"
+      },
+      {
+        "id": "d",
+        "label": "5 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 5,
+    "given": {
+      "mu": 0.1,
+      "m": 5,
+      "g": 10
+    },
+    "formulas": [
+      "f = μ N",
+      "N = m g"
+    ],
+    "explanation": "N = mg = 50 N, so f = μN = 0.1×50 = 5 N."
+  },
+  {
+    "id": "for-58",
+    "unitId": "forces",
+    "conceptTag": "friction",
+    "difficulty": 3,
+    "prompt": "A 2 kg ball sits on turf with coefficient of friction μ = 0.5. What is the maximum friction force? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 N"
+      },
+      {
+        "id": "b",
+        "label": "20 N"
+      },
+      {
+        "id": "c",
+        "label": "20.5 N"
+      },
+      {
+        "id": "d",
+        "label": "1 N"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 10,
+    "given": {
+      "mu": 0.5,
+      "m": 2,
+      "g": 10
+    },
+    "formulas": [
+      "f = μ N",
+      "N = m g"
+    ],
+    "explanation": "N = mg = 20 N, so f = μN = 0.5×20 = 10 N."
+  },
+  {
+    "id": "for-59",
+    "unitId": "forces",
+    "conceptTag": "friction",
+    "difficulty": 3,
+    "prompt": "A 5 kg ball sits on turf with coefficient of friction μ = 0.4. What is the maximum friction force? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "50 N"
+      },
+      {
+        "id": "b",
+        "label": "20 N"
+      },
+      {
+        "id": "c",
+        "label": "2 N"
+      },
+      {
+        "id": "d",
+        "label": "50.4 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 20,
+    "given": {
+      "mu": 0.4,
+      "m": 5,
+      "g": 10
+    },
+    "formulas": [
+      "f = μ N",
+      "N = m g"
+    ],
+    "explanation": "N = mg = 50 N, so f = μN = 0.4×50 = 20 N."
+  },
+  {
+    "id": "for-60",
+    "unitId": "forces",
+    "conceptTag": "friction",
+    "difficulty": 3,
+    "prompt": "A 6 kg ball sits on turf with coefficient of friction μ = 0.2. What is the maximum friction force? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "60.2 N"
+      },
+      {
+        "id": "b",
+        "label": "60 N"
+      },
+      {
+        "id": "c",
+        "label": "1.2 N"
+      },
+      {
+        "id": "d",
+        "label": "12 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 12,
+    "given": {
+      "mu": 0.2,
+      "m": 6,
+      "g": 10
+    },
+    "formulas": [
+      "f = μ N",
+      "N = m g"
+    ],
+    "explanation": "N = mg = 60 N, so f = μN = 0.2×60 = 12 N."
+  },
+  {
+    "id": "for-61",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 3,
+    "prompt": "A 3 kg ball feels 30 N forward and 6 N of friction. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "24 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "8 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "12 m/s²"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 8,
+    "given": {
+      "f1": 30,
+      "f2": 6,
+      "m": 3
+    },
+    "formulas": [
+      "a = F_net / m"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "ball",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "30 N"
+          },
+          {
+            "dir": "left",
+            "label": "6 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "F_net = 24 N, a = F_net/m = 24/3 = 8 m/s²."
+  },
+  {
+    "id": "for-62",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 3,
+    "prompt": "A 5 kg ball feels 40 N forward and 10 N of friction. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "8 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s²"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 6,
+    "given": {
+      "f1": 40,
+      "f2": 10,
+      "m": 5
+    },
+    "formulas": [
+      "a = F_net / m"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "ball",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "40 N"
+          },
+          {
+            "dir": "left",
+            "label": "10 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "F_net = 30 N, a = F_net/m = 30/5 = 6 m/s²."
+  },
+  {
+    "id": "for-63",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 3,
+    "prompt": "A 4 kg ball feels 24 N forward and 4 N of friction. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "7 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "20 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "5 m/s²"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 5,
+    "given": {
+      "f1": 24,
+      "f2": 4,
+      "m": 4
+    },
+    "formulas": [
+      "a = F_net / m"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "ball",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "24 N"
+          },
+          {
+            "dir": "left",
+            "label": "4 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "F_net = 20 N, a = F_net/m = 20/4 = 5 m/s²."
+  },
+  {
+    "id": "for-64",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 3,
+    "prompt": "A 5 kg ball feels 36 N forward and 6 N of friction. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "8.4 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "30 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "7.2 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "6 m/s²"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 6,
+    "given": {
+      "f1": 36,
+      "f2": 6,
+      "m": 5
+    },
+    "formulas": [
+      "a = F_net / m"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "ball",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "36 N"
+          },
+          {
+            "dir": "left",
+            "label": "6 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "F_net = 30 N, a = F_net/m = 30/5 = 6 m/s²."
+  },
+  {
+    "id": "for-65",
+    "unitId": "forces",
+    "conceptTag": "incline-force",
+    "difficulty": 4,
+    "prompt": "A 2 kg ball rests on a ramp inclined at 30°. What is the component of gravity along the ramp? (sin 30° = 0.5, g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 N"
+      },
+      {
+        "id": "b",
+        "label": "10 N"
+      },
+      {
+        "id": "c",
+        "label": "1 N"
+      },
+      {
+        "id": "d",
+        "label": "12 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "m": 2,
+      "angleDeg": 30
+    },
+    "formulas": [
+      "F = m g sinθ"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 30,
+        "blockLabel": "ball",
+        "showForces": true
+      },
+      "caption": "Ramp at 30°"
+    },
+    "explanation": "F_parallel = mg sinθ = 2×10×0.5 = 10 N."
+  },
+  {
+    "id": "for-66",
+    "unitId": "forces",
+    "conceptTag": "incline-force",
+    "difficulty": 4,
+    "prompt": "A 5 kg ball rests on a ramp inclined at 37°. What is the component of gravity along the ramp? (sin 37° = 0.6, g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "3 N"
+      },
+      {
+        "id": "b",
+        "label": "30 N"
+      },
+      {
+        "id": "c",
+        "label": "50 N"
+      },
+      {
+        "id": "d",
+        "label": "20 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 30,
+    "given": {
+      "m": 5,
+      "angleDeg": 37
+    },
+    "formulas": [
+      "F = m g sinθ"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 37,
+        "blockLabel": "ball",
+        "showForces": true
+      },
+      "caption": "Ramp at 37°"
+    },
+    "explanation": "F_parallel = mg sinθ = 5×10×0.6 = 30 N."
+  },
+  {
+    "id": "for-67",
+    "unitId": "forces",
+    "conceptTag": "incline-force",
+    "difficulty": 4,
+    "prompt": "A 4 kg ball rests on a ramp inclined at 53°. What is the component of gravity along the ramp? (sin 53° = 0.8, g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "8 N"
+      },
+      {
+        "id": "b",
+        "label": "3.2 N"
+      },
+      {
+        "id": "c",
+        "label": "40 N"
+      },
+      {
+        "id": "d",
+        "label": "32 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 32,
+    "given": {
+      "m": 4,
+      "angleDeg": 53
+    },
+    "formulas": [
+      "F = m g sinθ"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 53,
+        "blockLabel": "ball",
+        "showForces": true
+      },
+      "caption": "Ramp at 53°"
+    },
+    "explanation": "F_parallel = mg sinθ = 4×10×0.8 = 32 N."
+  },
+  {
+    "id": "for-68",
+    "unitId": "forces",
+    "conceptTag": "incline-force",
+    "difficulty": 4,
+    "prompt": "A 10 kg ball rests on a ramp inclined at 30°. What is the component of gravity along the ramp? (sin 30° = 0.5, g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 N"
+      },
+      {
+        "id": "b",
+        "label": "60 N"
+      },
+      {
+        "id": "c",
+        "label": "100 N"
+      },
+      {
+        "id": "d",
+        "label": "50 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 50,
+    "given": {
+      "m": 10,
+      "angleDeg": 30
+    },
+    "formulas": [
+      "F = m g sinθ"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 30,
+        "blockLabel": "ball",
+        "showForces": true
+      },
+      "caption": "Ramp at 30°"
+    },
+    "explanation": "F_parallel = mg sinθ = 10×10×0.5 = 50 N."
+  },
+  {
+    "id": "for-69",
+    "unitId": "forces",
+    "conceptTag": "incline-force",
+    "difficulty": 4,
+    "prompt": "A 5 kg ball rests on a ramp inclined at 30°. What is the component of gravity along the ramp? (sin 30° = 0.5, g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "50 N"
+      },
+      {
+        "id": "b",
+        "label": "25 N"
+      },
+      {
+        "id": "c",
+        "label": "2.5 N"
+      },
+      {
+        "id": "d",
+        "label": "30 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 25,
+    "given": {
+      "m": 5,
+      "angleDeg": 30
+    },
+    "formulas": [
+      "F = m g sinθ"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 30,
+        "blockLabel": "ball",
+        "showForces": true
+      },
+      "caption": "Ramp at 30°"
+    },
+    "explanation": "F_parallel = mg sinθ = 5×10×0.5 = 25 N."
+  },
+  {
+    "id": "for-70",
+    "unitId": "forces",
+    "conceptTag": "incline-force",
+    "difficulty": 4,
+    "prompt": "A 2 kg ball rests on a ramp inclined at 53°. What is the component of gravity along the ramp? (sin 53° = 0.8, g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "1.6 N"
+      },
+      {
+        "id": "b",
+        "label": "16 N"
+      },
+      {
+        "id": "c",
+        "label": "4 N"
+      },
+      {
+        "id": "d",
+        "label": "20 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 16,
+    "given": {
+      "m": 2,
+      "angleDeg": 53
+    },
+    "formulas": [
+      "F = m g sinθ"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 53,
+        "blockLabel": "ball",
+        "showForces": true
+      },
+      "caption": "Ramp at 53°"
+    },
+    "explanation": "F_parallel = mg sinθ = 2×10×0.8 = 16 N."
+  },
+  {
+    "id": "for-71",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 4,
+    "prompt": "A player pushes a 6 kg ball-machine with 50 N against 20 N of friction. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "8.33 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "11.67 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "5 m/s²"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 5,
+    "given": {
+      "F": 50,
+      "f": 20,
+      "m": 6
+    },
+    "formulas": [
+      "a = (F − f) / m"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "machine",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "50 N"
+          },
+          {
+            "dir": "left",
+            "label": "20 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "a = (F − f)/m = (50 − 20)/6 = 5 m/s²."
+  },
+  {
+    "id": "for-72",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 4,
+    "prompt": "A player pushes a 5 kg ball-machine with 40 N against 10 N of friction. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "30 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "8 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s²"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 6,
+    "given": {
+      "F": 40,
+      "f": 10,
+      "m": 5
+    },
+    "formulas": [
+      "a = (F − f) / m"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "machine",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "40 N"
+          },
+          {
+            "dir": "left",
+            "label": "10 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "a = (F − f)/m = (40 − 10)/5 = 6 m/s²."
+  },
+  {
+    "id": "for-73",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 4,
+    "prompt": "A player pushes a 4 kg ball-machine with 30 N against 6 N of friction. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "7.5 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "6 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "24 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "9 m/s²"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 6,
+    "given": {
+      "F": 30,
+      "f": 6,
+      "m": 4
+    },
+    "formulas": [
+      "a = (F − f) / m"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "machine",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "30 N"
+          },
+          {
+            "dir": "left",
+            "label": "6 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "a = (F − f)/m = (30 − 6)/4 = 6 m/s²."
+  },
+  {
+    "id": "for-74",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 4,
+    "prompt": "A player pushes a 8 kg ball-machine with 60 N against 20 N of friction. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "7.5 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "5 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "10 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "40 m/s²"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 5,
+    "given": {
+      "F": 60,
+      "f": 20,
+      "m": 8
+    },
+    "formulas": [
+      "a = (F − f) / m"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "machine",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "60 N"
+          },
+          {
+            "dir": "left",
+            "label": "20 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "a = (F − f)/m = (60 − 20)/8 = 5 m/s²."
+  },
+  {
+    "id": "for-75",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 4,
+    "prompt": "A player pushes a 5 kg ball-machine with 24 N against 4 N of friction. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "4.8 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "20 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "4 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "5.6 m/s²"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 4,
+    "given": {
+      "F": 24,
+      "f": 4,
+      "m": 5
+    },
+    "formulas": [
+      "a = (F − f) / m"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "machine",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "24 N"
+          },
+          {
+            "dir": "left",
+            "label": "4 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "a = (F − f)/m = (24 − 4)/5 = 4 m/s²."
+  },
+  {
+    "id": "for-76",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 4,
+    "prompt": "A player pushes a 6 kg ball-machine with 35 N against 5 N of friction. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6.67 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "5 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "5.83 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "30 m/s²"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 5,
+    "given": {
+      "F": 35,
+      "f": 5,
+      "m": 6
+    },
+    "formulas": [
+      "a = (F − f) / m"
+    ],
+    "diagram": {
+      "kind": "free-body",
+      "params": {
+        "bodyLabel": "machine",
+        "forces": [
+          {
+            "dir": "right",
+            "label": "35 N"
+          },
+          {
+            "dir": "left",
+            "label": "5 N"
+          }
+        ]
+      },
+      "caption": "Free-body diagram"
+    },
+    "explanation": "a = (F − f)/m = (35 − 5)/6 = 5 m/s²."
+  },
+  {
+    "id": "for-77",
+    "unitId": "forces",
+    "conceptTag": "net-force-2d",
+    "difficulty": 4,
+    "prompt": "Two perpendicular forces, 3 N and 4 N, act on a ball. What is the magnitude of the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "7 N"
+      },
+      {
+        "id": "b",
+        "label": "12 N"
+      },
+      {
+        "id": "c",
+        "label": "1 N"
+      },
+      {
+        "id": "d",
+        "label": "5 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 5,
+    "given": {
+      "fx": 3,
+      "fy": 4
+    },
+    "formulas": [
+      "F_net = √(F_x² + F_y²)"
+    ],
+    "explanation": "F_net = √(3² + 4²) = √25 = 5 N."
+  },
+  {
+    "id": "for-78",
+    "unitId": "forces",
+    "conceptTag": "net-force-2d",
+    "difficulty": 4,
+    "prompt": "Two perpendicular forces, 6 N and 8 N, act on a ball. What is the magnitude of the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "14 N"
+      },
+      {
+        "id": "b",
+        "label": "10 N"
+      },
+      {
+        "id": "c",
+        "label": "2 N"
+      },
+      {
+        "id": "d",
+        "label": "48 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "fx": 6,
+      "fy": 8
+    },
+    "formulas": [
+      "F_net = √(F_x² + F_y²)"
+    ],
+    "explanation": "F_net = √(6² + 8²) = √100 = 10 N."
+  },
+  {
+    "id": "for-79",
+    "unitId": "forces",
+    "conceptTag": "net-force-2d",
+    "difficulty": 4,
+    "prompt": "Two perpendicular forces, 5 N and 12 N, act on a ball. What is the magnitude of the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "60 N"
+      },
+      {
+        "id": "b",
+        "label": "7 N"
+      },
+      {
+        "id": "c",
+        "label": "13 N"
+      },
+      {
+        "id": "d",
+        "label": "17 N"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 13,
+    "given": {
+      "fx": 5,
+      "fy": 12
+    },
+    "formulas": [
+      "F_net = √(F_x² + F_y²)"
+    ],
+    "explanation": "F_net = √(5² + 12²) = √169 = 13 N."
+  },
+  {
+    "id": "for-80",
+    "unitId": "forces",
+    "conceptTag": "net-force-2d",
+    "difficulty": 4,
+    "prompt": "Two perpendicular forces, 8 N and 6 N, act on a ball. What is the magnitude of the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "48 N"
+      },
+      {
+        "id": "b",
+        "label": "2 N"
+      },
+      {
+        "id": "c",
+        "label": "10 N"
+      },
+      {
+        "id": "d",
+        "label": "14 N"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 10,
+    "given": {
+      "fx": 8,
+      "fy": 6
+    },
+    "formulas": [
+      "F_net = √(F_x² + F_y²)"
+    ],
+    "explanation": "F_net = √(8² + 6²) = √100 = 10 N."
+  },
+  {
+    "id": "for-81",
+    "unitId": "forces",
+    "conceptTag": "net-force-2d",
+    "difficulty": 4,
+    "prompt": "Two perpendicular forces, 9 N and 12 N, act on a ball. What is the magnitude of the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "108 N"
+      },
+      {
+        "id": "b",
+        "label": "21 N"
+      },
+      {
+        "id": "c",
+        "label": "3 N"
+      },
+      {
+        "id": "d",
+        "label": "15 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 15,
+    "given": {
+      "fx": 9,
+      "fy": 12
+    },
+    "formulas": [
+      "F_net = √(F_x² + F_y²)"
+    ],
+    "explanation": "F_net = √(9² + 12²) = √225 = 15 N."
+  },
+  {
+    "id": "for-82",
+    "unitId": "forces",
+    "conceptTag": "net-force-2d",
+    "difficulty": 4,
+    "prompt": "Two perpendicular forces, 20 N and 21 N, act on a ball. What is the magnitude of the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "29 N"
+      },
+      {
+        "id": "b",
+        "label": "41 N"
+      },
+      {
+        "id": "c",
+        "label": "420 N"
+      },
+      {
+        "id": "d",
+        "label": "1 N"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 29,
+    "given": {
+      "fx": 20,
+      "fy": 21
+    },
+    "formulas": [
+      "F_net = √(F_x² + F_y²)"
+    ],
+    "explanation": "F_net = √(20² + 21²) = √841 = 29 N."
+  },
+  {
+    "id": "for-83",
+    "unitId": "forces",
+    "conceptTag": "net-force-2d",
+    "difficulty": 4,
+    "prompt": "Two perpendicular forces, 7 N and 24 N, act on a ball. What is the magnitude of the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "25 N"
+      },
+      {
+        "id": "b",
+        "label": "17 N"
+      },
+      {
+        "id": "c",
+        "label": "31 N"
+      },
+      {
+        "id": "d",
+        "label": "168 N"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 25,
+    "given": {
+      "fx": 7,
+      "fy": 24
+    },
+    "formulas": [
+      "F_net = √(F_x² + F_y²)"
+    ],
+    "explanation": "F_net = √(7² + 24²) = √625 = 25 N."
+  },
+  {
+    "id": "for-84",
+    "unitId": "forces",
+    "conceptTag": "net-force-2d",
+    "difficulty": 4,
+    "prompt": "Two perpendicular forces, 10 N and 24 N, act on a ball. What is the magnitude of the net force?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "14 N"
+      },
+      {
+        "id": "b",
+        "label": "240 N"
+      },
+      {
+        "id": "c",
+        "label": "34 N"
+      },
+      {
+        "id": "d",
+        "label": "26 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 26,
+    "given": {
+      "fx": 10,
+      "fy": 24
+    },
+    "formulas": [
+      "F_net = √(F_x² + F_y²)"
+    ],
+    "explanation": "F_net = √(10² + 24²) = √676 = 26 N."
+  },
+  {
+    "id": "for-85",
+    "unitId": "forces",
+    "conceptTag": "newton-first-law",
+    "difficulty": 5,
+    "prompt": "A ball rolls across frictionless turf at a constant velocity. What is the net force on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Zero"
+      },
+      {
+        "id": "b",
+        "label": "In the direction of motion"
+      },
+      {
+        "id": "c",
+        "label": "Equal to its weight"
+      },
+      {
+        "id": "d",
+        "label": "Increasing"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "Constant velocity means zero acceleration, so by F = ma the net force is zero."
+  },
+  {
+    "id": "for-86",
+    "unitId": "forces",
+    "conceptTag": "newton-third-law",
+    "difficulty": 5,
+    "prompt": "Your foot pushes on the ball with 50 N. What does Newton’s third law say about the ball’s force on your foot?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "50 N in the opposite direction"
+      },
+      {
+        "id": "b",
+        "label": "Less, because the ball is light"
+      },
+      {
+        "id": "c",
+        "label": "50 N in the same direction"
+      },
+      {
+        "id": "d",
+        "label": "Zero"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "Action-reaction pairs are equal in magnitude and opposite in direction."
+  },
+  {
+    "id": "for-87",
+    "unitId": "forces",
+    "conceptTag": "inertia",
+    "difficulty": 5,
+    "prompt": "Two balls feel the same net force. The heavier one will:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Not move"
+      },
+      {
+        "id": "b",
+        "label": "Accelerate less"
+      },
+      {
+        "id": "c",
+        "label": "Accelerate more"
+      },
+      {
+        "id": "d",
+        "label": "Accelerate the same"
+      }
+    ],
+    "correctChoiceId": "b",
+    "explanation": "a = F/m: for the same F, larger mass gives smaller acceleration."
+  },
+  {
+    "id": "for-88",
+    "unitId": "forces",
+    "conceptTag": "equilibrium",
+    "difficulty": 5,
+    "prompt": "A ball is held still on a table. Which best describes the forces on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Only the normal force acts"
+      },
+      {
+        "id": "b",
+        "label": "Only gravity acts"
+      },
+      {
+        "id": "c",
+        "label": "A net downward force"
+      },
+      {
+        "id": "d",
+        "label": "Weight down balanced by normal force up"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "At rest the forces balance: the upward normal force equals the downward weight."
+  },
+  {
+    "id": "for-89",
+    "unitId": "forces",
+    "conceptTag": "double-force",
+    "difficulty": 5,
+    "prompt": "If you double the net force on a ball while keeping its mass the same, the acceleration:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Halves"
+      },
+      {
+        "id": "b",
+        "label": "Quadruples"
+      },
+      {
+        "id": "c",
+        "label": "Doubles"
+      },
+      {
+        "id": "d",
+        "label": "Stays the same"
+      }
+    ],
+    "correctChoiceId": "c",
+    "explanation": "a = F/m is proportional to F, so doubling F doubles a."
+  },
+  {
+    "id": "for-90",
+    "unitId": "forces",
+    "conceptTag": "mass-vs-weight",
+    "difficulty": 5,
+    "prompt": "How do mass and weight differ?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Mass is the amount of matter (kg); weight is the gravitational force (N)"
+      },
+      {
+        "id": "b",
+        "label": "Weight never changes with location"
+      },
+      {
+        "id": "c",
+        "label": "They are the same thing"
+      },
+      {
+        "id": "d",
+        "label": "Mass is measured in newtons"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "Mass (kg) is intrinsic; weight = mg (N) depends on gravity."
+  },
+  {
+    "id": "for-91",
+    "unitId": "forces",
+    "conceptTag": "friction-direction",
+    "difficulty": 5,
+    "prompt": "Which way does kinetic friction act on a ball rolling to the right?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "To the right"
+      },
+      {
+        "id": "b",
+        "label": "Downward"
+      },
+      {
+        "id": "c",
+        "label": "Upward"
+      },
+      {
+        "id": "d",
+        "label": "To the left (opposing motion)"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "Friction opposes relative motion, so it acts opposite the direction of travel."
+  },
+  {
+    "id": "for-92",
+    "unitId": "forces",
+    "conceptTag": "normal-force",
+    "difficulty": 5,
+    "prompt": "A ball sits on flat ground. The normal force on it equals:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Its weight, mg"
+      },
+      {
+        "id": "b",
+        "label": "Zero"
+      },
+      {
+        "id": "c",
+        "label": "Twice its weight"
+      },
+      {
+        "id": "d",
+        "label": "Its mass"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "On level ground with no vertical acceleration, normal force balances weight: N = mg."
+  },
+  {
+    "id": "for-93",
+    "unitId": "forces",
+    "conceptTag": "balanced-forces",
+    "difficulty": 5,
+    "prompt": "A ball moving at steady speed in a straight line has:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "No forces at all"
+      },
+      {
+        "id": "b",
+        "label": "Balanced (net zero) forces"
+      },
+      {
+        "id": "c",
+        "label": "A net forward force"
+      },
+      {
+        "id": "d",
+        "label": "Increasing acceleration"
+      }
+    ],
+    "correctChoiceId": "b",
+    "explanation": "Steady speed in a straight line = constant velocity = zero net force."
+  },
+  {
+    "id": "for-94",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 5,
+    "prompt": "A 6 kg sled is pushed with 100 N forward against 40 N of friction. Find its acceleration, then state the net force direction.",
+    "choices": [
+      {
+        "id": "a",
+        "label": "16.67 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "60 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "23.33 m/s²"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "F": 100,
+      "f": 40,
+      "m": 6
+    },
+    "formulas": [
+      "a = (F − f) / m"
+    ],
+    "explanation": "a = (100 − 40)/6 = 10 m/s² forward."
+  },
+  {
+    "id": "for-95",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 5,
+    "prompt": "A 5 kg sled is pushed with 80 N forward against 30 N of friction. Find its acceleration, then state the net force direction.",
+    "choices": [
+      {
+        "id": "a",
+        "label": "16 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "22 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "10 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "50 m/s²"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 10,
+    "given": {
+      "F": 80,
+      "f": 30,
+      "m": 5
+    },
+    "formulas": [
+      "a = (F − f) / m"
+    ],
+    "explanation": "a = (80 − 30)/5 = 10 m/s² forward."
+  },
+  {
+    "id": "for-96",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 5,
+    "prompt": "A 10 kg sled is pushed with 120 N forward against 60 N of friction. Find its acceleration, then state the net force direction.",
+    "choices": [
+      {
+        "id": "a",
+        "label": "18 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "12 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "60 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "6 m/s²"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 6,
+    "given": {
+      "F": 120,
+      "f": 60,
+      "m": 10
+    },
+    "formulas": [
+      "a = (F − f) / m"
+    ],
+    "explanation": "a = (120 − 60)/10 = 6 m/s² forward."
+  },
+  {
+    "id": "for-97",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 5,
+    "prompt": "A 6 kg sled is pushed with 45 N forward against 15 N of friction. Find its acceleration, then state the net force direction.",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "7.5 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "10 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "30 m/s²"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 5,
+    "given": {
+      "F": 45,
+      "f": 15,
+      "m": 6
+    },
+    "formulas": [
+      "a = (F − f) / m"
+    ],
+    "explanation": "a = (45 − 15)/6 = 5 m/s² forward."
+  },
+  {
+    "id": "for-98",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 5,
+    "prompt": "A 8 kg sled is pushed with 60 N forward against 20 N of friction. Find its acceleration, then state the net force direction.",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "5 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "7.5 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "40 m/s²"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 5,
+    "given": {
+      "F": 60,
+      "f": 20,
+      "m": 8
+    },
+    "formulas": [
+      "a = (F − f) / m"
+    ],
+    "explanation": "a = (60 − 20)/8 = 5 m/s² forward."
+  },
+  {
+    "id": "for-99",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 5,
+    "prompt": "A 6 kg sled is pushed with 90 N forward against 30 N of friction. Find its acceleration, then state the net force direction.",
+    "choices": [
+      {
+        "id": "a",
+        "label": "60 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "15 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "20 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s²"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 10,
+    "given": {
+      "F": 90,
+      "f": 30,
+      "m": 6
+    },
+    "formulas": [
+      "a = (F − f) / m"
+    ],
+    "explanation": "a = (90 − 30)/6 = 10 m/s² forward."
+  },
+  {
+    "id": "for-100",
+    "unitId": "forces",
+    "conceptTag": "net-force-accel",
+    "difficulty": 5,
+    "prompt": "A 10 kg sled is pushed with 140 N forward against 40 N of friction. Find its acceleration, then state the net force direction.",
+    "choices": [
+      {
+        "id": "a",
+        "label": "18 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "100 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "14 m/s²"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "F": 140,
+      "f": 40,
+      "m": 10
+    },
+    "formulas": [
+      "a = (F − f) / m"
+    ],
+    "explanation": "a = (140 − 40)/10 = 10 m/s² forward."
+  }
+]

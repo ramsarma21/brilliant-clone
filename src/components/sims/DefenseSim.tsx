@@ -1,6 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import type { SimProps } from './types'
+import type { JerseyPattern } from '../../types'
 import { Calculator } from './Calculator'
+import { usePlayerKit } from '../../lib/playerKit'
+import { drawPlayerLegs, drawPlayerShorts, bodyMetrics, drawPlayerArms, idleHands } from '../../lib/playerCanvas'
+import { fetchHighScore, saveHighScore } from '../../lib/scores'
 
 // ============================================================================
 // Momentum unit — soccer skill = DEFENDING (the challenge-menu drill).
@@ -399,6 +404,8 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const [answerStr, setAnswerStr] = useState('')
   const [streak, setStreak] = useState(0)
   const [best, setBest] = useState(() => { try { return Number(localStorage.getItem(BEST_KEY) ?? 0) || 0 } catch { return 0 } })
+  // Reconcile the all-time record with Supabase for the signed-in user on mount.
+  useEffect(() => { void fetchHighScore('momentum').then(setBest) }, [])
   // Gated first run (showGoal): the drill only finishes once you have won the ball
   // with ALL THREE challenges. Tracks which move ids are done.
   const [wonTypes, setWonTypes] = useState<MoveId[]>([])
@@ -407,6 +414,15 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const [robbed, setRobbed] = useState(false)
   const [, force] = useState(0)
   const rerender = useCallback(() => force((n) => n + 1), [])
+
+  // The controlled defender wears YOUR equipped loadout. usePlayerKit merges the
+  // equipped jersey + cleats COLOURS onto TEAM_KIT (shirt/shorts/socks/boots),
+  // while preserving the structural identity fields (number, hair, skin, facing).
+  // Held in a ref so the rAF draw loop reads the latest without re-subscribing;
+  // the opponent attacker keeps his own distinct FOE_KIT.
+  const teamKit = usePlayerKit(TEAM_KIT)
+  const kitRef = useRef<Kit>(teamKit)
+  kitRef.current = teamKit
 
   const sfx = useRef(new Sfx())
   const soundRef = useRef(sound); soundRef.current = sound
@@ -484,7 +500,7 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
       if (soundRef.current) { sfx.current.tackle(); sfx.current.cheer() }
       const s = streakRef.current + 1
       setStreak(s)
-      if (s > bestRef.current) { setBest(s); try { localStorage.setItem(BEST_KEY, String(s)) } catch { /* ignore */ } }
+      if (s > bestRef.current) { setBest(s); void saveHighScore('momentum', s) }
       const sceneNow = sceneRef.current
       sceneNow.onChange({ ...sceneNow.state, connections: Number(sceneNow.state.connections ?? 0) + 1 })
       if (sceneNow.showGoal) {
@@ -616,6 +632,10 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
       ctx.restore()
     }
 
+    // The defender you control wears the LIVE loadout kit; the attacker keeps his
+    // distinct FOE_KIT. Read fresh each frame from the kit ref.
+    const youKit = kitRef.current
+
     const animating = g.phase === 'fly' || (g.phase === 'result' && !g.robbed && g.outcome !== null)
     const u = g.phase === 'fly' ? clamp(g.t / FLY_DUR, 0, 1) : 1
 
@@ -629,7 +649,7 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
       const ball: V3 = { x: ax + g.openSide * 0.3, y: BALL_R, z: az - 0.3 }
       // attacker nearer than you at the end → draw you first, him on top
       const drawAtt = () => drawWorldPlayer(ax, az, FOE_KIT, tu < 0.96, false)
-      const drawYou = () => drawWorldPlayer(YOU_HOME.x, YOU_HOME.z, TEAM_KIT, tu < 0.3, false)
+      const drawYou = () => drawWorldPlayer(YOU_HOME.x, YOU_HOME.z, youKit, tu < 0.3, false)
       if (az >= YOU_HOME.z) { drawAtt(); drawYou() } else { drawYou(); drawAtt() }
       drawWorldBall(ball.x, ball.y, ball.z, now / 300)
     } else if (animating && g.picked && g.outcome) {
@@ -649,7 +669,7 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
           : sc.you.slide > 0.05 ? { footX: null, footY: 0, lean: sc.you.lean, slide: sc.you.slide }
           : Math.abs(sc.you.lean) > 0.02 ? leanAction(sc.you.lean)
           : undefined
-        drawWorldPlayer(sc.you.x, sc.you.z, TEAM_KIT, sc.you.running, false, act)
+        drawWorldPlayer(sc.you.x, sc.you.z, youKit, sc.you.running, false, act)
       }
       if (sc.att.z >= sc.you.z) { drawAtt(); drawYou() } else { drawYou(); drawAtt() }
       drawWorldBall(sc.ball.x, sc.ball.y, sc.ball.z, g.t * 9, sc.contact * 0.4)
@@ -661,7 +681,7 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
       const shuffle = Math.sin(ph) * 0.12
       drawWorldPlayer(0, g.attZ, FOE_KIT, g.phase === 'menu' || g.phase === 'solve', false)
       drawWorldBall(0, BALL_R, g.attZ - 0.45, now / 320)
-      drawWorldPlayer(YOU_HOME.x + shuffle, YOU_HOME.z, TEAM_KIT, false, false)
+      drawWorldPlayer(YOU_HOME.x + shuffle, YOU_HOME.z, youKit, false, false)
     }
 
     ctx.fillStyle = gradRef.current.vignette; ctx.fillRect(-30, -30, W + 60, H + 60)
@@ -745,7 +765,10 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const unlimited = !showGoal
   const wonCount = wonTypes.length
   const allWon = !unlimited && wonCount >= MOVES.length
-  const canClickContinue = phase === 'result' && (robbed || outcome === 'beat' || outcome === 'lost')
+  // A wrong answer now opens the worked-solution lesson (its own navigation /
+  // "Next attacker" continues the run), so it is intentionally excluded from the
+  // click-anywhere-to-continue shortcut — otherwise the first click would skip it.
+  const canClickContinue = phase === 'result' && (robbed || outcome === 'beat')
 
   return (
     <div
@@ -814,6 +837,12 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
           </div>
         )}
 
+        {/* Wrong answer → animated, multi-step worked-solution lesson (replaces the
+            brief miss banner above, which it covers). No try-yourself sandbox. */}
+        {phase === 'result' && outcome === 'lost' && !robbed && p && (
+          <DefenseLesson p={p} used={g.played} onDone={nextRun} />
+        )}
+
         {phase === 'result' && robbed && (
           <div className="soccer__banner soccer__banner--save">
             <strong>TOO SLOW ⛔</strong>
@@ -864,7 +893,7 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
                     type="text"
                     inputMode="decimal"
                     value={answerStr}
-                    placeholder={p.unit}
+                    placeholder={answerOf(p).toFixed(1)}
                     onChange={(e) => setAnswerStr(e.target.value)}
                   />
                 </label>
@@ -914,24 +943,279 @@ function missText(p: Problem | null, used: number): string {
 }
 
 // ============================================================================
+// Wrong-answer lesson — an animated, multi-step worked solution for THIS
+// attacker's momentum problem, modelled on KinematicsSim's SolveLesson. It walks
+// p = m·v in whichever direction the challenge asked, one fill-the-blank step at a
+// time, ending on the correct answer. Explanation slides ONLY: there is no
+// try-yourself sandbox (only the shooting sims keep that). When it is done — via
+// its own "Next attacker", "Skip explanation", or the side-panel button — the
+// existing nextRun flow starts the next attacker.
+// ============================================================================
+function DefenseLesson({ p, used, onDone }: { p: Problem; used: number; onDone: () => void }) {
+  const dir = p.dir
+  const answer = answerOf(p)
+  const unit = p.unit
+  const uName = unknownName(dir) // 'momentum p' | 'speed v' | 'mass m'
+  const uSym = dir === 'findP' ? 'p' : dir === 'findV' ? 'v' : 'm'
+  // the right-hand side that isolates the unknown, then the numbers plugged in
+  const rhsSym = dir === 'findP' ? 'm · v' : dir === 'findV' ? 'p / m' : 'p / v'
+  const numExpr = dir === 'findP' ? `${p.m} · ${p.v}` : dir === 'findV' ? `${p.p} / ${p.m}` : `${p.p} / ${p.v}`
+  // a "wrong operation / wrong variable" numeric distractor for the final compute
+  const wrongOp = dir === 'findP' ? p.m + p.v : dir === 'findV' ? p.p / p.v : p.p / p.m
+
+  // "What went wrong" — about the player's actual miss, not the worked solution.
+  const tooHigh = used > answer
+  const verdict = `You went with ${round1(used)} ${unit} — that reads his momentum ${tooHigh ? 'too high' : 'too low'}. The ${uName} works out to ${answer} ${unit}; here's how to get there.`
+
+  // ---- paced, fill-the-blank worked steps ----
+  const [stepIdx, setStepIdx] = useState(0)
+  const [answered, setAnswered] = useState<boolean[]>(() => [false, false, false])
+  const [pick, setPick] = useState<number | null>(null)
+  const [checked, setChecked] = useState(false)
+  const [revealed, setRevealed] = useState(false)
+  const [showLessonCalc, setShowLessonCalc] = useState(false)
+  // Stable-per-mount correct slot for each step's MCQ (3 steps, 3 options each).
+  const slots = useMemo(() => Array.from({ length: 3 }, () => Math.floor(Math.random() * 3)), [])
+  useEffect(() => { setPick(null); setChecked(false); setRevealed(false) }, [stepIdx])
+
+  // Count-up "time spent learning" bar (informational — no auto-skip without a
+  // sandbox to fall back to).
+  const LEARN_LIMIT = 90
+  const [elapsed, setElapsed] = useState(0)
+  useEffect(() => {
+    const start = performance.now()
+    const id = window.setInterval(() => setElapsed((performance.now() - start) / 1000), 100)
+    return () => window.clearInterval(id)
+  }, [])
+  const barPct = Math.min(100, (elapsed / LEARN_LIMIT) * 100)
+  const learnBar = (
+    <div className="soccer__learnbar">
+      <span>⏱ Time spent learning</span>
+      <div className="soccer__learnbar-track"><div className="soccer__learnbar-fill" style={{ width: `${barPct}%` }} /></div>
+      <span className="soccer__learnbar-num">{elapsed.toFixed(0)}s</span>
+    </div>
+  )
+
+  type Opt = { label: string; correct: boolean }
+  const rotate = (opts: Opt[], offset: number): Opt[] => { const k = offset % opts.length; return [...opts.slice(k), ...opts.slice(0, k)] }
+  const strOpts = (correctLabel: string, distractors: string[], offset: number): Opt[] =>
+    rotate([{ label: correctLabel, correct: true }, ...distractors.map((l) => ({ label: l, correct: false }))], offset)
+  const numFmt = (x: number) => `${round1(x)} ${unit}`
+  // Build numeric options, nudging any distractor whose formatted label collides
+  // with the correct one so the right answer is never duplicated.
+  const numOpts = (correctVal: number, distractors: number[], offset: number): Opt[] => {
+    const correctLabel = numFmt(correctVal)
+    const seen = new Set<string>([correctLabel])
+    const dist: string[] = []
+    for (const dv of distractors) {
+      let v = dv, label = numFmt(v), guard = 0
+      while (seen.has(label) && guard < 12) { v = v * 1.08 + 1; label = numFmt(v); guard++ }
+      seen.add(label); dist.push(label)
+    }
+    return rotate([{ label: correctLabel, correct: true }, ...dist.map((l) => ({ label: l, correct: false }))], offset)
+  }
+
+  const nameP = 'momentum p', nameV = 'speed v', nameM = 'mass m'
+  const otherNames = [nameP, nameV, nameM].filter((n) => n !== uName)
+
+  type Step = {
+    n: string; cmp?: boolean; tag: string; prompt: string; options: Opt[]
+    gate: 'check' | 'correct'
+    card: (blank: ReactNode) => ReactNode
+    solution: ReactNode
+  }
+  const steps: Step[] = [
+    {
+      n: '1', tag: 'Fill the blank', gate: 'check',
+      prompt: 'A clean tackle starts with reading the right thing. Which quantity does this challenge ask for?',
+      options: strOpts(uName, otherNames, slots[0]),
+      card: (blank) => (<>
+        <div className="soccer__step-formula">Momentum links mass and speed: p = m · v</div>
+        <div className="soccer__step-plug">here you must find {blank}</div>
+      </>),
+      solution: <>The challenge asks for the <b>{uName}</b>.</>,
+    },
+    {
+      n: '2', tag: 'Fill the blank', gate: 'check',
+      prompt: `Rearrange p = m · v to get ${uSym} on its own. Which expression equals ${uSym}?`,
+      options: strOpts(
+        rhsSym,
+        dir === 'findP' ? ['m + v', 'm / v'] : dir === 'findV' ? ['p · m', 'm / p'] : ['p · v', 'v / p'],
+        slots[1],
+      ),
+      card: (blank) => (<>
+        <div className="soccer__step-formula">Isolate {uSym} in p = m · v</div>
+        <div className="soccer__step-plug">{uSym} = {blank}</div>
+      </>),
+      solution: <>{uSym} = <b>{rhsSym}</b>.</>,
+    },
+    {
+      n: '★', cmp: true, tag: 'Solve it', gate: 'correct',
+      prompt: `Now drop his numbers in: what is the ${uName}?`,
+      options: numOpts(answer, [used, wrongOp], slots[2]),
+      card: (blank) => (<>
+        <div className="soccer__step-formula">Plug the numbers into {uSym} = {rhsSym}</div>
+        <div className="soccer__step-plug">{uSym} = {numExpr} = {blank}</div>
+      </>),
+      solution: <>{uSym} = {numExpr} = <b>{answer} {unit}</b> — that's the momentum to time your {p.move.name.toLowerCase()} against.</>,
+    },
+  ]
+  const N = steps.length
+  const cur = steps[stepIdx]
+  const last = stepIdx === N - 1
+  const stepDone = answered[stepIdx]
+  const pickedOpt = pick === null ? null : cur.options[pick]
+  const pickedCorrect = !!pickedOpt?.correct
+
+  // Pick a value for the blank (re-arms Check). Locked once the step is satisfied.
+  const choose = (i: number) => { if (stepDone) return; setPick(i); setChecked(false) }
+  // Computed steps proceed either way (a wrong check reveals the working to learn
+  // from); the final gate only proceeds when the answer is correct.
+  const checkAnswer = () => {
+    if (pick === null || stepDone) return
+    setChecked(true)
+    if (pickedCorrect) setAnswered((a) => { const b = [...a]; b[stepIdx] = true; return b })
+    else if (cur.gate === 'check') { setRevealed(true); setAnswered((a) => { const b = [...a]; b[stepIdx] = true; return b }) }
+  }
+  const blankSlot: ReactNode = pick === null
+    ? <span className="soccer__blank">?</span>
+    : <span className={`soccer__blank soccer__blank--filled${checked ? (pickedCorrect ? ' soccer__blank--ok' : ' soccer__blank--no') : ''}`}>{pickedOpt!.label}{checked ? (pickedCorrect ? ' ✓' : ' ✗') : ''}</span>
+  const showSolution = revealed || (checked && !pickedCorrect && cur.gate === 'check')
+
+  return (
+    // stop the click-anywhere-to-continue capture so the student can work the steps
+    <div className="soccer__lesson" onPointerDownCapture={(e) => e.stopPropagation()}>
+      <div className="soccer__lesson-inner">
+        <div className="soccer__lesson-head">
+          <div className="soccer__lesson-emoji">😖</div>
+          <div>
+            <h2 className="soccer__lesson-title">Beaten — read his momentum</h2>
+            <p className="soccer__lesson-sub">{verdict}</p>
+          </div>
+        </div>
+
+        <div className="soccer__lesson-chips">
+          <div className="chip"><span>challenge</span><strong>{p.move.emoji} {p.move.name}</strong></div>
+          {dir === 'findP' ? (<>
+            <div className="chip"><span>attacker mass</span><strong>m = {p.m} kg</strong></div>
+            <div className="chip"><span>his speed</span><strong>v = {p.v} m/s</strong></div>
+          </>) : dir === 'findV' ? (<>
+            <div className="chip"><span>his momentum</span><strong>p = {p.p} kg·m/s</strong></div>
+            <div className="chip"><span>attacker mass</span><strong>m = {p.m} kg</strong></div>
+          </>) : (<>
+            <div className="chip"><span>his momentum</span><strong>p = {p.p} kg·m/s</strong></div>
+            <div className="chip"><span>his speed</span><strong>v = {p.v} m/s</strong></div>
+          </>)}
+          <div className="chip chip--lock"><span>find</span><strong>{uName} ({unit})</strong></div>
+        </div>
+
+        <div className="soccer__stepper">
+          <div className="soccer__stepper-progress">
+            <span>Step {stepIdx + 1} of {N}</span>
+            <div className="soccer__stepper-dots">
+              {steps.map((_, i) => <i key={i} className={i === stepIdx ? 'is-on' : i < stepIdx ? 'is-done' : ''} />)}
+            </div>
+          </div>
+          {/* keyed so each reveal replays the big swap animation; the blank is filled
+              by picking below, then checking. */}
+          <div key={stepIdx} className={`soccer__step soccer__step--big${cur.cmp ? ' soccer__step--cmp' : ''}`}>
+            <span className="soccer__step-n">{cur.n}</span>
+            <div className="soccer__step-body">{cur.card(blankSlot)}</div>
+          </div>
+
+          {showSolution && (
+            <div className="soccer__solution">
+              <span className="soccer__solution-tag">Here's the working</span>
+              <div className="soccer__solution-body">{cur.solution}</div>
+            </div>
+          )}
+
+          <div key={`q${stepIdx}`} className="soccer__quiz">
+            <div className="soccer__quiz-q">
+              <span className="soccer__quiz-tag">{cur.tag}</span>
+              {cur.prompt}
+            </div>
+            <div className="soccer__quiz-opts">
+              {cur.options.map((o, i) => {
+                const chosen = pick === i
+                const state = chosen
+                  ? (checked ? (o.correct ? ' is-correct' : ' is-wrong') : ' is-picked')
+                  : (stepDone && o.correct ? ' is-correct' : '')
+                return (
+                  <button key={i} type="button" className={`soccer__quiz-opt${state}`} onClick={() => choose(i)} disabled={stepDone}>
+                    <span className="soccer__quiz-key">{String.fromCharCode(65 + i)}</span>{o.label}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="soccer__quiz-foot">
+              <span className={`soccer__quiz-fb${!checked ? '' : pickedCorrect ? ' is-good' : ' is-bad'}`}>
+                {!checked
+                  ? (pick === null ? 'Pick the value for the blank, then check it.' : 'Locked in? Hit "Check answer".')
+                  : pickedCorrect
+                    ? (last ? '✓ Correct! You read his momentum spot on.' : '✓ Correct! On you go.')
+                    : cur.gate === 'check'
+                      ? '✗ Not quite. Study the working below, then continue.'
+                      : '✗ Not quite. Try again, or reveal the worked solution.'}
+              </span>
+              <div className="soccer__quiz-actions">
+                {cur.gate === 'correct' && checked && !pickedCorrect && !revealed && (
+                  <button type="button" className="btn btn--ghost soccer__quiz-calc" onClick={() => setRevealed(true)}>Reveal solution</button>
+                )}
+                <button type="button" className="btn btn--ghost soccer__quiz-calc" onClick={() => setShowLessonCalc((s) => !s)}>🧮 {showLessonCalc ? 'Hide' : 'Calculator'}</button>
+                <button type="button" className="btn btn--primary soccer__quiz-check" onClick={checkAnswer} disabled={pick === null || stepDone}>{stepDone ? 'Checked ✓' : 'Check answer'}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {showLessonCalc && <Calculator onClose={() => setShowLessonCalc(false)} />}
+
+        <div className="soccer__lesson-foot">
+          {learnBar}
+          <div className="soccer__lesson-actions">
+            <button type="button" className="btn btn--ghost" onClick={() => setStepIdx((i) => Math.max(0, i - 1))} disabled={stepIdx === 0}>← Back</button>
+            {!last ? (
+              <button type="button" className="btn btn--primary soccer__try-btn" onClick={() => setStepIdx((i) => Math.min(N - 1, i + 1))} disabled={!stepDone}>{stepDone ? 'Next →' : 'Answer to continue'}</button>
+            ) : (<>
+              <button type="button" className="btn btn--ghost" onClick={onDone}>Skip explanation</button>
+              <button type="button" className="btn btn--primary soccer__try-btn" onClick={onDone} disabled={!stepDone}>Next attacker →</button>
+            </>)}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================================
 // Canvas drawing helpers (shared render kit with ForcesSim / KinematicsSim)
 // ============================================================================
 // `skinDark` is a one-shade-darker skin tone used for cheek/jaw + limb shading.
 // `faceCamera` picks whether a figure shows a FACE (true) or the BACK of the head
 // (false). The defender ("you") is trailed by the camera so you see his back;
 // the attacker drives toward the camera so you see his face.
+// YOUR PLAYER's BASE kit. The loadout (usePlayerKit) overrides ONLY the jersey
+// design + cleat colour fields (jersey/jerseyDark/jerseyHi/number/accent/pattern/
+// boot/bootDark). Everything below — white shorts, blue socks, collar, skin and
+// hair — stays fixed so the body draws + animates correctly from behind.
 const TEAM_KIT = {
   jersey: '#2f6df0', jerseyDark: '#1f4ec2', jerseyHi: '#6c9bff', collar: '#0d2f7a',
-  shorts: '#13234d', shortsDark: '#0c1834', sock: '#2f6df0', sockBand: '#ffffff',
-  boot: '#15171f', number: '#ffffff', num: 5, skin: '#e8b48a', skinDark: '#c2895f',
+  shorts: '#f4f6fb', shortsDark: '#c4ccdb', sock: '#2f6df0', sockBand: '#ffffff',
+  boot: '#15171f', bootDark: '#05060a', number: '#ffffff', num: 5, skin: '#e8b48a', skinDark: '#c2895f',
   hair: '#2c2016', hairStyle: 0, faceCamera: false,
 }
 const FOE_KIT = {
   jersey: '#ef4444', jerseyDark: '#b91c1c', jerseyHi: '#fca5a5', collar: '#7f1010',
   shorts: '#3a0d0d', shortsDark: '#250707', sock: '#ef4444', sockBand: '#ffe8e8',
-  boot: '#15171f', number: '#ffffff', num: 7, skin: '#b87a45', skinDark: '#945e31',
+  boot: '#15171f', bootDark: '#05060a', number: '#ffffff', num: 7, skin: '#b87a45', skinDark: '#945e31',
   hair: '#1a130c', hairStyle: 3, faceCamera: true,
 }
+// The render Kit for a figure. TEAM_KIT is YOUR PLAYER's BASE default; the
+// component skins it with the equipped loadout via usePlayerKit (which overrides
+// jersey/jerseyDark/jerseyHi/collar/shorts/shortsDark/sock/sockBand/boot/number
+// and preserves num/skin/skinDark/hair/hairStyle/faceCamera). FOE_KIT is the
+// opponent and is never loadout-skinned.
 type Kit = typeof TEAM_KIT
 
 function drawHair(ctx: CanvasRenderingContext2D, cx: number, headY: number, headR: number, style: number, color: string) {
@@ -1030,6 +1314,54 @@ function spawnConfetti(g: Game, at: P2) {
 
 type PlayerAction = { footX: number | null; footY: number; lean: number; slide?: number }
 
+// Render YOUR PLAYER's equipped jersey DESIGN in the accent colour. The caller has
+// already filled the torso with the base jersey colour + form shading and clipped to
+// the torso path, so these shapes are automatically clipped to the shirt silhouette.
+// (x0,y0,w,h) is the torso bounding box (top-left + size).
+function drawJerseyPattern(ctx: CanvasRenderingContext2D, pattern: JerseyPattern, accent: string, x0: number, y0: number, w: number, h: number) {
+  ctx.fillStyle = accent
+  switch (pattern) {
+    case 'stripes': {                                  // vertical accent stripes
+      const n = 5
+      const sw = w / (n * 2 - 1)
+      for (let i = 0; i < n; i++) ctx.fillRect(x0 + i * sw * 2, y0, sw, h)
+      break
+    }
+    case 'hoops': {                                    // horizontal accent bands
+      const n = 4
+      const bh = h / (n * 2 - 1)
+      for (let i = 0; i < n; i++) ctx.fillRect(x0, y0 + i * bh * 2, w, bh)
+      break
+    }
+    case 'sash': {                                     // one diagonal band shoulder→hip
+      const bw = w * 0.34
+      ctx.beginPath()
+      ctx.moveTo(x0, y0 + h * 0.12)
+      ctx.lineTo(x0 + bw, y0)
+      ctx.lineTo(x0 + w, y0 + h * 0.6)
+      ctx.lineTo(x0 + w - bw, y0 + h * 0.72)
+      ctx.closePath(); ctx.fill()
+      break
+    }
+    case 'halves': {                                   // left/right split
+      ctx.fillRect(x0 + w / 2, y0, w / 2, h)
+      break
+    }
+    case 'galaxy': {                                   // scattered accent flecks
+      const pts: Array<[number, number]> = [
+        [0.2, 0.16], [0.6, 0.1], [0.42, 0.38], [0.78, 0.46],
+        [0.24, 0.6], [0.56, 0.74], [0.14, 0.84], [0.82, 0.8],
+      ]
+      const r = Math.max(1.2, w * 0.055)
+      for (const [u, v] of pts) { ctx.beginPath(); ctx.arc(x0 + u * w, y0 + v * h, r, 0, Math.PI * 2); ctx.fill() }
+      break
+    }
+    case 'plain':
+    default:
+      break
+  }
+}
+
 function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit, now: number, running: boolean, hasBall: boolean, action?: PlayerAction) {
   const scale = feet.scale
   if (scale < 4 || scale > 360) return
@@ -1039,13 +1371,21 @@ function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit,
   const bob = running ? Math.abs(Math.sin(ph)) * 0.055 * scale : 0
   const cx = feet.sx
   const footY = feet.sy - bob
-  const headY = head.sy - bob
-  const hipY = headY + (footY - headY) * 0.52
+  const headY = head.sy - bob // top-of-head anchor (projected crown) for YOUR PLAYER
+  // YOUR PLAYER is the back-facing defender; the attacker faces the camera and is
+  // left on the original render path untouched.
+  const isSelf = !kit.faceCamera
+  // BOTH the back-facing defender AND the front-facing attacker now draw from the
+  // canonical athletic build (shared with the card + every other drill), so they
+  // are the same footballer — only the kit colours + facing differ.
+  const m = bodyMetrics(headY, footY)
+  const hipY = m.hipY
   // shoulders sit just below the head so the neck is a short stub, not a pole
-  const wBody = Math.max(5, 0.4 * scale)
-  const lw = Math.max(3, 0.15 * scale)
-  const headR = Math.max(3.5, 0.17 * scale)
-  const shoulderY = headY + headR * 1.2
+  const wBody = m.shoulderW
+  const lw = m.legW
+  const headR = m.headR
+  const headCenterY = m.headCY
+  const shoulderY = m.shoulderY
   const torsoH = hipY - shoulderY + 2
   const leanX = action ? clamp(action.lean, -1, 1) * wBody * 0.55 : 0
   const cxU = cx + leanX
@@ -1067,85 +1407,77 @@ function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit,
     footLx = cx - swing; footLy = footY - lift
     footRx = cx + swing; footRy = footY
   }
-  // LEGS — sock-coloured, thigh→shin taper with a slight forward knee bend. The
-  // foot end stays exactly on (footLx/footLy, footRx/footRy).
-  const thighW = Math.max(2.5, lw * 1.05)
-  const shinW = Math.max(2, lw * 0.9)
-  const legBow = (sx: number, ex: number, len: number) => ({ bx: -(ex - sx) * 0.07, by: len * 0.03 })
-  const lLen = Math.hypot(footLx - hipX, footLy - hipY)
-  const rLen = Math.hypot(footRx - hipX, footRy - hipY)
-  const lB = legBow(hipX, footLx, lLen)
-  const rB = legBow(hipX, footRx, rLen)
-  drawLimb(ctx, hipX, hipY, footLx, footLy, lB.bx, lB.by, thighW, shinW, kit.sock)
-  drawLimb(ctx, hipX, hipY, footRx, footRy, rB.bx, rB.by, thighW, shinW, kit.sock)
-  // sock bands near the ankles
-  ctx.strokeStyle = kit.sockBand; ctx.lineWidth = shinW * 0.95
-  ctx.beginPath(); ctx.moveTo(hipX + (footLx - hipX) * 0.66, hipY + (footLy - hipY) * 0.7); ctx.lineTo(hipX + (footLx - hipX) * 0.78, hipY + (footLy - hipY) * 0.82); ctx.stroke()
-  ctx.beginPath(); ctx.moveTo(hipX + (footRx - hipX) * 0.66, hipY + (footRy - hipY) * 0.7); ctx.lineTo(hipX + (footRx - hipX) * 0.78, hipY + (footRy - hipY) * 0.82); ctx.stroke()
-  // boots — darker, slightly elongated, pointing forward
-  ctx.fillStyle = kit.boot
-  ctx.beginPath(); ctx.ellipse(footRx + wBody * 0.06, footRy, lw * 1.05, lw * 0.5, 0, 0, Math.PI * 2); ctx.fill()
-  ctx.beginPath(); ctx.ellipse(footLx + wBody * 0.06, footLy, lw * 1.05, lw * 0.5, 0, 0, Math.PI * 2); ctx.fill()
+  // Both figures share the standardised lower-body renderer. The pose (hip CENTRE +
+  // the animated foot anchors + leg width) is reused for the legs and the white
+  // shorts. For the attacker the sock takes its RED jersey colour + dark cleat.
+  const bodyPose = {
+    hipX, hipY,
+    lFootX: footLx, lFootY: footLy, rFootX: footRx, rFootY: footRy,
+    legW: lw,
+    sock: kit.sock,
+    boot: kit.boot,
+    bootDark: (kit as { bootDark?: string }).bootDark ?? kit.boot,
+    detail,
+  }
+  // skin thigh → jersey-coloured sock shin + sock cuffs + boots, BEFORE the torso
+  drawPlayerLegs(ctx, bodyPose)
   ctx.lineCap = 'butt'
 
   // NECK — short skin stub so the head sits just above the shoulders
   ctx.strokeStyle = kit.skin; ctx.lineWidth = headR; ctx.lineCap = 'round'
-  ctx.beginPath(); ctx.moveTo(cxU, shoulderY + 1); ctx.lineTo(cxU, headY + headR * 0.95); ctx.stroke()
+  ctx.beginPath(); ctx.moveTo(cxU, shoulderY + 1); ctx.lineTo(cxU, headCenterY + headR * 0.95); ctx.stroke()
   ctx.lineCap = 'butt'
 
   // TORSO — trapezoid: wide shoulders tapering to a narrower waist
   const topW = wBody
-  const botW = wBody * 0.82
+  const botW = m.waistW
   const torsoBot = shoulderY + torsoH
-  ctx.fillStyle = kit.jersey
-  ctx.beginPath()
-  ctx.moveTo(cxU - topW / 2, shoulderY)
-  ctx.lineTo(cxU + topW / 2, shoulderY)
-  ctx.lineTo(cxU + botW / 2, torsoBot)
-  ctx.lineTo(cxU - botW / 2, torsoBot)
-  ctx.closePath(); ctx.fill()
+  const torsoPath = () => {
+    ctx.beginPath()
+    ctx.moveTo(cxU - topW / 2, shoulderY)
+    ctx.lineTo(cxU + topW / 2, shoulderY)
+    ctx.lineTo(cxU + botW / 2, torsoBot)
+    ctx.lineTo(cxU - botW / 2, torsoBot)
+    ctx.closePath()
+  }
+  ctx.fillStyle = kit.jersey; torsoPath(); ctx.fill()
   // centre shade stripe (right of midline) + lighter left edge highlight
   ctx.fillStyle = kit.jerseyDark; ctx.fillRect(cxU + wBody * 0.16, shoulderY + 2, wBody * 0.3, torsoH - 3)
   ctx.fillStyle = kit.jerseyHi; ctx.fillRect(cxU - wBody * 0.42, shoulderY + torsoH * 0.12, wBody * 0.1, torsoH * 0.6)
+  // YOUR PLAYER's loadout jersey DESIGN in the accent colour, clipped to the torso
+  // silhouette (the squad number is added on top below). The attacker has no pattern.
+  if (isSelf) {
+    const pattern = ((kit as any).pattern ?? 'plain') as JerseyPattern
+    const accent = (kit as any).accent ?? kit.jerseyDark
+    ctx.save(); torsoPath(); ctx.clip()
+    drawJerseyPattern(ctx, pattern, accent, cxU - topW / 2, shoulderY, topW, torsoH)
+    ctx.restore()
+  }
 
-  // SHORTS — team-coloured, at the hips over the tops of the thighs. Drawn AFTER
-  // the jersey hem so they stay clearly visible in every pose.
-  const shortsTop = hipY - wBody * 0.16
-  const shortsBot = hipY + (footY - hipY) * 0.26
-  const shortsH = Math.max(3, shortsBot - shortsTop)
-  ctx.fillStyle = kit.shorts
-  roundRect(ctx, cxU - wBody * 0.52, shortsTop, wBody * 1.04, shortsH, Math.max(2, wBody * 0.18)); ctx.fill()
-  ctx.fillStyle = kit.shortsDark; ctx.fillRect(cxU + wBody * 0.12, shortsTop + 1, wBody * 0.34, shortsH - 2)
-  // small centre notch hinting at the two legs
-  ctx.fillStyle = 'rgba(0,0,0,0.16)'
-  ctx.beginPath(); ctx.moveTo(cxU, shortsBot); ctx.lineTo(cxU - wBody * 0.1, shortsBot - shortsH * 0.42); ctx.lineTo(cxU + wBody * 0.1, shortsBot - shortsH * 0.42); ctx.closePath(); ctx.fill()
+  // SHORTS — the standardised white football shorts, AFTER the torso (both figures).
+  ctx.lineCap = 'round'
+  drawPlayerShorts(ctx, bodyPose)
+  ctx.lineCap = 'butt'
 
-  const armW = Math.max(2, 0.1 * scale)
   const armSwing = running ? Math.sin(ph + Math.PI) * 0.18 * scale : 0
   const armBal = action ? -leanX * 0.5 : 0
-  const handY = shoulderY + wBody * 0.85
-  const handReach = wBody * 0.62
-  const lShX = cxU - topW * 0.5, rShX = cxU + topW * 0.5
-  const lHandX = cxU - handReach - armSwing + armBal
-  const rHandX = cxU + handReach + armSwing + armBal
-  // ARMS — upper-arm≈forearm with a modest taper and slight elbow bend
-  const armProx = Math.max(2, armW * 1.05), armDist = Math.max(1.6, armW * 0.9)
-  const armBow = (sx: number, ex: number, len: number) => ({ bx: -(ex - sx) * 0.06, by: len * 0.04 })
-  const laLen = Math.hypot(lHandX - lShX, handY - (shoulderY + 2))
-  const raLen = Math.hypot(rHandX - rShX, handY - (shoulderY + 2))
-  const laB = armBow(lShX, lHandX, laLen)
-  const raB = armBow(rShX, rHandX, raLen)
-  drawLimb(ctx, lShX, shoulderY + 2, lHandX, handY, laB.bx, laB.by, armProx, armDist, kit.skin)
-  drawLimb(ctx, rShX, shoulderY + 2, rHandX, handY, raB.bx, raB.by, armProx, armDist, kit.skin)
-  // hands
-  ctx.fillStyle = kit.skin
-  ctx.beginPath(); ctx.arc(lHandX, handY, armDist * 0.85, 0, Math.PI * 2); ctx.fill()
-  ctx.beginPath(); ctx.arc(rHandX, handY, armDist * 0.85, 0, Math.PI * 2); ctx.fill()
-  // short jersey sleeves over the shoulders
-  ctx.strokeStyle = kit.jerseyDark; ctx.lineWidth = armProx * 1.5; ctx.lineCap = 'round'
-  ctx.beginPath(); ctx.moveTo(lShX, shoulderY + 3); ctx.lineTo(cxU - wBody * 0.66, shoulderY + wBody * 0.34); ctx.stroke()
-  ctx.beginPath(); ctx.moveTo(rShX, shoulderY + 3); ctx.lineTo(cxU + wBody * 0.66, shoulderY + wBody * 0.34); ctx.stroke()
-  ctx.lineCap = 'butt'
+  // Both figures' arms are the shared, standardised renderer (jersey sleeve over the
+  // upper arm + skin forearm + hand) so they match the card model. Start from the
+  // canonical idle hands at the sides and ADD the running swing + lean balance on top.
+  // The attacker uses its RED jersey for the sleeves.
+  const hands = idleHands(cxU, m)
+  drawPlayerArms(ctx, {
+    cx: cxU,
+    shoulderY: m.shoulderY,
+    shoulderW: m.shoulderW,
+    armW: m.armW,
+    lHandX: hands.lHandX - armSwing + armBal,
+    lHandY: hands.lHandY,
+    rHandX: hands.rHandX + armSwing + armBal,
+    rHandY: hands.rHandY,
+    sleeve: kit.jersey,
+    sleeveDark: kit.jerseyDark,
+  })
 
   ctx.fillStyle = kit.collar; ctx.fillRect(cxU - wBody * 0.2, shoulderY, wBody * 0.4, Math.max(1.5, torsoH * 0.1))
   if (wBody > 9) {
@@ -1165,7 +1497,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit,
     drawBall(ctx, bx, by - br * 0.7, br, now / 320, 0)
   }
 
-  drawHead(ctx, cxU, headY, headR, kit, detail)
+  drawHead(ctx, cxU, headCenterY, headR, kit, detail)
   ctx.lineCap = 'butt'
 }
 
@@ -1174,11 +1506,18 @@ function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit,
 // the trailing leg tucks under. `s` (0..1) blends from a low lunge into a full
 // slide so the commit eases in and the defender pops back up at the end.
 function drawSlidePlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit, action: PlayerAction, s: number) {
-  void head
   const scale = feet.scale
+  // Body-part SIZES come from the canonical athletic build (head, limbs, torso
+  // taper) derived from the representative standing span (crown anchor → feet),
+  // so the grounded defender is the SAME build as the standing player and every
+  // other drill. `wBody` stays the geometry unit so the slide pose/orientation
+  // is unchanged — only the drawn body sizes are standardised.
+  const mb = bodyMetrics(head.sy, feet.sy)
   const wBody = Math.max(5, 0.4 * scale)
-  const lw = Math.max(3, 0.15 * scale)
-  const headR = Math.max(3.5, 0.17 * scale)
+  const lw = mb.legW
+  const headR = mb.headR
+  // torso thickness honours the shoulder→waist taper (single capsule → mid value)
+  const torsoW = (mb.shoulderW + mb.waistW) / 2
   const groundY = feet.sy
   const dir = action.footX != null ? (Math.sign(action.footX - feet.sx) || 1) : 1
   const detail = headR > 6.5
@@ -1201,22 +1540,18 @@ function drawSlidePlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit:
   const headX = shoX - dir * wBody * 0.42 * s
   const headY = shoY - wBody * (0.4 - 0.04 * s) - headR * 0.2
 
-  const thighW = Math.max(2.5, lw * 1.05)
-  const shinW = Math.max(2, lw * 0.9)
-  // LEGS — jointed sock-coloured limbs (modest taper) with a slight knee bend; endpoints unchanged
-  const leadLen = Math.hypot(leadX - hipX, leadY - hipY)
-  const trailLen = Math.hypot(trailX - hipX, trailY - hipY)
-  drawLimb(ctx, hipX, hipY, leadX, leadY, dir * leadLen * 0.03, -leadLen * 0.07, thighW, shinW, kit.sock)
-  drawLimb(ctx, hipX, hipY, trailX, trailY, -dir * trailLen * 0.06, -trailLen * 0.09, thighW, shinW, kit.sock)
-  // sock band on the leading shin
-  ctx.lineCap = 'round'
-  ctx.strokeStyle = kit.sockBand; ctx.lineWidth = shinW * 0.9
-  ctx.beginPath(); ctx.moveTo(hipX + (leadX - hipX) * 0.62, hipY + (leadY - hipY) * 0.62); ctx.lineTo(hipX + (leadX - hipX) * 0.74, hipY + (leadY - hipY) * 0.74); ctx.stroke()
-  // boots — darker, slightly elongated
-  ctx.fillStyle = kit.boot
-  ctx.beginPath(); ctx.ellipse(leadX + dir * wBody * 0.08, leadY, lw * 1.05, lw * 0.52, 0, 0, Math.PI * 2); ctx.fill()
-  ctx.beginPath(); ctx.ellipse(trailX, trailY, lw * 0.95, lw * 0.48, 0, 0, Math.PI * 2); ctx.fill()
-  ctx.lineCap = 'butt'
+  // LEGS + boots — the standardised shared lower-body renderer, posed with the
+  // slide's hip centre and the two splayed foot anchors (leading + trailing leg).
+  const slidePose = {
+    hipX, hipY,
+    lFootX: leadX, lFootY: leadY, rFootX: trailX, rFootY: trailY,
+    legW: lw,
+    sock: kit.sock,
+    boot: kit.boot,
+    bootDark: (kit as { bootDark?: string }).bootDark ?? kit.boot,
+    detail,
+  }
+  drawPlayerLegs(ctx, slidePose)
 
   // NECK — short skin stub from the shoulders to just under the head
   ctx.lineCap = 'round'
@@ -1224,28 +1559,19 @@ function drawSlidePlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit:
   ctx.beginPath(); ctx.moveTo(shoX, shoY); ctx.lineTo(headX, headY + headR * 0.85); ctx.stroke()
 
   // torso as a thick capsule from hip to shoulder, with shade + highlight
-  ctx.strokeStyle = kit.jersey; ctx.lineWidth = wBody * 0.92
+  ctx.strokeStyle = kit.jersey; ctx.lineWidth = torsoW
   ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(shoX, shoY); ctx.stroke()
-  ctx.strokeStyle = kit.jerseyDark; ctx.lineWidth = wBody * 0.3
+  ctx.strokeStyle = kit.jerseyDark; ctx.lineWidth = torsoW * 0.33
   ctx.beginPath(); ctx.moveTo(hipX + dir * wBody * 0.18, hipY); ctx.lineTo(shoX + dir * wBody * 0.18, shoY); ctx.stroke()
-  ctx.strokeStyle = kit.jerseyHi; ctx.lineWidth = wBody * 0.12
+  ctx.strokeStyle = kit.jerseyHi; ctx.lineWidth = torsoW * 0.13
   ctx.beginPath(); ctx.moveTo(hipX - dir * wBody * 0.22, hipY); ctx.lineTo(shoX - dir * wBody * 0.22, shoY); ctx.stroke()
   ctx.lineCap = 'butt'
 
-  // SHORTS — team-coloured at the hip, drawn over the tops of both thighs so they
-  // stay clearly visible in the grounded pose
-  ctx.lineCap = 'round'
-  ctx.strokeStyle = kit.shorts; ctx.lineWidth = thighW * 1.3
-  ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(hipX + (leadX - hipX) * 0.34, hipY + (leadY - hipY) * 0.34); ctx.stroke()
-  ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(hipX + (trailX - hipX) * 0.34, hipY + (trailY - hipY) * 0.34); ctx.stroke()
-  ctx.lineCap = 'butt'
-  ctx.fillStyle = kit.shorts
-  ctx.beginPath(); ctx.ellipse(hipX, hipY, wBody * 0.52, wBody * 0.44, 0, 0, Math.PI * 2); ctx.fill()
-  ctx.fillStyle = kit.shortsDark
-  ctx.beginPath(); ctx.ellipse(hipX + dir * wBody * 0.16, hipY, wBody * 0.26, wBody * 0.4, 0, 0, Math.PI * 2); ctx.fill()
+  // SHORTS — the standardised white football shorts (same pose), AFTER the torso.
+  drawPlayerShorts(ctx, slidePose)
 
   // arms: leading arm forward for balance, trailing arm back — jointed, hands
-  const armProx = Math.max(2, 0.1 * scale * 1.05), armDist = Math.max(1.6, 0.1 * scale * 0.9)
+  const armProx = Math.max(2, mb.armW * 1.05), armDist = Math.max(1.6, mb.armW * 0.9)
   const leadHandX = shoX + dir * wBody * 0.85, leadHandY = shoY + wBody * 0.16
   const trailHandX = shoX - dir * wBody * 0.45, trailHandY = shoY - wBody * 0.55
   drawLimb(ctx, shoX, shoY, leadHandX, leadHandY, 0, wBody * 0.08, armProx, armDist, kit.skin)

@@ -9,37 +9,47 @@ export const STARTER_CLEATS = 'cleats-starter'
 
 export const COSMETICS: Cosmetic[] = [
   // ---- Jerseys ----
+  // Default = the BLUE home kit worn by the in-drill character (the penalty taker).
   {
     id: STARTER_JERSEY,
     kind: 'jersey',
-    name: 'Training Bib (worn)',
+    name: 'Home Kit',
     rarity: 'starter',
     price: 0,
-    colors: { primary: '#8a8f99', secondary: '#6b7079', accent: '#c2c7d0' },
+    colors: { primary: '#2f6df0', secondary: '#1d4ec0', accent: '#ffffff' },
+    pattern: 'plain',
+    shorts: '#eef2fb',
   },
   {
     id: 'jersey-sunday',
     kind: 'jersey',
-    name: 'Sunday League Red',
+    name: 'Crimson Classic',
     rarity: 'common',
     price: 300,
-    colors: { primary: '#d6314b', secondary: '#a31f35', accent: '#ff7a8c' },
+    // bold red body, crisp white sleeves + gold trim
+    colors: { primary: '#e2263f', secondary: '#ffffff', accent: '#ffd23f' },
+    pattern: 'plain',
+    shorts: '#ffffff',
   },
   {
     id: 'jersey-azure',
     kind: 'jersey',
-    name: 'Azure Classic',
+    name: 'Azure Pinstripe',
     rarity: 'common',
     price: 300,
-    colors: { primary: '#2f6df0', secondary: '#1d4ec0', accent: '#6f9bff' },
+    colors: { primary: '#1f6fe0', secondary: '#0f3f8c', accent: '#ffffff' },
+    pattern: 'stripes',
+    shorts: '#ffffff',
   },
   {
     id: 'jersey-emerald',
     kind: 'jersey',
-    name: 'Emerald Strike',
+    name: 'Emerald Sash',
     rarity: 'rare',
     price: 800,
-    colors: { primary: '#10b981', secondary: '#0c8f66', accent: '#5ff0bd' },
+    colors: { primary: '#0fae77', secondary: '#0a7c54', accent: '#ffd23f' },
+    pattern: 'sash',
+    shorts: '#0e1726',
   },
   {
     id: 'jersey-galaxy',
@@ -47,7 +57,10 @@ export const COSMETICS: Cosmetic[] = [
     name: 'Galaxy Kit',
     rarity: 'epic',
     price: 2000,
-    colors: { primary: '#7c5cff', secondary: '#5a32d6', accent: '#ff6ec7' },
+    // cosmic gradient with star speckle
+    colors: { primary: '#6d4bff', secondary: '#ff5fc4', accent: '#ffffff' },
+    pattern: 'galaxy',
+    shorts: '#160f33',
   },
 
   // ---- Cleats ----
@@ -57,7 +70,7 @@ export const COSMETICS: Cosmetic[] = [
     name: 'Scuffed Trainers',
     rarity: 'starter',
     price: 0,
-    colors: { primary: '#3a3f48', secondary: '#22262d', accent: '#5a606b' },
+    colors: { primary: '#2b2f37', secondary: '#15171f', accent: '#5a606b' },
   },
   {
     id: 'cleats-bolt',
@@ -65,7 +78,7 @@ export const COSMETICS: Cosmetic[] = [
     name: 'Bolt Yellow',
     rarity: 'common',
     price: 250,
-    colors: { primary: '#ffd23f', secondary: '#d99316', accent: '#fff0a8' },
+    colors: { primary: '#ffd23f', secondary: '#d99316', accent: '#1b1d24' },
   },
   {
     id: 'cleats-crimson',
@@ -73,7 +86,7 @@ export const COSMETICS: Cosmetic[] = [
     name: 'Crimson Speed',
     rarity: 'rare',
     price: 700,
-    colors: { primary: '#ff5b6e', secondary: '#c4313f', accent: '#ffb3bb' },
+    colors: { primary: '#ff3b54', secondary: '#c4313f', accent: '#ffffff' },
   },
   {
     id: 'cleats-phantom',
@@ -81,7 +94,7 @@ export const COSMETICS: Cosmetic[] = [
     name: 'Phantom Black',
     rarity: 'epic',
     price: 1800,
-    colors: { primary: '#11141d', secondary: '#000000', accent: '#7c5cff' },
+    colors: { primary: '#15171f', secondary: '#000000', accent: '#7c5cff' },
   },
 ]
 

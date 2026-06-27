@@ -1,15 +1,15 @@
 import type { UnitStatus } from '../types'
 import { supabase } from './supabase'
-import { DEMO_PROFILE } from './storage'
 
+// Only the five offered units have mastery columns. (circuits + impulse were
+// removed — referencing those non-existent columns in the upsert payload made
+// the whole write fail, which is why resets never cleared the flags.)
 type MasteryPayload = {
   kinematics_mastered: boolean
   motion_graphs_mastered: boolean
   forces_mastered: boolean
   energy_mastered: boolean
-  circuits_mastered: boolean
   momentum_mastered: boolean
-  impulse_mastered: boolean
 }
 
 export function unitStatusToProfileMastery(unitStatus: Record<string, UnitStatus>): MasteryPayload {
@@ -18,16 +18,15 @@ export function unitStatusToProfileMastery(unitStatus: Record<string, UnitStatus
     motion_graphs_mastered: unitStatus['motion-graphs'] === 'mastered',
     forces_mastered: unitStatus.forces === 'mastered',
     energy_mastered: unitStatus.energy === 'mastered',
-    circuits_mastered: unitStatus.circuits === 'mastered',
     momentum_mastered: unitStatus.momentum === 'mastered',
-    impulse_mastered: unitStatus.impulse === 'mastered',
   }
 }
 
 export async function saveProfileMastery(
   unitStatus: Record<string, UnitStatus>,
-  username: string = DEMO_PROFILE.username,
+  username: string,
 ): Promise<void> {
+  if (!username) return
   const payload = unitStatusToProfileMastery(unitStatus)
   try {
     await supabase
@@ -35,7 +34,6 @@ export async function saveProfileMastery(
       .upsert(
         {
           username,
-          display_name: DEMO_PROFILE.displayName,
           ...payload,
           updated_at: new Date().toISOString(),
         },

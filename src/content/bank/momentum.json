@@ -1,0 +1,4544 @@
+[
+  {
+    "id": "mom-1",
+    "unitId": "momentum",
+    "conceptTag": "units",
+    "difficulty": 1,
+    "prompt": "What are the units of momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "m/s"
+      },
+      {
+        "id": "c",
+        "label": "kg·m/s²"
+      },
+      {
+        "id": "d",
+        "label": "N·m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "Momentum p = mv has units kg·m/s (equivalently N·s)."
+  },
+  {
+    "id": "mom-2",
+    "unitId": "momentum",
+    "conceptTag": "momentum-formula",
+    "difficulty": 1,
+    "prompt": "Which is the formula for momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "p = ½ m v²"
+      },
+      {
+        "id": "b",
+        "label": "p = m v"
+      },
+      {
+        "id": "c",
+        "label": "p = m g h"
+      },
+      {
+        "id": "d",
+        "label": "p = F / t"
+      }
+    ],
+    "correctChoiceId": "b",
+    "explanation": "Momentum is mass times velocity, p = mv."
+  },
+  {
+    "id": "mom-3",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 1,
+    "prompt": "A 0.43 kg ball moves at 20 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "86 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "20.43 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "8.6 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "46.51 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 8.6,
+    "given": {
+      "m": 0.43,
+      "v": 20
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 0.43×20 = 8.6 kg·m/s."
+  },
+  {
+    "id": "mom-4",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 1,
+    "prompt": "A 2 kg ball moves at 5 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "2.5 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "10 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "25 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "7 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "m": 2,
+      "v": 5
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 2×5 = 10 kg·m/s."
+  },
+  {
+    "id": "mom-5",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 1,
+    "prompt": "A 1 kg ball moves at 10 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "11 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "50 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "12 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "10 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 10,
+    "given": {
+      "m": 1,
+      "v": 10
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 1×10 = 10 kg·m/s."
+  },
+  {
+    "id": "mom-6",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 1,
+    "prompt": "A 5 kg ball moves at 4 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "9 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "20 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "0.8 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "40 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 20,
+    "given": {
+      "m": 5,
+      "v": 4
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 5×4 = 20 kg·m/s."
+  },
+  {
+    "id": "mom-7",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 1,
+    "prompt": "A 3 kg ball moves at 6 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "9 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "2 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "18 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "54 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 18,
+    "given": {
+      "m": 3,
+      "v": 6
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 3×6 = 18 kg·m/s."
+  },
+  {
+    "id": "mom-8",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 1,
+    "prompt": "A 0.43 kg ball moves at 10 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "23.26 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "10.43 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "4.3 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "21.5 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 4.3,
+    "given": {
+      "m": 0.43,
+      "v": 10
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 0.43×10 = 4.3 kg·m/s."
+  },
+  {
+    "id": "mom-9",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 1,
+    "prompt": "A 2 kg ball moves at 8 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "64 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "16 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "10 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "4 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 16,
+    "given": {
+      "m": 2,
+      "v": 8
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 2×8 = 16 kg·m/s."
+  },
+  {
+    "id": "mom-10",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 1,
+    "prompt": "A 4 kg ball moves at 5 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "50 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "1.25 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "20 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "9 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 20,
+    "given": {
+      "m": 4,
+      "v": 5
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 4×5 = 20 kg·m/s."
+  },
+  {
+    "id": "mom-11",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 1,
+    "prompt": "A 0.43 kg ball moves at 30 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "193.5 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "69.77 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "30.43 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "12.9 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 12.9,
+    "given": {
+      "m": 0.43,
+      "v": 30
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 0.43×30 = 12.9 kg·m/s."
+  },
+  {
+    "id": "mom-12",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 1,
+    "prompt": "A 1 kg ball moves at 12 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "72 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "13 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "12 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "14.4 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 12,
+    "given": {
+      "m": 1,
+      "v": 12
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 1×12 = 12 kg·m/s."
+  },
+  {
+    "id": "mom-13",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 1,
+    "prompt": "A foot applies 50 N to the ball for 0.1 s. What impulse does it deliver?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "50 N·s"
+      },
+      {
+        "id": "b",
+        "label": "500 N·s"
+      },
+      {
+        "id": "c",
+        "label": "5 N·s"
+      },
+      {
+        "id": "d",
+        "label": "50.1 N·s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 5,
+    "given": {
+      "F": 50,
+      "dt": 0.1
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "explanation": "J = FΔt = 50×0.1 = 5 N·s."
+  },
+  {
+    "id": "mom-14",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 1,
+    "prompt": "A foot applies 20 N to the ball for 0.2 s. What impulse does it deliver?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 N·s"
+      },
+      {
+        "id": "b",
+        "label": "100 N·s"
+      },
+      {
+        "id": "c",
+        "label": "20.2 N·s"
+      },
+      {
+        "id": "d",
+        "label": "4 N·s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 4,
+    "given": {
+      "F": 20,
+      "dt": 0.2
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "explanation": "J = FΔt = 20×0.2 = 4 N·s."
+  },
+  {
+    "id": "mom-15",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 1,
+    "prompt": "A foot applies 100 N to the ball for 0.1 s. What impulse does it deliver?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "100.1 N·s"
+      },
+      {
+        "id": "b",
+        "label": "10 N·s"
+      },
+      {
+        "id": "c",
+        "label": "100 N·s"
+      },
+      {
+        "id": "d",
+        "label": "1000 N·s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "F": 100,
+      "dt": 0.1
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "explanation": "J = FΔt = 100×0.1 = 10 N·s."
+  },
+  {
+    "id": "mom-16",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 1,
+    "prompt": "A foot applies 30 N to the ball for 0.5 s. What impulse does it deliver?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 N·s"
+      },
+      {
+        "id": "b",
+        "label": "30.5 N·s"
+      },
+      {
+        "id": "c",
+        "label": "60 N·s"
+      },
+      {
+        "id": "d",
+        "label": "15 N·s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 15,
+    "given": {
+      "F": 30,
+      "dt": 0.5
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "explanation": "J = FΔt = 30×0.5 = 15 N·s."
+  },
+  {
+    "id": "mom-17",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 1,
+    "prompt": "A foot applies 40 N to the ball for 0.1 s. What impulse does it deliver?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "4 N·s"
+      },
+      {
+        "id": "b",
+        "label": "40 N·s"
+      },
+      {
+        "id": "c",
+        "label": "40.1 N·s"
+      },
+      {
+        "id": "d",
+        "label": "400 N·s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 4,
+    "given": {
+      "F": 40,
+      "dt": 0.1
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "explanation": "J = FΔt = 40×0.1 = 4 N·s."
+  },
+  {
+    "id": "mom-18",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 1,
+    "prompt": "A foot applies 60 N to the ball for 0.2 s. What impulse does it deliver?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "12 N·s"
+      },
+      {
+        "id": "b",
+        "label": "60 N·s"
+      },
+      {
+        "id": "c",
+        "label": "300 N·s"
+      },
+      {
+        "id": "d",
+        "label": "60.2 N·s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 12,
+    "given": {
+      "F": 60,
+      "dt": 0.2
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "explanation": "J = FΔt = 60×0.2 = 12 N·s."
+  },
+  {
+    "id": "mom-19",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 1,
+    "prompt": "A foot applies 80 N to the ball for 0.1 s. What impulse does it deliver?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "80 N·s"
+      },
+      {
+        "id": "b",
+        "label": "8 N·s"
+      },
+      {
+        "id": "c",
+        "label": "80.1 N·s"
+      },
+      {
+        "id": "d",
+        "label": "800 N·s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 8,
+    "given": {
+      "F": 80,
+      "dt": 0.1
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "explanation": "J = FΔt = 80×0.1 = 8 N·s."
+  },
+  {
+    "id": "mom-20",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 1,
+    "prompt": "A foot applies 25 N to the ball for 0.2 s. What impulse does it deliver?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "125 N·s"
+      },
+      {
+        "id": "b",
+        "label": "25.2 N·s"
+      },
+      {
+        "id": "c",
+        "label": "25 N·s"
+      },
+      {
+        "id": "d",
+        "label": "5 N·s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 5,
+    "given": {
+      "F": 25,
+      "dt": 0.2
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "explanation": "J = FΔt = 25×0.2 = 5 N·s."
+  },
+  {
+    "id": "mom-21",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 1,
+    "prompt": "A foot applies 10 N to the ball for 0.5 s. What impulse does it deliver?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 N·s"
+      },
+      {
+        "id": "b",
+        "label": "20 N·s"
+      },
+      {
+        "id": "c",
+        "label": "10.5 N·s"
+      },
+      {
+        "id": "d",
+        "label": "10 N·s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 5,
+    "given": {
+      "F": 10,
+      "dt": 0.5
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "explanation": "J = FΔt = 10×0.5 = 5 N·s."
+  },
+  {
+    "id": "mom-22",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 1,
+    "prompt": "A foot applies 200 N to the ball for 0.1 s. What impulse does it deliver?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "2000 N·s"
+      },
+      {
+        "id": "b",
+        "label": "200 N·s"
+      },
+      {
+        "id": "c",
+        "label": "20 N·s"
+      },
+      {
+        "id": "d",
+        "label": "200.1 N·s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 20,
+    "given": {
+      "F": 200,
+      "dt": 0.1
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "explanation": "J = FΔt = 200×0.1 = 20 N·s."
+  },
+  {
+    "id": "mom-23",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 2,
+    "prompt": "A 0.43 kg ball is struck to 25 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10.75 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "5.38 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "25.43 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "21.5 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 10.75,
+    "given": {
+      "m": 0.43,
+      "v": 25
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 0.43×25 = 10.75 kg·m/s."
+  },
+  {
+    "id": "mom-24",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 2,
+    "prompt": "A 2 kg ball is struck to 8 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "32 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "10 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "16 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "8 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 16,
+    "given": {
+      "m": 2,
+      "v": 8
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 2×8 = 16 kg·m/s."
+  },
+  {
+    "id": "mom-25",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 2,
+    "prompt": "A 4 kg ball is struck to 6 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "48 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "10 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "24 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "12 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 24,
+    "given": {
+      "m": 4,
+      "v": 6
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 4×6 = 24 kg·m/s."
+  },
+  {
+    "id": "mom-26",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 2,
+    "prompt": "A 1.5 kg ball is struck to 10 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "15 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "11.5 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "7.5 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "30 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 15,
+    "given": {
+      "m": 1.5,
+      "v": 10
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 1.5×10 = 15 kg·m/s."
+  },
+  {
+    "id": "mom-27",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 2,
+    "prompt": "A 3 kg ball is struck to 7 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10.5 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "10 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "42 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "21 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 21,
+    "given": {
+      "m": 3,
+      "v": 7
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 3×7 = 21 kg·m/s."
+  },
+  {
+    "id": "mom-28",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 2,
+    "prompt": "A 0.43 kg ball is struck to 15 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "3.23 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "15.43 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "6.45 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "12.9 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 6.45,
+    "given": {
+      "m": 0.43,
+      "v": 15
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 0.43×15 = 6.45 kg·m/s."
+  },
+  {
+    "id": "mom-29",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 2,
+    "prompt": "A 5 kg ball is struck to 6 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "11 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "60 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "15 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 30,
+    "given": {
+      "m": 5,
+      "v": 6
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 5×6 = 30 kg·m/s."
+  },
+  {
+    "id": "mom-30",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 2,
+    "prompt": "A 2.5 kg ball is struck to 8 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "10.5 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "20 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "40 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 20,
+    "given": {
+      "m": 2.5,
+      "v": 8
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 2.5×8 = 20 kg·m/s."
+  },
+  {
+    "id": "mom-31",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 2,
+    "prompt": "A 2 kg ball is struck to 12 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "24 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "12 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "48 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "14 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 24,
+    "given": {
+      "m": 2,
+      "v": 12
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 2×12 = 24 kg·m/s."
+  },
+  {
+    "id": "mom-32",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 2,
+    "prompt": "A 4 kg ball is struck to 9 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "18 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "13 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "72 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "36 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 36,
+    "given": {
+      "m": 4,
+      "v": 9
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 4×9 = 36 kg·m/s."
+  },
+  {
+    "id": "mom-33",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 2,
+    "prompt": "A 0.43 kg ball is struck to 30 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6.45 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "25.8 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "30.43 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "12.9 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 12.9,
+    "given": {
+      "m": 0.43,
+      "v": 30
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 0.43×30 = 12.9 kg·m/s."
+  },
+  {
+    "id": "mom-34",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 2,
+    "prompt": "A 3 kg ball is struck to 10 m/s. What is its momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "13 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "60 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "15 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "30 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 30,
+    "given": {
+      "m": 3,
+      "v": 10
+    },
+    "formulas": [
+      "p = m v"
+    ],
+    "explanation": "p = mv = 3×10 = 30 kg·m/s."
+  },
+  {
+    "id": "mom-35",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 2,
+    "prompt": "A keeper's hands push the ball with 80 N for 0.1 s. What is the impulse on the ball?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "80.1 N·s"
+      },
+      {
+        "id": "b",
+        "label": "800 N·s"
+      },
+      {
+        "id": "c",
+        "label": "8 N·s"
+      },
+      {
+        "id": "d",
+        "label": "16 N·s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 8,
+    "given": {
+      "F": 80,
+      "dt": 0.1
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.1,
+        "yMax": 80,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                80
+              ],
+              [
+                0.1,
+                80
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "J = FΔt = 80×0.1 = 8 N·s."
+  },
+  {
+    "id": "mom-36",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 2,
+    "prompt": "A keeper's hands push the ball with 120 N for 0.1 s. What is the impulse on the ball?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "12 N·s"
+      },
+      {
+        "id": "b",
+        "label": "1200 N·s"
+      },
+      {
+        "id": "c",
+        "label": "24 N·s"
+      },
+      {
+        "id": "d",
+        "label": "120.1 N·s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 12,
+    "given": {
+      "F": 120,
+      "dt": 0.1
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.1,
+        "yMax": 120,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                120
+              ],
+              [
+                0.1,
+                120
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "J = FΔt = 120×0.1 = 12 N·s."
+  },
+  {
+    "id": "mom-37",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 2,
+    "prompt": "A keeper's hands push the ball with 50 N for 0.2 s. What is the impulse on the ball?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 N·s"
+      },
+      {
+        "id": "b",
+        "label": "250 N·s"
+      },
+      {
+        "id": "c",
+        "label": "10 N·s"
+      },
+      {
+        "id": "d",
+        "label": "50.2 N·s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 10,
+    "given": {
+      "F": 50,
+      "dt": 0.2
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.2,
+        "yMax": 50,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                50
+              ],
+              [
+                0.2,
+                50
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "J = FΔt = 50×0.2 = 10 N·s."
+  },
+  {
+    "id": "mom-38",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 2,
+    "prompt": "A keeper's hands push the ball with 200 N for 0.05 s. What is the impulse on the ball?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "4000 N·s"
+      },
+      {
+        "id": "b",
+        "label": "200.05 N·s"
+      },
+      {
+        "id": "c",
+        "label": "20 N·s"
+      },
+      {
+        "id": "d",
+        "label": "10 N·s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 10,
+    "given": {
+      "F": 200,
+      "dt": 0.05
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.05,
+        "yMax": 200,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                200
+              ],
+              [
+                0.05,
+                200
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "J = FΔt = 200×0.05 = 10 N·s."
+  },
+  {
+    "id": "mom-39",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 2,
+    "prompt": "A keeper's hands push the ball with 90 N for 0.1 s. What is the impulse on the ball?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "90.1 N·s"
+      },
+      {
+        "id": "b",
+        "label": "900 N·s"
+      },
+      {
+        "id": "c",
+        "label": "9 N·s"
+      },
+      {
+        "id": "d",
+        "label": "18 N·s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 9,
+    "given": {
+      "F": 90,
+      "dt": 0.1
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.1,
+        "yMax": 90,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                90
+              ],
+              [
+                0.1,
+                90
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "J = FΔt = 90×0.1 = 9 N·s."
+  },
+  {
+    "id": "mom-40",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 2,
+    "prompt": "A keeper's hands push the ball with 60 N for 0.5 s. What is the impulse on the ball?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 N·s"
+      },
+      {
+        "id": "b",
+        "label": "60 N·s"
+      },
+      {
+        "id": "c",
+        "label": "120 N·s"
+      },
+      {
+        "id": "d",
+        "label": "60.5 N·s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 30,
+    "given": {
+      "F": 60,
+      "dt": 0.5
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.5,
+        "yMax": 60,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                60
+              ],
+              [
+                0.5,
+                60
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "J = FΔt = 60×0.5 = 30 N·s."
+  },
+  {
+    "id": "mom-41",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 2,
+    "prompt": "A keeper's hands push the ball with 150 N for 0.1 s. What is the impulse on the ball?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 N·s"
+      },
+      {
+        "id": "b",
+        "label": "15 N·s"
+      },
+      {
+        "id": "c",
+        "label": "1500 N·s"
+      },
+      {
+        "id": "d",
+        "label": "150.1 N·s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 15,
+    "given": {
+      "F": 150,
+      "dt": 0.1
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.1,
+        "yMax": 150,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                150
+              ],
+              [
+                0.1,
+                150
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "J = FΔt = 150×0.1 = 15 N·s."
+  },
+  {
+    "id": "mom-42",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 2,
+    "prompt": "A keeper's hands push the ball with 40 N for 0.2 s. What is the impulse on the ball?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "200 N·s"
+      },
+      {
+        "id": "b",
+        "label": "16 N·s"
+      },
+      {
+        "id": "c",
+        "label": "8 N·s"
+      },
+      {
+        "id": "d",
+        "label": "40.2 N·s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 8,
+    "given": {
+      "F": 40,
+      "dt": 0.2
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.2,
+        "yMax": 40,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                40
+              ],
+              [
+                0.2,
+                40
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "J = FΔt = 40×0.2 = 8 N·s."
+  },
+  {
+    "id": "mom-43",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 2,
+    "prompt": "A keeper's hands push the ball with 100 N for 0.1 s. What is the impulse on the ball?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 N·s"
+      },
+      {
+        "id": "b",
+        "label": "1000 N·s"
+      },
+      {
+        "id": "c",
+        "label": "100.1 N·s"
+      },
+      {
+        "id": "d",
+        "label": "10 N·s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 10,
+    "given": {
+      "F": 100,
+      "dt": 0.1
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.1,
+        "yMax": 100,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                100
+              ],
+              [
+                0.1,
+                100
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "J = FΔt = 100×0.1 = 10 N·s."
+  },
+  {
+    "id": "mom-44",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 2,
+    "prompt": "A keeper's hands push the ball with 70 N for 0.2 s. What is the impulse on the ball?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "28 N·s"
+      },
+      {
+        "id": "b",
+        "label": "350 N·s"
+      },
+      {
+        "id": "c",
+        "label": "70.2 N·s"
+      },
+      {
+        "id": "d",
+        "label": "14 N·s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 14,
+    "given": {
+      "F": 70,
+      "dt": 0.2
+    },
+    "formulas": [
+      "J = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.2,
+        "yMax": 70,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                70
+              ],
+              [
+                0.2,
+                70
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "J = FΔt = 70×0.2 = 14 N·s."
+  },
+  {
+    "id": "mom-45",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "A 0.43 kg ball changes speed from 0 m/s to 20 m/s in the same direction. What is the change in momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "8.6 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "10.32 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "12.04 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 8.6,
+    "given": {
+      "m": 0.43,
+      "u": 0,
+      "v": 20
+    },
+    "formulas": [
+      "Δp = m(v − u)"
+    ],
+    "explanation": "Δp = m(v − u) = 0.43×(20 − 0) = 8.6 kg·m/s."
+  },
+  {
+    "id": "mom-46",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "A 2 kg ball changes speed from 3 m/s to 8 m/s in the same direction. What is the change in momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "16 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "5 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "22 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "10 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 10,
+    "given": {
+      "m": 2,
+      "u": 3,
+      "v": 8
+    },
+    "formulas": [
+      "Δp = m(v − u)"
+    ],
+    "explanation": "Δp = m(v − u) = 2×(8 − 3) = 10 kg·m/s."
+  },
+  {
+    "id": "mom-47",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "A 1 kg ball changes speed from 5 m/s to 15 m/s in the same direction. What is the change in momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "12 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "10 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "15 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 10,
+    "given": {
+      "m": 1,
+      "u": 5,
+      "v": 15
+    },
+    "formulas": [
+      "Δp = m(v − u)"
+    ],
+    "explanation": "Δp = m(v − u) = 1×(15 − 5) = 10 kg·m/s."
+  },
+  {
+    "id": "mom-48",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "A 0.43 kg ball changes speed from 10 m/s to 30 m/s in the same direction. What is the change in momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "17.2 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "12.9 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "8.6 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 8.6,
+    "given": {
+      "m": 0.43,
+      "u": 10,
+      "v": 30
+    },
+    "formulas": [
+      "Δp = m(v − u)"
+    ],
+    "explanation": "Δp = m(v − u) = 0.43×(30 − 10) = 8.6 kg·m/s."
+  },
+  {
+    "id": "mom-49",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "A 3 kg ball changes speed from 2 m/s to 6 m/s in the same direction. What is the change in momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "4 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "12 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "24 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "18 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 12,
+    "given": {
+      "m": 3,
+      "u": 2,
+      "v": 6
+    },
+    "formulas": [
+      "Δp = m(v − u)"
+    ],
+    "explanation": "Δp = m(v − u) = 3×(6 − 2) = 12 kg·m/s."
+  },
+  {
+    "id": "mom-50",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "A 4 kg ball changes speed from 1 m/s to 5 m/s in the same direction. What is the change in momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "24 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "4 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "20 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "16 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 16,
+    "given": {
+      "m": 4,
+      "u": 1,
+      "v": 5
+    },
+    "formulas": [
+      "Δp = m(v − u)"
+    ],
+    "explanation": "Δp = m(v − u) = 4×(5 − 1) = 16 kg·m/s."
+  },
+  {
+    "id": "mom-51",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "A 2 kg ball changes speed from 4 m/s to 10 m/s in the same direction. What is the change in momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "28 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "12 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "20 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 12,
+    "given": {
+      "m": 2,
+      "u": 4,
+      "v": 10
+    },
+    "formulas": [
+      "Δp = m(v − u)"
+    ],
+    "explanation": "Δp = m(v − u) = 2×(10 − 4) = 12 kg·m/s."
+  },
+  {
+    "id": "mom-52",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "A 5 kg ball changes speed from 2 m/s to 8 m/s in the same direction. What is the change in momentum?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 kg·m/s"
+      },
+      {
+        "id": "b",
+        "label": "40 kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "50 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "6 kg·m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 30,
+    "given": {
+      "m": 5,
+      "u": 2,
+      "v": 8
+    },
+    "formulas": [
+      "Δp = m(v − u)"
+    ],
+    "explanation": "Δp = m(v − u) = 5×(8 − 2) = 30 kg·m/s."
+  },
+  {
+    "id": "mom-53",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "A 0.43 kg ball is brought from 20 m/s to rest in 0.1 s. What average force acted on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.86 N"
+      },
+      {
+        "id": "b",
+        "label": "4.3 N"
+      },
+      {
+        "id": "c",
+        "label": "172 N"
+      },
+      {
+        "id": "d",
+        "label": "86 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 86,
+    "given": {
+      "m": 0.43,
+      "v": 20,
+      "dt": 0.1
+    },
+    "formulas": [
+      "F = Δp / Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.1,
+        "yMax": 86,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                86
+              ],
+              [
+                0.1,
+                86
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "Δp = mv = 8.6 kg·m/s, so F = Δp/Δt = 8.6/0.1 = 86 N."
+  },
+  {
+    "id": "mom-54",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "A 2 kg ball is brought from 6 m/s to rest in 0.2 s. What average force acted on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "60 N"
+      },
+      {
+        "id": "b",
+        "label": "2.4 N"
+      },
+      {
+        "id": "c",
+        "label": "10 N"
+      },
+      {
+        "id": "d",
+        "label": "72 N"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 60,
+    "given": {
+      "m": 2,
+      "v": 6,
+      "dt": 0.2
+    },
+    "formulas": [
+      "F = Δp / Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.2,
+        "yMax": 60,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                60
+              ],
+              [
+                0.2,
+                60
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "Δp = mv = 12 kg·m/s, so F = Δp/Δt = 12/0.2 = 60 N."
+  },
+  {
+    "id": "mom-55",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "A 1 kg ball is brought from 10 m/s to rest in 0.5 s. What average force acted on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "100 N"
+      },
+      {
+        "id": "b",
+        "label": "20 N"
+      },
+      {
+        "id": "c",
+        "label": "2 N"
+      },
+      {
+        "id": "d",
+        "label": "5 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 20,
+    "given": {
+      "m": 1,
+      "v": 10,
+      "dt": 0.5
+    },
+    "formulas": [
+      "F = Δp / Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.5,
+        "yMax": 20,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                20
+              ],
+              [
+                0.5,
+                20
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "Δp = mv = 10 kg·m/s, so F = Δp/Δt = 10/0.5 = 20 N."
+  },
+  {
+    "id": "mom-56",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "A 0.43 kg ball is brought from 30 m/s to rest in 0.1 s. What average force acted on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "129 N"
+      },
+      {
+        "id": "b",
+        "label": "4.3 N"
+      },
+      {
+        "id": "c",
+        "label": "387 N"
+      },
+      {
+        "id": "d",
+        "label": "1.29 N"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 129,
+    "given": {
+      "m": 0.43,
+      "v": 30,
+      "dt": 0.1
+    },
+    "formulas": [
+      "F = Δp / Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.1,
+        "yMax": 129,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                129
+              ],
+              [
+                0.1,
+                129
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "Δp = mv = 12.9 kg·m/s, so F = Δp/Δt = 12.9/0.1 = 129 N."
+  },
+  {
+    "id": "mom-57",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "A 3 kg ball is brought from 8 m/s to rest in 0.4 s. What average force acted on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "60 N"
+      },
+      {
+        "id": "b",
+        "label": "7.5 N"
+      },
+      {
+        "id": "c",
+        "label": "9.6 N"
+      },
+      {
+        "id": "d",
+        "label": "192 N"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 60,
+    "given": {
+      "m": 3,
+      "v": 8,
+      "dt": 0.4
+    },
+    "formulas": [
+      "F = Δp / Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.4,
+        "yMax": 60,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                60
+              ],
+              [
+                0.4,
+                60
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "Δp = mv = 24 kg·m/s, so F = Δp/Δt = 24/0.4 = 60 N."
+  },
+  {
+    "id": "mom-58",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "A 5 kg ball is brought from 4 m/s to rest in 0.2 s. What average force acted on it?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "4 N"
+      },
+      {
+        "id": "b",
+        "label": "25 N"
+      },
+      {
+        "id": "c",
+        "label": "80 N"
+      },
+      {
+        "id": "d",
+        "label": "100 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 100,
+    "given": {
+      "m": 5,
+      "v": 4,
+      "dt": 0.2
+    },
+    "formulas": [
+      "F = Δp / Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.2,
+        "yMax": 100,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                100
+              ],
+              [
+                0.2,
+                100
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "Δp = mv = 20 kg·m/s, so F = Δp/Δt = 20/0.2 = 100 N."
+  },
+  {
+    "id": "mom-59",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "Using the area under the force-time graph, what impulse does a constant 200 N delivered over 0.1 s provide?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 N·s"
+      },
+      {
+        "id": "b",
+        "label": "200 N·s"
+      },
+      {
+        "id": "c",
+        "label": "20 N·s"
+      },
+      {
+        "id": "d",
+        "label": "2000 N·s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 20,
+    "given": {
+      "F": 200,
+      "dt": 0.1
+    },
+    "formulas": [
+      "J = area = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.1,
+        "yMax": 200,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                200
+              ],
+              [
+                0.1,
+                200
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "Area of the rectangle = F × Δt = 200×0.1 = 20 N·s."
+  },
+  {
+    "id": "mom-60",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "Using the area under the force-time graph, what impulse does a constant 150 N delivered over 0.2 s provide?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "150 N·s"
+      },
+      {
+        "id": "b",
+        "label": "30 N·s"
+      },
+      {
+        "id": "c",
+        "label": "15 N·s"
+      },
+      {
+        "id": "d",
+        "label": "750 N·s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 30,
+    "given": {
+      "F": 150,
+      "dt": 0.2
+    },
+    "formulas": [
+      "J = area = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.2,
+        "yMax": 150,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                150
+              ],
+              [
+                0.2,
+                150
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "Area of the rectangle = F × Δt = 150×0.2 = 30 N·s."
+  },
+  {
+    "id": "mom-61",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "Using the area under the force-time graph, what impulse does a constant 300 N delivered over 0.1 s provide?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "3000 N·s"
+      },
+      {
+        "id": "b",
+        "label": "30 N·s"
+      },
+      {
+        "id": "c",
+        "label": "15 N·s"
+      },
+      {
+        "id": "d",
+        "label": "300 N·s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 30,
+    "given": {
+      "F": 300,
+      "dt": 0.1
+    },
+    "formulas": [
+      "J = area = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.1,
+        "yMax": 300,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                300
+              ],
+              [
+                0.1,
+                300
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "Area of the rectangle = F × Δt = 300×0.1 = 30 N·s."
+  },
+  {
+    "id": "mom-62",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "Using the area under the force-time graph, what impulse does a constant 80 N delivered over 0.5 s provide?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "40 N·s"
+      },
+      {
+        "id": "b",
+        "label": "80 N·s"
+      },
+      {
+        "id": "c",
+        "label": "160 N·s"
+      },
+      {
+        "id": "d",
+        "label": "20 N·s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 40,
+    "given": {
+      "F": 80,
+      "dt": 0.5
+    },
+    "formulas": [
+      "J = area = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.5,
+        "yMax": 80,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                80
+              ],
+              [
+                0.5,
+                80
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "Area of the rectangle = F × Δt = 80×0.5 = 40 N·s."
+  },
+  {
+    "id": "mom-63",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "Using the area under the force-time graph, what impulse does a constant 120 N delivered over 0.25 s provide?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "120 N·s"
+      },
+      {
+        "id": "b",
+        "label": "15 N·s"
+      },
+      {
+        "id": "c",
+        "label": "30 N·s"
+      },
+      {
+        "id": "d",
+        "label": "480 N·s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 30,
+    "given": {
+      "F": 120,
+      "dt": 0.25
+    },
+    "formulas": [
+      "J = area = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.25,
+        "yMax": 120,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                120
+              ],
+              [
+                0.25,
+                120
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "Area of the rectangle = F × Δt = 120×0.25 = 30 N·s."
+  },
+  {
+    "id": "mom-64",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 3,
+    "prompt": "Using the area under the force-time graph, what impulse does a constant 250 N delivered over 0.1 s provide?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "250 N·s"
+      },
+      {
+        "id": "b",
+        "label": "25 N·s"
+      },
+      {
+        "id": "c",
+        "label": "12.5 N·s"
+      },
+      {
+        "id": "d",
+        "label": "2500 N·s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 25,
+    "given": {
+      "F": 250,
+      "dt": 0.1
+    },
+    "formulas": [
+      "J = area = F Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.1,
+        "yMax": 250,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                250
+              ],
+              [
+                0.1,
+                250
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "Area of the rectangle = F × Δt = 250×0.1 = 25 N·s."
+  },
+  {
+    "id": "mom-65",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 4,
+    "prompt": "A 2 kg ball moving at 6 m/s strikes a stationary 1 kg ball and they stick together. What is their common velocity afterward?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "12 m/s"
+      },
+      {
+        "id": "b",
+        "label": "5 m/s"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s"
+      },
+      {
+        "id": "d",
+        "label": "4 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 4,
+    "given": {
+      "m1": 2,
+      "v1": 6,
+      "m2": 1
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 2,
+          "v": 6,
+          "label": "2 kg"
+        },
+        "right": {
+          "m": 1,
+          "v": 0,
+          "label": "1 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "Momentum conserved: v′ = m₁v₁/(m₁+m₂) = 2×6/3 = 4 m/s."
+  },
+  {
+    "id": "mom-66",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 4,
+    "prompt": "A 4 kg ball moving at 5 m/s strikes a stationary 1 kg ball and they stick together. What is their common velocity afterward?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m/s"
+      },
+      {
+        "id": "b",
+        "label": "6 m/s"
+      },
+      {
+        "id": "c",
+        "label": "20 m/s"
+      },
+      {
+        "id": "d",
+        "label": "4 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 4,
+    "given": {
+      "m1": 4,
+      "v1": 5,
+      "m2": 1
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 4,
+          "v": 5,
+          "label": "4 kg"
+        },
+        "right": {
+          "m": 1,
+          "v": 0,
+          "label": "1 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "Momentum conserved: v′ = m₁v₁/(m₁+m₂) = 4×5/5 = 4 m/s."
+  },
+  {
+    "id": "mom-67",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 4,
+    "prompt": "A 3 kg ball moving at 8 m/s strikes a stationary 1 kg ball and they stick together. What is their common velocity afterward?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6 m/s"
+      },
+      {
+        "id": "b",
+        "label": "8 m/s"
+      },
+      {
+        "id": "c",
+        "label": "7.2 m/s"
+      },
+      {
+        "id": "d",
+        "label": "24 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 6,
+    "given": {
+      "m1": 3,
+      "v1": 8,
+      "m2": 1
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 3,
+          "v": 8,
+          "label": "3 kg"
+        },
+        "right": {
+          "m": 1,
+          "v": 0,
+          "label": "1 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "Momentum conserved: v′ = m₁v₁/(m₁+m₂) = 3×8/4 = 6 m/s."
+  },
+  {
+    "id": "mom-68",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 4,
+    "prompt": "A 2 kg ball moving at 9 m/s strikes a stationary 4 kg ball and they stick together. What is their common velocity afterward?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "4.5 m/s"
+      },
+      {
+        "id": "b",
+        "label": "18 m/s"
+      },
+      {
+        "id": "c",
+        "label": "9 m/s"
+      },
+      {
+        "id": "d",
+        "label": "3 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 3,
+    "given": {
+      "m1": 2,
+      "v1": 9,
+      "m2": 4
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 2,
+          "v": 9,
+          "label": "2 kg"
+        },
+        "right": {
+          "m": 4,
+          "v": 0,
+          "label": "4 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "Momentum conserved: v′ = m₁v₁/(m₁+m₂) = 2×9/6 = 3 m/s."
+  },
+  {
+    "id": "mom-69",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 4,
+    "prompt": "A 1 kg ball moving at 10 m/s strikes a stationary 1 kg ball and they stick together. What is their common velocity afterward?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m/s"
+      },
+      {
+        "id": "b",
+        "label": "7 m/s"
+      },
+      {
+        "id": "c",
+        "label": "10 m/s"
+      },
+      {
+        "id": "d",
+        "label": "6 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 5,
+    "given": {
+      "m1": 1,
+      "v1": 10,
+      "m2": 1
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 1,
+          "v": 10,
+          "label": "1 kg"
+        },
+        "right": {
+          "m": 1,
+          "v": 0,
+          "label": "1 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "Momentum conserved: v′ = m₁v₁/(m₁+m₂) = 1×10/2 = 5 m/s."
+  },
+  {
+    "id": "mom-70",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 4,
+    "prompt": "A 6 kg ball moving at 4 m/s strikes a stationary 2 kg ball and they stick together. What is their common velocity afterward?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "12 m/s"
+      },
+      {
+        "id": "b",
+        "label": "3 m/s"
+      },
+      {
+        "id": "c",
+        "label": "24 m/s"
+      },
+      {
+        "id": "d",
+        "label": "4 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 3,
+    "given": {
+      "m1": 6,
+      "v1": 4,
+      "m2": 2
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 6,
+          "v": 4,
+          "label": "6 kg"
+        },
+        "right": {
+          "m": 2,
+          "v": 0,
+          "label": "2 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "Momentum conserved: v′ = m₁v₁/(m₁+m₂) = 6×4/8 = 3 m/s."
+  },
+  {
+    "id": "mom-71",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 4,
+    "prompt": "A 2 kg ball moving at 12 m/s strikes a stationary 2 kg ball and they stick together. What is their common velocity afterward?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6 m/s"
+      },
+      {
+        "id": "b",
+        "label": "24 m/s"
+      },
+      {
+        "id": "c",
+        "label": "7.2 m/s"
+      },
+      {
+        "id": "d",
+        "label": "12 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 6,
+    "given": {
+      "m1": 2,
+      "v1": 12,
+      "m2": 2
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 2,
+          "v": 12,
+          "label": "2 kg"
+        },
+        "right": {
+          "m": 2,
+          "v": 0,
+          "label": "2 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "Momentum conserved: v′ = m₁v₁/(m₁+m₂) = 2×12/4 = 6 m/s."
+  },
+  {
+    "id": "mom-72",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 4,
+    "prompt": "A 3 kg ball moving at 6 m/s strikes a stationary 3 kg ball and they stick together. What is their common velocity afterward?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "18 m/s"
+      },
+      {
+        "id": "b",
+        "label": "4 m/s"
+      },
+      {
+        "id": "c",
+        "label": "3 m/s"
+      },
+      {
+        "id": "d",
+        "label": "6 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 3,
+    "given": {
+      "m1": 3,
+      "v1": 6,
+      "m2": 3
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 3,
+          "v": 6,
+          "label": "3 kg"
+        },
+        "right": {
+          "m": 3,
+          "v": 0,
+          "label": "3 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "Momentum conserved: v′ = m₁v₁/(m₁+m₂) = 3×6/6 = 3 m/s."
+  },
+  {
+    "id": "mom-73",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 4,
+    "prompt": "A 2 kg ball at 5 m/s and a 3 kg ball at 0 m/s collide and move off together. Find their final velocity (rightward positive).",
+    "choices": [
+      {
+        "id": "a",
+        "label": "2 m/s"
+      },
+      {
+        "id": "b",
+        "label": "3 m/s"
+      },
+      {
+        "id": "c",
+        "label": "5 m/s"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 2,
+    "given": {
+      "m1": 2,
+      "v1": 5,
+      "m2": 3,
+      "v2": 0
+    },
+    "formulas": [
+      "m₁v₁ + m₂v₂ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 2,
+          "v": 5,
+          "label": "2 kg"
+        },
+        "right": {
+          "m": 3,
+          "v": 0,
+          "label": "3 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "v′ = (m₁v₁ + m₂v₂)/(m₁+m₂) = (10 + 0)/5 = 2 m/s."
+  },
+  {
+    "id": "mom-74",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 4,
+    "prompt": "A 1 kg ball at 8 m/s and a 1 kg ball at -2 m/s collide and move off together. Find their final velocity (rightward positive).",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6 m/s"
+      },
+      {
+        "id": "b",
+        "label": "3 m/s"
+      },
+      {
+        "id": "c",
+        "label": "5 m/s"
+      },
+      {
+        "id": "d",
+        "label": "4 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 3,
+    "given": {
+      "m1": 1,
+      "v1": 8,
+      "m2": 1,
+      "v2": -2
+    },
+    "formulas": [
+      "m₁v₁ + m₂v₂ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 1,
+          "v": 8,
+          "label": "1 kg"
+        },
+        "right": {
+          "m": 1,
+          "v": -2,
+          "label": "1 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "v′ = (m₁v₁ + m₂v₂)/(m₁+m₂) = (8 + -2)/2 = 3 m/s."
+  },
+  {
+    "id": "mom-75",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 4,
+    "prompt": "A 4 kg ball at 3 m/s and a 2 kg ball at 0 m/s collide and move off together. Find their final velocity (rightward positive).",
+    "choices": [
+      {
+        "id": "a",
+        "label": "2 m/s"
+      },
+      {
+        "id": "b",
+        "label": "12 m/s"
+      },
+      {
+        "id": "c",
+        "label": "4 m/s"
+      },
+      {
+        "id": "d",
+        "label": "3 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 2,
+    "given": {
+      "m1": 4,
+      "v1": 3,
+      "m2": 2,
+      "v2": 0
+    },
+    "formulas": [
+      "m₁v₁ + m₂v₂ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 4,
+          "v": 3,
+          "label": "4 kg"
+        },
+        "right": {
+          "m": 2,
+          "v": 0,
+          "label": "2 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "v′ = (m₁v₁ + m₂v₂)/(m₁+m₂) = (12 + 0)/6 = 2 m/s."
+  },
+  {
+    "id": "mom-76",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 4,
+    "prompt": "A 2 kg ball at 6 m/s and a 2 kg ball at -2 m/s collide and move off together. Find their final velocity (rightward positive).",
+    "choices": [
+      {
+        "id": "a",
+        "label": "2 m/s"
+      },
+      {
+        "id": "b",
+        "label": "8 m/s"
+      },
+      {
+        "id": "c",
+        "label": "4 m/s"
+      },
+      {
+        "id": "d",
+        "label": "3 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 2,
+    "given": {
+      "m1": 2,
+      "v1": 6,
+      "m2": 2,
+      "v2": -2
+    },
+    "formulas": [
+      "m₁v₁ + m₂v₂ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 2,
+          "v": 6,
+          "label": "2 kg"
+        },
+        "right": {
+          "m": 2,
+          "v": -2,
+          "label": "2 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "v′ = (m₁v₁ + m₂v₂)/(m₁+m₂) = (12 + -4)/4 = 2 m/s."
+  },
+  {
+    "id": "mom-77",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 4,
+    "prompt": "A 5 kg ball at 2 m/s and a 5 kg ball at 0 m/s collide and move off together. Find their final velocity (rightward positive).",
+    "choices": [
+      {
+        "id": "a",
+        "label": "1 m/s"
+      },
+      {
+        "id": "b",
+        "label": "3 m/s"
+      },
+      {
+        "id": "c",
+        "label": "2 m/s"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 1,
+    "given": {
+      "m1": 5,
+      "v1": 2,
+      "m2": 5,
+      "v2": 0
+    },
+    "formulas": [
+      "m₁v₁ + m₂v₂ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 5,
+          "v": 2,
+          "label": "5 kg"
+        },
+        "right": {
+          "m": 5,
+          "v": 0,
+          "label": "5 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "v′ = (m₁v₁ + m₂v₂)/(m₁+m₂) = (10 + 0)/10 = 1 m/s."
+  },
+  {
+    "id": "mom-78",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 4,
+    "prompt": "A 3 kg ball at 4 m/s and a 1 kg ball at 0 m/s collide and move off together. Find their final velocity (rightward positive).",
+    "choices": [
+      {
+        "id": "a",
+        "label": "4 m/s"
+      },
+      {
+        "id": "b",
+        "label": "5 m/s"
+      },
+      {
+        "id": "c",
+        "label": "3 m/s"
+      },
+      {
+        "id": "d",
+        "label": "12 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 3,
+    "given": {
+      "m1": 3,
+      "v1": 4,
+      "m2": 1,
+      "v2": 0
+    },
+    "formulas": [
+      "m₁v₁ + m₂v₂ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 3,
+          "v": 4,
+          "label": "3 kg"
+        },
+        "right": {
+          "m": 1,
+          "v": 0,
+          "label": "1 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "v′ = (m₁v₁ + m₂v₂)/(m₁+m₂) = (12 + 0)/4 = 3 m/s."
+  },
+  {
+    "id": "mom-79",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 4,
+    "prompt": "An impulse of 20 N·s is delivered to a ball over 0.1 s. What average force was applied?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "200 N"
+      },
+      {
+        "id": "b",
+        "label": "2 N"
+      },
+      {
+        "id": "c",
+        "label": "0.01 N"
+      },
+      {
+        "id": "d",
+        "label": "20 N"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 200,
+    "given": {
+      "J": 20,
+      "dt": 0.1
+    },
+    "formulas": [
+      "F = J / Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.1,
+        "yMax": 200,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                200
+              ],
+              [
+                0.1,
+                200
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "F = J/Δt = 20/0.1 = 200 N."
+  },
+  {
+    "id": "mom-80",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 4,
+    "prompt": "An impulse of 30 N·s is delivered to a ball over 0.2 s. What average force was applied?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "150 N"
+      },
+      {
+        "id": "b",
+        "label": "30 N"
+      },
+      {
+        "id": "c",
+        "label": "6 N"
+      },
+      {
+        "id": "d",
+        "label": "0.01 N"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 150,
+    "given": {
+      "J": 30,
+      "dt": 0.2
+    },
+    "formulas": [
+      "F = J / Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.2,
+        "yMax": 150,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                150
+              ],
+              [
+                0.2,
+                150
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "F = J/Δt = 30/0.2 = 150 N."
+  },
+  {
+    "id": "mom-81",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 4,
+    "prompt": "An impulse of 15 N·s is delivered to a ball over 0.5 s. What average force was applied?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "7.5 N"
+      },
+      {
+        "id": "b",
+        "label": "30 N"
+      },
+      {
+        "id": "c",
+        "label": "0.03 N"
+      },
+      {
+        "id": "d",
+        "label": "15 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 30,
+    "given": {
+      "J": 15,
+      "dt": 0.5
+    },
+    "formulas": [
+      "F = J / Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.5,
+        "yMax": 30,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                30
+              ],
+              [
+                0.5,
+                30
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "F = J/Δt = 15/0.5 = 30 N."
+  },
+  {
+    "id": "mom-82",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 4,
+    "prompt": "An impulse of 40 N·s is delivered to a ball over 0.1 s. What average force was applied?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0 N"
+      },
+      {
+        "id": "b",
+        "label": "4 N"
+      },
+      {
+        "id": "c",
+        "label": "40 N"
+      },
+      {
+        "id": "d",
+        "label": "400 N"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 400,
+    "given": {
+      "J": 40,
+      "dt": 0.1
+    },
+    "formulas": [
+      "F = J / Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.1,
+        "yMax": 400,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                400
+              ],
+              [
+                0.1,
+                400
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "F = J/Δt = 40/0.1 = 400 N."
+  },
+  {
+    "id": "mom-83",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 4,
+    "prompt": "An impulse of 12 N·s is delivered to a ball over 0.4 s. What average force was applied?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 N"
+      },
+      {
+        "id": "b",
+        "label": "0.03 N"
+      },
+      {
+        "id": "c",
+        "label": "12 N"
+      },
+      {
+        "id": "d",
+        "label": "4.8 N"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 30,
+    "given": {
+      "J": 12,
+      "dt": 0.4
+    },
+    "formulas": [
+      "F = J / Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.4,
+        "yMax": 30,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                30
+              ],
+              [
+                0.4,
+                30
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "F = J/Δt = 12/0.4 = 30 N."
+  },
+  {
+    "id": "mom-84",
+    "unitId": "momentum",
+    "conceptTag": "impulse",
+    "difficulty": 4,
+    "prompt": "An impulse of 50 N·s is delivered to a ball over 0.25 s. What average force was applied?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.01 N"
+      },
+      {
+        "id": "b",
+        "label": "200 N"
+      },
+      {
+        "id": "c",
+        "label": "12.5 N"
+      },
+      {
+        "id": "d",
+        "label": "50 N"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 200,
+    "given": {
+      "J": 50,
+      "dt": 0.25
+    },
+    "formulas": [
+      "F = J / Δt"
+    ],
+    "diagram": {
+      "kind": "force-time",
+      "params": {
+        "yLabel": "force (N)",
+        "xLabel": "time (s)",
+        "xMax": 0.25,
+        "yMax": 200,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                200
+              ],
+              [
+                0.25,
+                200
+              ]
+            ],
+            "label": "contact force"
+          }
+        ]
+      },
+      "caption": "Force vs time (impulse = area)"
+    },
+    "explanation": "F = J/Δt = 50/0.25 = 200 N."
+  },
+  {
+    "id": "mom-85",
+    "unitId": "momentum",
+    "conceptTag": "conservation-of-momentum",
+    "difficulty": 5,
+    "prompt": "Two players collide in mid-air with no external horizontal forces. The total momentum of the pair afterward is:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "The same as before the collision"
+      },
+      {
+        "id": "b",
+        "label": "Half of before"
+      },
+      {
+        "id": "c",
+        "label": "Greater than before"
+      },
+      {
+        "id": "d",
+        "label": "Zero"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "With no external force, total momentum is conserved — unchanged by the collision."
+  },
+  {
+    "id": "mom-86",
+    "unitId": "momentum",
+    "conceptTag": "impulse-momentum-theorem",
+    "difficulty": 5,
+    "prompt": "The impulse-momentum theorem says the impulse on an object equals its:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Kinetic energy"
+      },
+      {
+        "id": "b",
+        "label": "Weight"
+      },
+      {
+        "id": "c",
+        "label": "Acceleration"
+      },
+      {
+        "id": "d",
+        "label": "Change in momentum"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "J = FΔt = Δp — impulse equals the change in momentum."
+  },
+  {
+    "id": "mom-87",
+    "unitId": "momentum",
+    "conceptTag": "follow-through",
+    "difficulty": 5,
+    "prompt": "Why does following through on a kick (extending contact time) help?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "It reduces the ball’s mass"
+      },
+      {
+        "id": "b",
+        "label": "It lowers the force to zero"
+      },
+      {
+        "id": "c",
+        "label": "It removes friction"
+      },
+      {
+        "id": "d",
+        "label": "Longer contact time delivers more impulse, so more momentum"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "J = FΔt: keeping force on the ball for longer Δt delivers more impulse and final momentum."
+  },
+  {
+    "id": "mom-88",
+    "unitId": "momentum",
+    "conceptTag": "cushioning",
+    "difficulty": 5,
+    "prompt": "A keeper \"gives\" with the ball, catching it over a longer time. For the same change in momentum, this:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Reduces the force on the hands"
+      },
+      {
+        "id": "b",
+        "label": "Changes the impulse"
+      },
+      {
+        "id": "c",
+        "label": "Increases the force"
+      },
+      {
+        "id": "d",
+        "label": "Has no effect"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "Δp is fixed; F = Δp/Δt, so a larger Δt means a smaller force."
+  },
+  {
+    "id": "mom-89",
+    "unitId": "momentum",
+    "conceptTag": "momentum-vector",
+    "difficulty": 5,
+    "prompt": "Two identical balls have the same speed but move in opposite directions. Their momenta are:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Equal in magnitude, opposite in direction"
+      },
+      {
+        "id": "b",
+        "label": "Identical"
+      },
+      {
+        "id": "c",
+        "label": "Unrelated"
+      },
+      {
+        "id": "d",
+        "label": "Both zero"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "Momentum is a vector; same mass and speed but opposite directions give opposite-sign momenta."
+  },
+  {
+    "id": "mom-90",
+    "unitId": "momentum",
+    "conceptTag": "impulse-units",
+    "difficulty": 5,
+    "prompt": "Which is equivalent to one newton-second (N·s)?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "1 W"
+      },
+      {
+        "id": "b",
+        "label": "1 J"
+      },
+      {
+        "id": "c",
+        "label": "1 kg·m/s"
+      },
+      {
+        "id": "d",
+        "label": "1 kg·m/s²"
+      }
+    ],
+    "correctChoiceId": "c",
+    "explanation": "N·s = (kg·m/s²)·s = kg·m/s, the units of momentum."
+  },
+  {
+    "id": "mom-91",
+    "unitId": "momentum",
+    "conceptTag": "equal-opposite-impulse",
+    "difficulty": 5,
+    "prompt": "During a collision between two balls, the impulse each exerts on the other is:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Larger for the heavier ball"
+      },
+      {
+        "id": "b",
+        "label": "Equal in magnitude and opposite in direction"
+      },
+      {
+        "id": "c",
+        "label": "Zero"
+      },
+      {
+        "id": "d",
+        "label": "In the same direction"
+      }
+    ],
+    "correctChoiceId": "b",
+    "explanation": "By Newton’s third law the forces (and so impulses) are equal and opposite."
+  },
+  {
+    "id": "mom-92",
+    "unitId": "momentum",
+    "conceptTag": "elastic-vs-inelastic",
+    "difficulty": 5,
+    "prompt": "In a perfectly inelastic collision, which quantity is definitely conserved?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Total kinetic energy"
+      },
+      {
+        "id": "b",
+        "label": "Total momentum"
+      },
+      {
+        "id": "c",
+        "label": "Neither"
+      },
+      {
+        "id": "d",
+        "label": "Both momentum and kinetic energy"
+      }
+    ],
+    "correctChoiceId": "b",
+    "explanation": "Momentum is conserved in all collisions; kinetic energy is lost in inelastic ones."
+  },
+  {
+    "id": "mom-93",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 5,
+    "prompt": "A 2 kg attacker at 9 m/s tackles a stationary 1 kg ball-carrier and they move together. Find the common speed (conservation of momentum).",
+    "choices": [
+      {
+        "id": "a",
+        "label": "9 m/s"
+      },
+      {
+        "id": "b",
+        "label": "18 m/s"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.17 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 6,
+    "given": {
+      "m1": 2,
+      "v1": 9,
+      "m2": 1
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 2,
+          "v": 9,
+          "label": "2 kg"
+        },
+        "right": {
+          "m": 1,
+          "v": 0,
+          "label": "1 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "v′ = m₁v₁/(m₁+m₂) = 18/3 = 6 m/s."
+  },
+  {
+    "id": "mom-94",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 5,
+    "prompt": "A 3 kg attacker at 8 m/s tackles a stationary 1 kg ball-carrier and they move together. Find the common speed (conservation of momentum).",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.17 m/s"
+      },
+      {
+        "id": "b",
+        "label": "8 m/s"
+      },
+      {
+        "id": "c",
+        "label": "24 m/s"
+      },
+      {
+        "id": "d",
+        "label": "6 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 6,
+    "given": {
+      "m1": 3,
+      "v1": 8,
+      "m2": 1
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 3,
+          "v": 8,
+          "label": "3 kg"
+        },
+        "right": {
+          "m": 1,
+          "v": 0,
+          "label": "1 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "v′ = m₁v₁/(m₁+m₂) = 24/4 = 6 m/s."
+  },
+  {
+    "id": "mom-95",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 5,
+    "prompt": "A 4 kg attacker at 5 m/s tackles a stationary 1 kg ball-carrier and they move together. Find the common speed (conservation of momentum).",
+    "choices": [
+      {
+        "id": "a",
+        "label": "4 m/s"
+      },
+      {
+        "id": "b",
+        "label": "20 m/s"
+      },
+      {
+        "id": "c",
+        "label": "5 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.25 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 4,
+    "given": {
+      "m1": 4,
+      "v1": 5,
+      "m2": 1
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 4,
+          "v": 5,
+          "label": "4 kg"
+        },
+        "right": {
+          "m": 1,
+          "v": 0,
+          "label": "1 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "v′ = m₁v₁/(m₁+m₂) = 20/5 = 4 m/s."
+  },
+  {
+    "id": "mom-96",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 5,
+    "prompt": "A 5 kg attacker at 6 m/s tackles a stationary 1 kg ball-carrier and they move together. Find the common speed (conservation of momentum).",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m/s"
+      },
+      {
+        "id": "b",
+        "label": "6 m/s"
+      },
+      {
+        "id": "c",
+        "label": "30 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.2 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 5,
+    "given": {
+      "m1": 5,
+      "v1": 6,
+      "m2": 1
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 5,
+          "v": 6,
+          "label": "5 kg"
+        },
+        "right": {
+          "m": 1,
+          "v": 0,
+          "label": "1 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "v′ = m₁v₁/(m₁+m₂) = 30/6 = 5 m/s."
+  },
+  {
+    "id": "mom-97",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 5,
+    "prompt": "A 2 kg attacker at 10 m/s tackles a stationary 2 kg ball-carrier and they move together. Find the common speed (conservation of momentum).",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m/s"
+      },
+      {
+        "id": "b",
+        "label": "0.2 m/s"
+      },
+      {
+        "id": "c",
+        "label": "10 m/s"
+      },
+      {
+        "id": "d",
+        "label": "6 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 5,
+    "given": {
+      "m1": 2,
+      "v1": 10,
+      "m2": 2
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 2,
+          "v": 10,
+          "label": "2 kg"
+        },
+        "right": {
+          "m": 2,
+          "v": 0,
+          "label": "2 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "v′ = m₁v₁/(m₁+m₂) = 20/4 = 5 m/s."
+  },
+  {
+    "id": "mom-98",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 5,
+    "prompt": "A 3 kg attacker at 9 m/s tackles a stationary 1 kg ball-carrier and they move together. Find the common speed (conservation of momentum).",
+    "choices": [
+      {
+        "id": "a",
+        "label": "27 m/s"
+      },
+      {
+        "id": "b",
+        "label": "0.15 m/s"
+      },
+      {
+        "id": "c",
+        "label": "6.75 m/s"
+      },
+      {
+        "id": "d",
+        "label": "9 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 6.75,
+    "given": {
+      "m1": 3,
+      "v1": 9,
+      "m2": 1
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 3,
+          "v": 9,
+          "label": "3 kg"
+        },
+        "right": {
+          "m": 1,
+          "v": 0,
+          "label": "1 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "v′ = m₁v₁/(m₁+m₂) = 27/4 = 6.75 m/s."
+  },
+  {
+    "id": "mom-99",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 5,
+    "prompt": "A 4 kg attacker at 6 m/s tackles a stationary 2 kg ball-carrier and they move together. Find the common speed (conservation of momentum).",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6 m/s"
+      },
+      {
+        "id": "b",
+        "label": "4 m/s"
+      },
+      {
+        "id": "c",
+        "label": "12 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.25 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 4,
+    "given": {
+      "m1": 4,
+      "v1": 6,
+      "m2": 2
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 4,
+          "v": 6,
+          "label": "4 kg"
+        },
+        "right": {
+          "m": 2,
+          "v": 0,
+          "label": "2 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "v′ = m₁v₁/(m₁+m₂) = 24/6 = 4 m/s."
+  },
+  {
+    "id": "mom-100",
+    "unitId": "momentum",
+    "conceptTag": "momentum-collisions",
+    "difficulty": 5,
+    "prompt": "A 6 kg attacker at 5 m/s tackles a stationary 4 kg ball-carrier and they move together. Find the common speed (conservation of momentum).",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m/s"
+      },
+      {
+        "id": "b",
+        "label": "0.33 m/s"
+      },
+      {
+        "id": "c",
+        "label": "3 m/s"
+      },
+      {
+        "id": "d",
+        "label": "7.5 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 3,
+    "given": {
+      "m1": 6,
+      "v1": 5,
+      "m2": 4
+    },
+    "formulas": [
+      "m₁v₁ = (m₁+m₂)v′"
+    ],
+    "diagram": {
+      "kind": "collision",
+      "params": {
+        "left": {
+          "m": 6,
+          "v": 5,
+          "label": "6 kg"
+        },
+        "right": {
+          "m": 4,
+          "v": 0,
+          "label": "4 kg"
+        }
+      },
+      "caption": "Collision"
+    },
+    "explanation": "v′ = m₁v₁/(m₁+m₂) = 30/10 = 3 m/s."
+  }
+]

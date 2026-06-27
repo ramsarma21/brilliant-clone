@@ -36,13 +36,9 @@ export const UNITS: Unit[] = [
     blurb: 'Defending: Win the Ball',
     lessonId: 'lesson-defense',
   },
-  {
-    id: 'impulse',
-    index: 5,
-    name: 'More Momentum',
-    blurb: 'Goalkeeping: Make the Save',
-    lessonId: 'lesson-goalie',
-  },
+  // NOTE: the impulse / Goalkeeping unit is intentionally NOT offered. Its lesson
+  // (`lesson-goalie`), the GoalieSim, GoalieQuiz, and bank are all kept in the
+  // codebase, just not surfaced as a unit. To re-enable it, add it back here.
 ]
 
 export const UNIT_THEME: Record<string, { icon: string; accent: string; tagline: string }> = {

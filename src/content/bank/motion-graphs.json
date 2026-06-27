@@ -1,0 +1,5120 @@
+[
+  {
+    "id": "mot-1",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "On a position-time graph, what does the slope of the line represent?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Distance"
+      },
+      {
+        "id": "b",
+        "label": "Time"
+      },
+      {
+        "id": "c",
+        "label": "Acceleration"
+      },
+      {
+        "id": "d",
+        "label": "Velocity"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "Slope = rise/run = change in position over time = velocity."
+  },
+  {
+    "id": "mot-2",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 1,
+    "prompt": "On a velocity-time graph, what does the area under the line represent?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Acceleration"
+      },
+      {
+        "id": "b",
+        "label": "Force"
+      },
+      {
+        "id": "c",
+        "label": "Displacement"
+      },
+      {
+        "id": "d",
+        "label": "Speed"
+      }
+    ],
+    "correctChoiceId": "c",
+    "explanation": "Area = velocity × time = displacement."
+  },
+  {
+    "id": "mot-3",
+    "unitId": "motion-graphs",
+    "conceptTag": "flat-xt-at-rest",
+    "difficulty": 1,
+    "prompt": "A position-time graph is a flat, horizontal line. What is the object doing?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Moving at constant speed"
+      },
+      {
+        "id": "b",
+        "label": "Slowing down"
+      },
+      {
+        "id": "c",
+        "label": "Speeding up"
+      },
+      {
+        "id": "d",
+        "label": "Staying still"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "Zero slope means position is not changing — the object is at rest."
+  },
+  {
+    "id": "mot-4",
+    "unitId": "motion-graphs",
+    "conceptTag": "slope-vt-as-accel",
+    "difficulty": 1,
+    "prompt": "On a velocity-time graph, the slope of the line represents:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Speed"
+      },
+      {
+        "id": "b",
+        "label": "Position"
+      },
+      {
+        "id": "c",
+        "label": "Acceleration"
+      },
+      {
+        "id": "d",
+        "label": "Displacement"
+      }
+    ],
+    "correctChoiceId": "c",
+    "explanation": "Slope of v-t = change in velocity over time = acceleration."
+  },
+  {
+    "id": "mot-5",
+    "unitId": "motion-graphs",
+    "conceptTag": "units",
+    "difficulty": 1,
+    "prompt": "The slope of a position-time graph has units of:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "m/s"
+      },
+      {
+        "id": "b",
+        "label": "m"
+      },
+      {
+        "id": "c",
+        "label": "m/s²"
+      },
+      {
+        "id": "d",
+        "label": "s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "Position (m) over time (s) gives m/s."
+  },
+  {
+    "id": "mot-6",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (2 s, 6 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "3 m/s"
+      },
+      {
+        "id": "b",
+        "label": "4 m/s"
+      },
+      {
+        "id": "c",
+        "label": "0.33 m/s"
+      },
+      {
+        "id": "d",
+        "label": "12 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 3,
+    "given": {
+      "dt": 2,
+      "dx": 6
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 2,
+        "yMax": 6,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                2,
+                6
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 6/2 = 3 m/s."
+  },
+  {
+    "id": "mot-7",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (2 s, 12 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.17 m/s"
+      },
+      {
+        "id": "b",
+        "label": "6 m/s"
+      },
+      {
+        "id": "c",
+        "label": "24 m/s"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 6,
+    "given": {
+      "dt": 2,
+      "dx": 12
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 2,
+        "yMax": 12,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                2,
+                12
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 12/2 = 6 m/s."
+  },
+  {
+    "id": "mot-8",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (2 s, 20 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.1 m/s"
+      },
+      {
+        "id": "b",
+        "label": "18 m/s"
+      },
+      {
+        "id": "c",
+        "label": "40 m/s"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 10,
+    "given": {
+      "dt": 2,
+      "dx": 20
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 2,
+        "yMax": 20,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                2,
+                20
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 20/2 = 10 m/s."
+  },
+  {
+    "id": "mot-9",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (2 s, 30 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "15 m/s"
+      },
+      {
+        "id": "b",
+        "label": "60 m/s"
+      },
+      {
+        "id": "c",
+        "label": "0.07 m/s"
+      },
+      {
+        "id": "d",
+        "label": "28 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 15,
+    "given": {
+      "dt": 2,
+      "dx": 30
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 2,
+        "yMax": 30,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                2,
+                30
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 30/2 = 15 m/s."
+  },
+  {
+    "id": "mot-10",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (2 s, 40 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "80 m/s"
+      },
+      {
+        "id": "b",
+        "label": "38 m/s"
+      },
+      {
+        "id": "c",
+        "label": "20 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.05 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 20,
+    "given": {
+      "dt": 2,
+      "dx": 40
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 2,
+        "yMax": 40,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                2,
+                40
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 40/2 = 20 m/s."
+  },
+  {
+    "id": "mot-11",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (3 s, 6 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "2 m/s"
+      },
+      {
+        "id": "b",
+        "label": "3 m/s"
+      },
+      {
+        "id": "c",
+        "label": "18 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.5 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 2,
+    "given": {
+      "dt": 3,
+      "dx": 6
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 3,
+        "yMax": 6,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                3,
+                6
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 6/3 = 2 m/s."
+  },
+  {
+    "id": "mot-12",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (3 s, 18 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "54 m/s"
+      },
+      {
+        "id": "b",
+        "label": "0.17 m/s"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s"
+      },
+      {
+        "id": "d",
+        "label": "15 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 6,
+    "given": {
+      "dt": 3,
+      "dx": 18
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 3,
+        "yMax": 18,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                3,
+                18
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 18/3 = 6 m/s."
+  },
+  {
+    "id": "mot-13",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (3 s, 30 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m/s"
+      },
+      {
+        "id": "b",
+        "label": "27 m/s"
+      },
+      {
+        "id": "c",
+        "label": "90 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.1 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 10,
+    "given": {
+      "dt": 3,
+      "dx": 30
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 3,
+        "yMax": 30,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                3,
+                30
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 30/3 = 10 m/s."
+  },
+  {
+    "id": "mot-14",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (3 s, 60 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 m/s"
+      },
+      {
+        "id": "b",
+        "label": "57 m/s"
+      },
+      {
+        "id": "c",
+        "label": "180 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.05 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 20,
+    "given": {
+      "dt": 3,
+      "dx": 60
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 3,
+        "yMax": 60,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                3,
+                60
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 60/3 = 20 m/s."
+  },
+  {
+    "id": "mot-15",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (4 s, 20 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.2 m/s"
+      },
+      {
+        "id": "b",
+        "label": "16 m/s"
+      },
+      {
+        "id": "c",
+        "label": "5 m/s"
+      },
+      {
+        "id": "d",
+        "label": "80 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 5,
+    "given": {
+      "dt": 4,
+      "dx": 20
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 4,
+        "yMax": 20,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                4,
+                20
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 20/4 = 5 m/s."
+  },
+  {
+    "id": "mot-16",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (4 s, 36 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "32 m/s"
+      },
+      {
+        "id": "b",
+        "label": "9 m/s"
+      },
+      {
+        "id": "c",
+        "label": "0.11 m/s"
+      },
+      {
+        "id": "d",
+        "label": "144 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 9,
+    "given": {
+      "dt": 4,
+      "dx": 36
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 4,
+        "yMax": 36,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                4,
+                36
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 36/4 = 9 m/s."
+  },
+  {
+    "id": "mot-17",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (4 s, 60 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "15 m/s"
+      },
+      {
+        "id": "b",
+        "label": "0.07 m/s"
+      },
+      {
+        "id": "c",
+        "label": "240 m/s"
+      },
+      {
+        "id": "d",
+        "label": "56 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 15,
+    "given": {
+      "dt": 4,
+      "dx": 60
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 4,
+        "yMax": 60,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                4,
+                60
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 60/4 = 15 m/s."
+  },
+  {
+    "id": "mot-18",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (5 s, 20 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "100 m/s"
+      },
+      {
+        "id": "b",
+        "label": "4 m/s"
+      },
+      {
+        "id": "c",
+        "label": "15 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.25 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 4,
+    "given": {
+      "dt": 5,
+      "dx": 20
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 5,
+        "yMax": 20,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                5,
+                20
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 20/5 = 4 m/s."
+  },
+  {
+    "id": "mot-19",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (5 s, 40 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "35 m/s"
+      },
+      {
+        "id": "b",
+        "label": "8 m/s"
+      },
+      {
+        "id": "c",
+        "label": "200 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.13 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 8,
+    "given": {
+      "dt": 5,
+      "dx": 40
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 5,
+        "yMax": 40,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                5,
+                40
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 40/5 = 8 m/s."
+  },
+  {
+    "id": "mot-20",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (6 s, 6 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "36 m/s"
+      },
+      {
+        "id": "b",
+        "label": "1 m/s"
+      },
+      {
+        "id": "c",
+        "label": "0 m/s"
+      },
+      {
+        "id": "d",
+        "label": "2 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 1,
+    "given": {
+      "dt": 6,
+      "dx": 6
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 6,
+        "yMax": 6,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                6,
+                6
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 6/6 = 1 m/s."
+  },
+  {
+    "id": "mot-21",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (6 s, 18 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "108 m/s"
+      },
+      {
+        "id": "b",
+        "label": "12 m/s"
+      },
+      {
+        "id": "c",
+        "label": "3 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.33 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 3,
+    "given": {
+      "dt": 6,
+      "dx": 18
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 6,
+        "yMax": 18,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                6,
+                18
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 18/6 = 3 m/s."
+  },
+  {
+    "id": "mot-22",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 1,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (6 s, 30 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.2 m/s"
+      },
+      {
+        "id": "b",
+        "label": "5 m/s"
+      },
+      {
+        "id": "c",
+        "label": "180 m/s"
+      },
+      {
+        "id": "d",
+        "label": "24 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 5,
+    "given": {
+      "dt": 6,
+      "dx": 30
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 6,
+        "yMax": 30,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                6,
+                30
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 30/6 = 5 m/s."
+  },
+  {
+    "id": "mot-23",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (2 s, 10 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "8 m/s"
+      },
+      {
+        "id": "b",
+        "label": "20 m/s"
+      },
+      {
+        "id": "c",
+        "label": "5 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.2 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 5,
+    "given": {
+      "dt": 2,
+      "dx": 10
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 2,
+        "yMax": 10,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                2,
+                10
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 10/2 = 5 m/s."
+  },
+  {
+    "id": "mot-24",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (2 s, 18 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "16 m/s"
+      },
+      {
+        "id": "b",
+        "label": "9 m/s"
+      },
+      {
+        "id": "c",
+        "label": "36 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.11 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 9,
+    "given": {
+      "dt": 2,
+      "dx": 18
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 2,
+        "yMax": 18,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                2,
+                18
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 18/2 = 9 m/s."
+  },
+  {
+    "id": "mot-25",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (2 s, 24 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "48 m/s"
+      },
+      {
+        "id": "b",
+        "label": "12 m/s"
+      },
+      {
+        "id": "c",
+        "label": "22 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.08 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 12,
+    "given": {
+      "dt": 2,
+      "dx": 24
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 2,
+        "yMax": 24,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                2,
+                24
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 24/2 = 12 m/s."
+  },
+  {
+    "id": "mot-26",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (2 s, 36 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.06 m/s"
+      },
+      {
+        "id": "b",
+        "label": "72 m/s"
+      },
+      {
+        "id": "c",
+        "label": "34 m/s"
+      },
+      {
+        "id": "d",
+        "label": "18 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 18,
+    "given": {
+      "dt": 2,
+      "dx": 36
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 2,
+        "yMax": 36,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                2,
+                36
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 36/2 = 18 m/s."
+  },
+  {
+    "id": "mot-27",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (2 s, 60 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "58 m/s"
+      },
+      {
+        "id": "b",
+        "label": "0.03 m/s"
+      },
+      {
+        "id": "c",
+        "label": "30 m/s"
+      },
+      {
+        "id": "d",
+        "label": "120 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 30,
+    "given": {
+      "dt": 2,
+      "dx": 60
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 2,
+        "yMax": 60,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                2,
+                60
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 60/2 = 30 m/s."
+  },
+  {
+    "id": "mot-28",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (3 s, 12 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "4 m/s"
+      },
+      {
+        "id": "b",
+        "label": "36 m/s"
+      },
+      {
+        "id": "c",
+        "label": "9 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.25 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 4,
+    "given": {
+      "dt": 3,
+      "dx": 12
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 3,
+        "yMax": 12,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                3,
+                12
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 12/3 = 4 m/s."
+  },
+  {
+    "id": "mot-29",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (3 s, 24 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.13 m/s"
+      },
+      {
+        "id": "b",
+        "label": "8 m/s"
+      },
+      {
+        "id": "c",
+        "label": "72 m/s"
+      },
+      {
+        "id": "d",
+        "label": "21 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 8,
+    "given": {
+      "dt": 3,
+      "dx": 24
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 3,
+        "yMax": 24,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                3,
+                24
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 24/3 = 8 m/s."
+  },
+  {
+    "id": "mot-30",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (3 s, 36 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "108 m/s"
+      },
+      {
+        "id": "b",
+        "label": "33 m/s"
+      },
+      {
+        "id": "c",
+        "label": "0.08 m/s"
+      },
+      {
+        "id": "d",
+        "label": "12 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 12,
+    "given": {
+      "dt": 3,
+      "dx": 36
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 3,
+        "yMax": 36,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                3,
+                36
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 36/3 = 12 m/s."
+  },
+  {
+    "id": "mot-31",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (4 s, 12 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "8 m/s"
+      },
+      {
+        "id": "b",
+        "label": "3 m/s"
+      },
+      {
+        "id": "c",
+        "label": "0.33 m/s"
+      },
+      {
+        "id": "d",
+        "label": "48 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 3,
+    "given": {
+      "dt": 4,
+      "dx": 12
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 4,
+        "yMax": 12,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                4,
+                12
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 12/4 = 3 m/s."
+  },
+  {
+    "id": "mot-32",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (4 s, 24 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.17 m/s"
+      },
+      {
+        "id": "b",
+        "label": "6 m/s"
+      },
+      {
+        "id": "c",
+        "label": "96 m/s"
+      },
+      {
+        "id": "d",
+        "label": "20 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 6,
+    "given": {
+      "dt": 4,
+      "dx": 24
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 4,
+        "yMax": 24,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                4,
+                24
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 24/4 = 6 m/s."
+  },
+  {
+    "id": "mot-33",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (4 s, 40 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "160 m/s"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s"
+      },
+      {
+        "id": "c",
+        "label": "36 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.1 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "dt": 4,
+      "dx": 40
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 4,
+        "yMax": 40,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                4,
+                40
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 40/4 = 10 m/s."
+  },
+  {
+    "id": "mot-34",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (5 s, 10 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "2 m/s"
+      },
+      {
+        "id": "b",
+        "label": "5 m/s"
+      },
+      {
+        "id": "c",
+        "label": "0.5 m/s"
+      },
+      {
+        "id": "d",
+        "label": "50 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 2,
+    "given": {
+      "dt": 5,
+      "dx": 10
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 5,
+        "yMax": 10,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                5,
+                10
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 10/5 = 2 m/s."
+  },
+  {
+    "id": "mot-35",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (5 s, 30 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.17 m/s"
+      },
+      {
+        "id": "b",
+        "label": "6 m/s"
+      },
+      {
+        "id": "c",
+        "label": "150 m/s"
+      },
+      {
+        "id": "d",
+        "label": "25 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 6,
+    "given": {
+      "dt": 5,
+      "dx": 30
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 5,
+        "yMax": 30,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                5,
+                30
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 30/5 = 6 m/s."
+  },
+  {
+    "id": "mot-36",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (5 s, 60 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "55 m/s"
+      },
+      {
+        "id": "b",
+        "label": "0.08 m/s"
+      },
+      {
+        "id": "c",
+        "label": "12 m/s"
+      },
+      {
+        "id": "d",
+        "label": "300 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 12,
+    "given": {
+      "dt": 5,
+      "dx": 60
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 5,
+        "yMax": 60,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                5,
+                60
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 60/5 = 12 m/s."
+  },
+  {
+    "id": "mot-37",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (6 s, 12 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.5 m/s"
+      },
+      {
+        "id": "b",
+        "label": "2 m/s"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s"
+      },
+      {
+        "id": "d",
+        "label": "72 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 2,
+    "given": {
+      "dt": 6,
+      "dx": 12
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 6,
+        "yMax": 12,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                6,
+                12
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 12/6 = 2 m/s."
+  },
+  {
+    "id": "mot-38",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (6 s, 24 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.25 m/s"
+      },
+      {
+        "id": "b",
+        "label": "18 m/s"
+      },
+      {
+        "id": "c",
+        "label": "144 m/s"
+      },
+      {
+        "id": "d",
+        "label": "4 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 4,
+    "given": {
+      "dt": 6,
+      "dx": 24
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 6,
+        "yMax": 24,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                6,
+                24
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 24/6 = 4 m/s."
+  },
+  {
+    "id": "mot-39",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (6 s, 36 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "216 m/s"
+      },
+      {
+        "id": "b",
+        "label": "30 m/s"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.17 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 6,
+    "given": {
+      "dt": 6,
+      "dx": 36
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 6,
+        "yMax": 36,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                6,
+                36
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 36/6 = 6 m/s."
+  },
+  {
+    "id": "mot-40",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (10 s, 10 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0 m/s"
+      },
+      {
+        "id": "b",
+        "label": "100 m/s"
+      },
+      {
+        "id": "c",
+        "label": "1 m/s"
+      },
+      {
+        "id": "d",
+        "label": "2 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 1,
+    "given": {
+      "dt": 10,
+      "dx": 10
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 10,
+        "yMax": 10,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                10,
+                10
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 10/10 = 1 m/s."
+  },
+  {
+    "id": "mot-41",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (10 s, 30 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "300 m/s"
+      },
+      {
+        "id": "b",
+        "label": "0.33 m/s"
+      },
+      {
+        "id": "c",
+        "label": "20 m/s"
+      },
+      {
+        "id": "d",
+        "label": "3 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 3,
+    "given": {
+      "dt": 10,
+      "dx": 30
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 10,
+        "yMax": 30,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                10,
+                30
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 30/10 = 3 m/s."
+  },
+  {
+    "id": "mot-42",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-slope-as-velocity",
+    "difficulty": 2,
+    "prompt": "A player's position-time graph is a straight line from (0 s, 0 m) to (10 s, 60 m). What is the player's velocity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "600 m/s"
+      },
+      {
+        "id": "b",
+        "label": "50 m/s"
+      },
+      {
+        "id": "c",
+        "label": "0.17 m/s"
+      },
+      {
+        "id": "d",
+        "label": "6 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 6,
+    "given": {
+      "dt": 10,
+      "dx": 60
+    },
+    "formulas": [
+      "v = Δx / Δt"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 10,
+        "yMax": 60,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                10,
+                60
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "v = Δx/Δt = 60/10 = 6 m/s."
+  },
+  {
+    "id": "mot-43",
+    "unitId": "motion-graphs",
+    "conceptTag": "displacement-from-graph",
+    "difficulty": 2,
+    "prompt": "A runner's position-time graph passes through (1 s, 5 m) and (4 s, 20 m). What is the displacement between these times?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m"
+      },
+      {
+        "id": "b",
+        "label": "25 m"
+      },
+      {
+        "id": "c",
+        "label": "15 m"
+      },
+      {
+        "id": "d",
+        "label": "18 m"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 15,
+    "given": {
+      "x1": 5,
+      "x2": 20
+    },
+    "formulas": [
+      "Δx = x₂ − x₁"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 4,
+        "yMax": 20,
+        "lines": [
+          {
+            "points": [
+              [
+                1,
+                5
+              ],
+              [
+                4,
+                20
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "Δx = x₂ − x₁ = 20 − 5 = 15 m."
+  },
+  {
+    "id": "mot-44",
+    "unitId": "motion-graphs",
+    "conceptTag": "displacement-from-graph",
+    "difficulty": 2,
+    "prompt": "A runner's position-time graph passes through (0 s, 10 m) and (3 s, 40 m). What is the displacement between these times?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 m"
+      },
+      {
+        "id": "b",
+        "label": "10 m"
+      },
+      {
+        "id": "c",
+        "label": "36 m"
+      },
+      {
+        "id": "d",
+        "label": "50 m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 30,
+    "given": {
+      "x1": 10,
+      "x2": 40
+    },
+    "formulas": [
+      "Δx = x₂ − x₁"
+    ],
+    "diagram": {
+      "kind": "position-time",
+      "params": {
+        "yLabel": "position (m)",
+        "xMax": 3,
+        "yMax": 40,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                10
+              ],
+              [
+                3,
+                40
+              ]
+            ],
+            "label": "runner"
+          }
+        ]
+      },
+      "caption": "Position vs time"
+    },
+    "explanation": "Δx = x₂ − x₁ = 40 − 10 = 30 m."
+  },
+  {
+    "id": "mot-45",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "A ball rolls at a constant 5 m/s for 4 s. Using the area under the velocity-time graph, what is its displacement?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "9 m"
+      },
+      {
+        "id": "b",
+        "label": "10 m"
+      },
+      {
+        "id": "c",
+        "label": "20 m"
+      },
+      {
+        "id": "d",
+        "label": "1.25 m"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 20,
+    "given": {
+      "v": 5,
+      "t": 4
+    },
+    "formulas": [
+      "Δx = v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 4,
+        "yMax": 5,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                5
+              ],
+              [
+                4,
+                5
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the rectangle = v × t = 5×4 = 20 m."
+  },
+  {
+    "id": "mot-46",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "A ball rolls at a constant 10 m/s for 3 s. Using the area under the velocity-time graph, what is its displacement?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "13 m"
+      },
+      {
+        "id": "b",
+        "label": "3.33 m"
+      },
+      {
+        "id": "c",
+        "label": "15 m"
+      },
+      {
+        "id": "d",
+        "label": "30 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 30,
+    "given": {
+      "v": 10,
+      "t": 3
+    },
+    "formulas": [
+      "Δx = v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 3,
+        "yMax": 10,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                10
+              ],
+              [
+                3,
+                10
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the rectangle = v × t = 10×3 = 30 m."
+  },
+  {
+    "id": "mot-47",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "A ball rolls at a constant 8 m/s for 5 s. Using the area under the velocity-time graph, what is its displacement?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "1.6 m"
+      },
+      {
+        "id": "b",
+        "label": "40 m"
+      },
+      {
+        "id": "c",
+        "label": "20 m"
+      },
+      {
+        "id": "d",
+        "label": "13 m"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 40,
+    "given": {
+      "v": 8,
+      "t": 5
+    },
+    "formulas": [
+      "Δx = v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 5,
+        "yMax": 8,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                8
+              ],
+              [
+                5,
+                8
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the rectangle = v × t = 8×5 = 40 m."
+  },
+  {
+    "id": "mot-48",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "A ball rolls at a constant 6 m/s for 6 s. Using the area under the velocity-time graph, what is its displacement?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "36 m"
+      },
+      {
+        "id": "b",
+        "label": "18 m"
+      },
+      {
+        "id": "c",
+        "label": "1 m"
+      },
+      {
+        "id": "d",
+        "label": "12 m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 36,
+    "given": {
+      "v": 6,
+      "t": 6
+    },
+    "formulas": [
+      "Δx = v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 6,
+        "yMax": 6,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                6
+              ],
+              [
+                6,
+                6
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the rectangle = v × t = 6×6 = 36 m."
+  },
+  {
+    "id": "mot-49",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "A ball rolls at a constant 12 m/s for 4 s. Using the area under the velocity-time graph, what is its displacement?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "3 m"
+      },
+      {
+        "id": "b",
+        "label": "48 m"
+      },
+      {
+        "id": "c",
+        "label": "24 m"
+      },
+      {
+        "id": "d",
+        "label": "16 m"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 48,
+    "given": {
+      "v": 12,
+      "t": 4
+    },
+    "formulas": [
+      "Δx = v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 4,
+        "yMax": 12,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                12
+              ],
+              [
+                4,
+                12
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the rectangle = v × t = 12×4 = 48 m."
+  },
+  {
+    "id": "mot-50",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "A ball rolls at a constant 4 m/s for 10 s. Using the area under the velocity-time graph, what is its displacement?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 m"
+      },
+      {
+        "id": "b",
+        "label": "14 m"
+      },
+      {
+        "id": "c",
+        "label": "0.4 m"
+      },
+      {
+        "id": "d",
+        "label": "40 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 40,
+    "given": {
+      "v": 4,
+      "t": 10
+    },
+    "formulas": [
+      "Δx = v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 10,
+        "yMax": 4,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                4
+              ],
+              [
+                10,
+                4
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the rectangle = v × t = 4×10 = 40 m."
+  },
+  {
+    "id": "mot-51",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "A ball rolls at a constant 7 m/s for 4 s. Using the area under the velocity-time graph, what is its displacement?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "1.75 m"
+      },
+      {
+        "id": "b",
+        "label": "11 m"
+      },
+      {
+        "id": "c",
+        "label": "14 m"
+      },
+      {
+        "id": "d",
+        "label": "28 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 28,
+    "given": {
+      "v": 7,
+      "t": 4
+    },
+    "formulas": [
+      "Δx = v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 4,
+        "yMax": 7,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                7
+              ],
+              [
+                4,
+                7
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the rectangle = v × t = 7×4 = 28 m."
+  },
+  {
+    "id": "mot-52",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "A ball rolls at a constant 9 m/s for 5 s. Using the area under the velocity-time graph, what is its displacement?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "22.5 m"
+      },
+      {
+        "id": "b",
+        "label": "1.8 m"
+      },
+      {
+        "id": "c",
+        "label": "14 m"
+      },
+      {
+        "id": "d",
+        "label": "45 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 45,
+    "given": {
+      "v": 9,
+      "t": 5
+    },
+    "formulas": [
+      "Δx = v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 5,
+        "yMax": 9,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                9
+              ],
+              [
+                5,
+                9
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the rectangle = v × t = 9×5 = 45 m."
+  },
+  {
+    "id": "mot-53",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "A ball rolls at a constant 3 m/s for 8 s. Using the area under the velocity-time graph, what is its displacement?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "11 m"
+      },
+      {
+        "id": "b",
+        "label": "12 m"
+      },
+      {
+        "id": "c",
+        "label": "24 m"
+      },
+      {
+        "id": "d",
+        "label": "0.38 m"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 24,
+    "given": {
+      "v": 3,
+      "t": 8
+    },
+    "formulas": [
+      "Δx = v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 8,
+        "yMax": 3,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                3
+              ],
+              [
+                8,
+                3
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the rectangle = v × t = 3×8 = 24 m."
+  },
+  {
+    "id": "mot-54",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "A ball rolls at a constant 15 m/s for 2 s. Using the area under the velocity-time graph, what is its displacement?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "15 m"
+      },
+      {
+        "id": "b",
+        "label": "7.5 m"
+      },
+      {
+        "id": "c",
+        "label": "17 m"
+      },
+      {
+        "id": "d",
+        "label": "30 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 30,
+    "given": {
+      "v": 15,
+      "t": 2
+    },
+    "formulas": [
+      "Δx = v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 2,
+        "yMax": 15,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                15
+              ],
+              [
+                2,
+                15
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the rectangle = v × t = 15×2 = 30 m."
+  },
+  {
+    "id": "mot-55",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a player's velocity rises in a straight line to 10 m/s over 4 s. What is the displacement (area under the graph)?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "14 m"
+      },
+      {
+        "id": "b",
+        "label": "40 m"
+      },
+      {
+        "id": "c",
+        "label": "20 m"
+      },
+      {
+        "id": "d",
+        "label": "5 m"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 20,
+    "given": {
+      "v": 10,
+      "t": 4
+    },
+    "formulas": [
+      "Δx = ½ v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 4,
+        "yMax": 10,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                4,
+                10
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the triangle = ½ × base × height = ½ × 4 × 10 = 20 m."
+  },
+  {
+    "id": "mot-56",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a player's velocity rises in a straight line to 20 m/s over 5 s. What is the displacement (area under the graph)?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "50 m"
+      },
+      {
+        "id": "b",
+        "label": "100 m"
+      },
+      {
+        "id": "c",
+        "label": "25 m"
+      },
+      {
+        "id": "d",
+        "label": "10 m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 50,
+    "given": {
+      "v": 20,
+      "t": 5
+    },
+    "formulas": [
+      "Δx = ½ v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 5,
+        "yMax": 20,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                5,
+                20
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the triangle = ½ × base × height = ½ × 5 × 20 = 50 m."
+  },
+  {
+    "id": "mot-57",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a player's velocity rises in a straight line to 8 m/s over 6 s. What is the displacement (area under the graph)?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "14 m"
+      },
+      {
+        "id": "b",
+        "label": "4 m"
+      },
+      {
+        "id": "c",
+        "label": "48 m"
+      },
+      {
+        "id": "d",
+        "label": "24 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 24,
+    "given": {
+      "v": 8,
+      "t": 6
+    },
+    "formulas": [
+      "Δx = ½ v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 6,
+        "yMax": 8,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                6,
+                8
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the triangle = ½ × base × height = ½ × 6 × 8 = 24 m."
+  },
+  {
+    "id": "mot-58",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a player's velocity rises in a straight line to 12 m/s over 4 s. What is the displacement (area under the graph)?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "24 m"
+      },
+      {
+        "id": "b",
+        "label": "16 m"
+      },
+      {
+        "id": "c",
+        "label": "6 m"
+      },
+      {
+        "id": "d",
+        "label": "48 m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 24,
+    "given": {
+      "v": 12,
+      "t": 4
+    },
+    "formulas": [
+      "Δx = ½ v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 4,
+        "yMax": 12,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                4,
+                12
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the triangle = ½ × base × height = ½ × 4 × 12 = 24 m."
+  },
+  {
+    "id": "mot-59",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a player's velocity rises in a straight line to 6 m/s over 5 s. What is the displacement (area under the graph)?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "3 m"
+      },
+      {
+        "id": "b",
+        "label": "30 m"
+      },
+      {
+        "id": "c",
+        "label": "15 m"
+      },
+      {
+        "id": "d",
+        "label": "11 m"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 15,
+    "given": {
+      "v": 6,
+      "t": 5
+    },
+    "formulas": [
+      "Δx = ½ v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 5,
+        "yMax": 6,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                5,
+                6
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the triangle = ½ × base × height = ½ × 5 × 6 = 15 m."
+  },
+  {
+    "id": "mot-60",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a player's velocity rises in a straight line to 16 m/s over 4 s. What is the displacement (area under the graph)?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "8 m"
+      },
+      {
+        "id": "b",
+        "label": "64 m"
+      },
+      {
+        "id": "c",
+        "label": "20 m"
+      },
+      {
+        "id": "d",
+        "label": "32 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 32,
+    "given": {
+      "v": 16,
+      "t": 4
+    },
+    "formulas": [
+      "Δx = ½ v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 4,
+        "yMax": 16,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                4,
+                16
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the triangle = ½ × base × height = ½ × 4 × 16 = 32 m."
+  },
+  {
+    "id": "mot-61",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a player's velocity rises in a straight line to 10 m/s over 6 s. What is the displacement (area under the graph)?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m"
+      },
+      {
+        "id": "b",
+        "label": "16 m"
+      },
+      {
+        "id": "c",
+        "label": "60 m"
+      },
+      {
+        "id": "d",
+        "label": "30 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 30,
+    "given": {
+      "v": 10,
+      "t": 6
+    },
+    "formulas": [
+      "Δx = ½ v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 6,
+        "yMax": 10,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                6,
+                10
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the triangle = ½ × base × height = ½ × 6 × 10 = 30 m."
+  },
+  {
+    "id": "mot-62",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a player's velocity rises in a straight line to 18 m/s over 4 s. What is the displacement (area under the graph)?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "9 m"
+      },
+      {
+        "id": "b",
+        "label": "22 m"
+      },
+      {
+        "id": "c",
+        "label": "36 m"
+      },
+      {
+        "id": "d",
+        "label": "72 m"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 36,
+    "given": {
+      "v": 18,
+      "t": 4
+    },
+    "formulas": [
+      "Δx = ½ v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 4,
+        "yMax": 18,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                4,
+                18
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the triangle = ½ × base × height = ½ × 4 × 18 = 36 m."
+  },
+  {
+    "id": "mot-63",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a player's velocity rises in a straight line to 14 m/s over 5 s. What is the displacement (area under the graph)?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "35 m"
+      },
+      {
+        "id": "b",
+        "label": "70 m"
+      },
+      {
+        "id": "c",
+        "label": "7 m"
+      },
+      {
+        "id": "d",
+        "label": "19 m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 35,
+    "given": {
+      "v": 14,
+      "t": 5
+    },
+    "formulas": [
+      "Δx = ½ v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 5,
+        "yMax": 14,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                5,
+                14
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the triangle = ½ × base × height = ½ × 5 × 14 = 35 m."
+  },
+  {
+    "id": "mot-64",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-under-vt",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a player's velocity rises in a straight line to 24 m/s over 5 s. What is the displacement (area under the graph)?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "29 m"
+      },
+      {
+        "id": "b",
+        "label": "120 m"
+      },
+      {
+        "id": "c",
+        "label": "12 m"
+      },
+      {
+        "id": "d",
+        "label": "60 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 60,
+    "given": {
+      "v": 24,
+      "t": 5
+    },
+    "formulas": [
+      "Δx = ½ v t"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 5,
+        "yMax": 24,
+        "shade": true,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                5,
+                24
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "Area of the triangle = ½ × base × height = ½ × 5 × 24 = 60 m."
+  },
+  {
+    "id": "mot-65",
+    "unitId": "motion-graphs",
+    "conceptTag": "slope-vt-as-accel",
+    "difficulty": 4,
+    "prompt": "A velocity-time graph rises in a straight line from 0 m/s to 20 m/s over 4 s. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "7 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "80 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "6 m/s²"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 5,
+    "given": {
+      "v0": 0,
+      "v1": 20,
+      "t": 4
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 4,
+        "yMax": 20,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                4,
+                20
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "a = Δv/Δt = (20 − 0)/4 = 5 m/s²."
+  },
+  {
+    "id": "mot-66",
+    "unitId": "motion-graphs",
+    "conceptTag": "slope-vt-as-accel",
+    "difficulty": 4,
+    "prompt": "A velocity-time graph rises in a straight line from 5 m/s to 25 m/s over 5 s. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "6 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "4 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "100 m/s²"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 4,
+    "given": {
+      "v0": 5,
+      "v1": 25,
+      "t": 5
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 5,
+        "yMax": 25,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                5
+              ],
+              [
+                5,
+                25
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "a = Δv/Δt = (25 − 5)/5 = 4 m/s²."
+  },
+  {
+    "id": "mot-67",
+    "unitId": "motion-graphs",
+    "conceptTag": "slope-vt-as-accel",
+    "difficulty": 4,
+    "prompt": "A velocity-time graph rises in a straight line from 10 m/s to 30 m/s over 4 s. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "7.5 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "5 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "80 m/s²"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 5,
+    "given": {
+      "v0": 10,
+      "v1": 30,
+      "t": 4
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 4,
+        "yMax": 30,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                10
+              ],
+              [
+                4,
+                30
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "a = Δv/Δt = (30 − 10)/4 = 5 m/s²."
+  },
+  {
+    "id": "mot-68",
+    "unitId": "motion-graphs",
+    "conceptTag": "slope-vt-as-accel",
+    "difficulty": 4,
+    "prompt": "A velocity-time graph rises in a straight line from 0 m/s to 15 m/s over 3 s. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "7 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "45 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "5 m/s²"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 5,
+    "given": {
+      "v0": 0,
+      "v1": 15,
+      "t": 3
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 3,
+        "yMax": 15,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                3,
+                15
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "a = Δv/Δt = (15 − 0)/3 = 5 m/s²."
+  },
+  {
+    "id": "mot-69",
+    "unitId": "motion-graphs",
+    "conceptTag": "slope-vt-as-accel",
+    "difficulty": 4,
+    "prompt": "A velocity-time graph rises in a straight line from 4 m/s to 24 m/s over 5 s. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5.6 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "4.8 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "100 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "4 m/s²"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 4,
+    "given": {
+      "v0": 4,
+      "v1": 24,
+      "t": 5
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 5,
+        "yMax": 24,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                4
+              ],
+              [
+                5,
+                24
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "a = Δv/Δt = (24 − 4)/5 = 4 m/s²."
+  },
+  {
+    "id": "mot-70",
+    "unitId": "motion-graphs",
+    "conceptTag": "slope-vt-as-accel",
+    "difficulty": 4,
+    "prompt": "A velocity-time graph rises in a straight line from 10 m/s to 40 m/s over 6 s. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6.67 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "5 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "180 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "8.33 m/s²"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 5,
+    "given": {
+      "v0": 10,
+      "v1": 40,
+      "t": 6
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 6,
+        "yMax": 40,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                10
+              ],
+              [
+                6,
+                40
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "a = Δv/Δt = (40 − 10)/6 = 5 m/s²."
+  },
+  {
+    "id": "mot-71",
+    "unitId": "motion-graphs",
+    "conceptTag": "slope-vt-as-accel",
+    "difficulty": 4,
+    "prompt": "A velocity-time graph rises in a straight line from 0 m/s to 24 m/s over 4 s. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "7.2 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "8.4 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "96 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "6 m/s²"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 6,
+    "given": {
+      "v0": 0,
+      "v1": 24,
+      "t": 4
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 4,
+        "yMax": 24,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                0
+              ],
+              [
+                4,
+                24
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "a = Δv/Δt = (24 − 0)/4 = 6 m/s²."
+  },
+  {
+    "id": "mot-72",
+    "unitId": "motion-graphs",
+    "conceptTag": "slope-vt-as-accel",
+    "difficulty": 4,
+    "prompt": "A velocity-time graph rises in a straight line from 6 m/s to 30 m/s over 6 s. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "4 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "144 m/s²"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 4,
+    "given": {
+      "v0": 6,
+      "v1": 30,
+      "t": 6
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 6,
+        "yMax": 30,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                6
+              ],
+              [
+                6,
+                30
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "a = Δv/Δt = (30 − 6)/6 = 4 m/s²."
+  },
+  {
+    "id": "mot-73",
+    "unitId": "motion-graphs",
+    "conceptTag": "slope-vt-as-accel",
+    "difficulty": 4,
+    "prompt": "A velocity-time graph rises in a straight line from 8 m/s to 28 m/s over 5 s. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "100 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "4 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "7.2 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "5.6 m/s²"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 4,
+    "given": {
+      "v0": 8,
+      "v1": 28,
+      "t": 5
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 5,
+        "yMax": 28,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                8
+              ],
+              [
+                5,
+                28
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "a = Δv/Δt = (28 − 8)/5 = 4 m/s²."
+  },
+  {
+    "id": "mot-74",
+    "unitId": "motion-graphs",
+    "conceptTag": "slope-vt-as-accel",
+    "difficulty": 4,
+    "prompt": "A velocity-time graph rises in a straight line from 10 m/s to 25 m/s over 5 s. What is the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "3 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "7 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "5 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "75 m/s²"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 3,
+    "given": {
+      "v0": 10,
+      "v1": 25,
+      "t": 5
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "diagram": {
+      "kind": "velocity-time",
+      "params": {
+        "yLabel": "velocity (m/s)",
+        "xMax": 5,
+        "yMax": 25,
+        "lines": [
+          {
+            "points": [
+              [
+                0,
+                10
+              ],
+              [
+                5,
+                25
+              ]
+            ],
+            "label": "velocity"
+          }
+        ]
+      },
+      "caption": "Velocity vs time"
+    },
+    "explanation": "a = Δv/Δt = (25 − 10)/5 = 3 m/s²."
+  },
+  {
+    "id": "mot-75",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 4,
+    "prompt": "A midfielder runs 30 m in 3 s, then 10 m in 2 s (same direction). What is the average velocity for the whole run?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "13.33 m/s"
+      },
+      {
+        "id": "b",
+        "label": "8 m/s"
+      },
+      {
+        "id": "c",
+        "label": "10 m/s"
+      },
+      {
+        "id": "d",
+        "label": "7.5 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 8,
+    "given": {
+      "d1": 30,
+      "d2": 10,
+      "t1": 3,
+      "t2": 2
+    },
+    "formulas": [
+      "v_avg = total Δx / total Δt"
+    ],
+    "explanation": "v_avg = (30+10)/(3+2) = 8 m/s."
+  },
+  {
+    "id": "mot-76",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 4,
+    "prompt": "A midfielder runs 40 m in 4 s, then 20 m in 4 s (same direction). What is the average velocity for the whole run?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "9 m/s"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s"
+      },
+      {
+        "id": "c",
+        "label": "15 m/s"
+      },
+      {
+        "id": "d",
+        "label": "7.5 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 7.5,
+    "given": {
+      "d1": 40,
+      "d2": 20,
+      "t1": 4,
+      "t2": 4
+    },
+    "formulas": [
+      "v_avg = total Δx / total Δt"
+    ],
+    "explanation": "v_avg = (40+20)/(4+4) = 7.5 m/s."
+  },
+  {
+    "id": "mot-77",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 4,
+    "prompt": "A midfielder runs 50 m in 5 s, then 10 m in 5 s (same direction). What is the average velocity for the whole run?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m/s"
+      },
+      {
+        "id": "b",
+        "label": "12 m/s"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s"
+      },
+      {
+        "id": "d",
+        "label": "7.2 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 6,
+    "given": {
+      "d1": 50,
+      "d2": 10,
+      "t1": 5,
+      "t2": 5
+    },
+    "formulas": [
+      "v_avg = total Δx / total Δt"
+    ],
+    "explanation": "v_avg = (50+10)/(5+5) = 6 m/s."
+  },
+  {
+    "id": "mot-78",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 4,
+    "prompt": "A midfielder runs 20 m in 2 s, then 40 m in 6 s (same direction). What is the average velocity for the whole run?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "9 m/s"
+      },
+      {
+        "id": "b",
+        "label": "7.5 m/s"
+      },
+      {
+        "id": "c",
+        "label": "10 m/s"
+      },
+      {
+        "id": "d",
+        "label": "8.33 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 7.5,
+    "given": {
+      "d1": 20,
+      "d2": 40,
+      "t1": 2,
+      "t2": 6
+    },
+    "formulas": [
+      "v_avg = total Δx / total Δt"
+    ],
+    "explanation": "v_avg = (20+40)/(2+6) = 7.5 m/s."
+  },
+  {
+    "id": "mot-79",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 4,
+    "prompt": "A midfielder runs 60 m in 6 s, then 30 m in 3 s (same direction). What is the average velocity for the whole run?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "12 m/s"
+      },
+      {
+        "id": "b",
+        "label": "14 m/s"
+      },
+      {
+        "id": "c",
+        "label": "15 m/s"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 10,
+    "given": {
+      "d1": 60,
+      "d2": 30,
+      "t1": 6,
+      "t2": 3
+    },
+    "formulas": [
+      "v_avg = total Δx / total Δt"
+    ],
+    "explanation": "v_avg = (60+30)/(6+3) = 10 m/s."
+  },
+  {
+    "id": "mot-80",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 4,
+    "prompt": "A midfielder runs 10 m in 1 s, then 50 m in 5 s (same direction). What is the average velocity for the whole run?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "14 m/s"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s"
+      },
+      {
+        "id": "c",
+        "label": "16 m/s"
+      },
+      {
+        "id": "d",
+        "label": "12 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "d1": 10,
+      "d2": 50,
+      "t1": 1,
+      "t2": 5
+    },
+    "formulas": [
+      "v_avg = total Δx / total Δt"
+    ],
+    "explanation": "v_avg = (10+50)/(1+5) = 10 m/s."
+  },
+  {
+    "id": "mot-81",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 4,
+    "prompt": "A midfielder runs 45 m in 3 s, then 15 m in 3 s (same direction). What is the average velocity for the whole run?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m/s"
+      },
+      {
+        "id": "b",
+        "label": "20 m/s"
+      },
+      {
+        "id": "c",
+        "label": "15 m/s"
+      },
+      {
+        "id": "d",
+        "label": "12 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 10,
+    "given": {
+      "d1": 45,
+      "d2": 15,
+      "t1": 3,
+      "t2": 3
+    },
+    "formulas": [
+      "v_avg = total Δx / total Δt"
+    ],
+    "explanation": "v_avg = (45+15)/(3+3) = 10 m/s."
+  },
+  {
+    "id": "mot-82",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 4,
+    "prompt": "A midfielder runs 24 m in 2 s, then 36 m in 4 s (same direction). What is the average velocity for the whole run?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m/s"
+      },
+      {
+        "id": "b",
+        "label": "12 m/s"
+      },
+      {
+        "id": "c",
+        "label": "10.5 m/s"
+      },
+      {
+        "id": "d",
+        "label": "15 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 10,
+    "given": {
+      "d1": 24,
+      "d2": 36,
+      "t1": 2,
+      "t2": 4
+    },
+    "formulas": [
+      "v_avg = total Δx / total Δt"
+    ],
+    "explanation": "v_avg = (24+36)/(2+4) = 10 m/s."
+  },
+  {
+    "id": "mot-83",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 4,
+    "prompt": "A midfielder runs 12 m in 2 s, then 48 m in 6 s (same direction). What is the average velocity for the whole run?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "7.5 m/s"
+      },
+      {
+        "id": "b",
+        "label": "7 m/s"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 7.5,
+    "given": {
+      "d1": 12,
+      "d2": 48,
+      "t1": 2,
+      "t2": 6
+    },
+    "formulas": [
+      "v_avg = total Δx / total Δt"
+    ],
+    "explanation": "v_avg = (12+48)/(2+6) = 7.5 m/s."
+  },
+  {
+    "id": "mot-84",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 4,
+    "prompt": "A midfielder runs 35 m in 5 s, then 25 m in 5 s (same direction). What is the average velocity for the whole run?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "7 m/s"
+      },
+      {
+        "id": "b",
+        "label": "12 m/s"
+      },
+      {
+        "id": "c",
+        "label": "7.2 m/s"
+      },
+      {
+        "id": "d",
+        "label": "6 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 6,
+    "given": {
+      "d1": 35,
+      "d2": 25,
+      "t1": 5,
+      "t2": 5
+    },
+    "formulas": [
+      "v_avg = total Δx / total Δt"
+    ],
+    "explanation": "v_avg = (35+25)/(5+5) = 6 m/s."
+  },
+  {
+    "id": "mot-85",
+    "unitId": "motion-graphs",
+    "conceptTag": "curved-xt-accelerating",
+    "difficulty": 5,
+    "prompt": "A position-time graph curves upward, getting steeper over time. What does this indicate?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "The object is speeding up"
+      },
+      {
+        "id": "b",
+        "label": "The object moves backward"
+      },
+      {
+        "id": "c",
+        "label": "Constant velocity"
+      },
+      {
+        "id": "d",
+        "label": "The object is at rest"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "Increasing slope means increasing velocity — the object is accelerating (speeding up)."
+  },
+  {
+    "id": "mot-86",
+    "unitId": "motion-graphs",
+    "conceptTag": "steeper-faster",
+    "difficulty": 5,
+    "prompt": "Two players are plotted on the same position-time graph. Player A’s line is steeper than Player B’s. Which is moving faster?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "They move at the same speed"
+      },
+      {
+        "id": "b",
+        "label": "Player A"
+      },
+      {
+        "id": "c",
+        "label": "Player B"
+      },
+      {
+        "id": "d",
+        "label": "Neither is moving"
+      }
+    ],
+    "correctChoiceId": "b",
+    "explanation": "A steeper position-time slope means a greater velocity."
+  },
+  {
+    "id": "mot-87",
+    "unitId": "motion-graphs",
+    "conceptTag": "negative-slope",
+    "difficulty": 5,
+    "prompt": "A defender’s position-time line slopes downward (negative slope). What does that mean?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Speeding up"
+      },
+      {
+        "id": "b",
+        "label": "At rest"
+      },
+      {
+        "id": "c",
+        "label": "Moving forward faster"
+      },
+      {
+        "id": "d",
+        "label": "Moving back toward the starting point"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "A negative slope means position is decreasing — moving in the negative direction."
+  },
+  {
+    "id": "mot-88",
+    "unitId": "motion-graphs",
+    "conceptTag": "flat-vt-constant-velocity",
+    "difficulty": 5,
+    "prompt": "A velocity-time graph is a horizontal line above zero. The object is:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Moving at constant velocity (zero acceleration)"
+      },
+      {
+        "id": "b",
+        "label": "At rest"
+      },
+      {
+        "id": "c",
+        "label": "Decelerating"
+      },
+      {
+        "id": "d",
+        "label": "Accelerating"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "A flat v-t line means velocity is unchanging: constant velocity, zero acceleration."
+  },
+  {
+    "id": "mot-89",
+    "unitId": "motion-graphs",
+    "conceptTag": "graph-matching",
+    "difficulty": 5,
+    "prompt": "A ball is dropped and speeds up as it falls. Which graph matches its motion (downward positive)?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "A v-t line with negative slope"
+      },
+      {
+        "id": "b",
+        "label": "A v-t line with constant positive slope"
+      },
+      {
+        "id": "c",
+        "label": "A horizontal x-t line"
+      },
+      {
+        "id": "d",
+        "label": "A flat v-t line"
+      }
+    ],
+    "correctChoiceId": "b",
+    "explanation": "Constant acceleration gives a straight v-t line with constant (positive) slope."
+  },
+  {
+    "id": "mot-90",
+    "unitId": "motion-graphs",
+    "conceptTag": "area-vs-slope",
+    "difficulty": 5,
+    "prompt": "To find how FAR an object traveled from a velocity-time graph, you should:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Find the area under the line"
+      },
+      {
+        "id": "b",
+        "label": "Read the time axis"
+      },
+      {
+        "id": "c",
+        "label": "Read the highest point"
+      },
+      {
+        "id": "d",
+        "label": "Find the slope of the line"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "Displacement is the area under a v-t graph; slope would give acceleration."
+  },
+  {
+    "id": "mot-91",
+    "unitId": "motion-graphs",
+    "conceptTag": "curved-vt",
+    "difficulty": 5,
+    "prompt": "A velocity-time graph curves and gets steeper. What is true about the acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "It is negative"
+      },
+      {
+        "id": "b",
+        "label": "It is constant"
+      },
+      {
+        "id": "c",
+        "label": "It is zero"
+      },
+      {
+        "id": "d",
+        "label": "It is increasing"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "Steepening v-t slope means the rate of velocity change (acceleration) is increasing."
+  },
+  {
+    "id": "mot-92",
+    "unitId": "motion-graphs",
+    "conceptTag": "displacement-vs-distance",
+    "difficulty": 5,
+    "prompt": "A player runs 10 m forward then 10 m back to the start in a total of 5 s. The average VELOCITY is:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "2 m/s"
+      },
+      {
+        "id": "b",
+        "label": "0 m/s"
+      },
+      {
+        "id": "c",
+        "label": "20 m/s"
+      },
+      {
+        "id": "d",
+        "label": "4 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "explanation": "Net displacement is 0 (back to start), so average velocity = 0, even though average speed is 4 m/s."
+  },
+  {
+    "id": "mot-93",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 5,
+    "prompt": "From a velocity-time graph: a ball moves at 10 m/s for 2 s, then 4 m/s for 3 s. What is its average velocity over the whole interval?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "32 m/s"
+      },
+      {
+        "id": "b",
+        "label": "6.4 m/s"
+      },
+      {
+        "id": "c",
+        "label": "7 m/s"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 6.4,
+    "given": {
+      "v1": 10,
+      "t1": 2,
+      "v2": 4,
+      "t2": 3
+    },
+    "formulas": [
+      "v_avg = total area / total time"
+    ],
+    "explanation": "total Δx = 10×2 + 4×3 = 32 m over 5 s ⇒ 6.4 m/s."
+  },
+  {
+    "id": "mot-94",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 5,
+    "prompt": "From a velocity-time graph: a ball moves at 8 m/s for 3 s, then 12 m/s for 2 s. What is its average velocity over the whole interval?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "9.6 m/s"
+      },
+      {
+        "id": "b",
+        "label": "8 m/s"
+      },
+      {
+        "id": "c",
+        "label": "48 m/s"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 9.6,
+    "given": {
+      "v1": 8,
+      "t1": 3,
+      "v2": 12,
+      "t2": 2
+    },
+    "formulas": [
+      "v_avg = total area / total time"
+    ],
+    "explanation": "total Δx = 8×3 + 12×2 = 48 m over 5 s ⇒ 9.6 m/s."
+  },
+  {
+    "id": "mot-95",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 5,
+    "prompt": "From a velocity-time graph: a ball moves at 6 m/s for 5 s, then 10 m/s for 5 s. What is its average velocity over the whole interval?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "9.6 m/s"
+      },
+      {
+        "id": "b",
+        "label": "6 m/s"
+      },
+      {
+        "id": "c",
+        "label": "80 m/s"
+      },
+      {
+        "id": "d",
+        "label": "8 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 8,
+    "given": {
+      "v1": 6,
+      "t1": 5,
+      "v2": 10,
+      "t2": 5
+    },
+    "formulas": [
+      "v_avg = total area / total time"
+    ],
+    "explanation": "total Δx = 6×5 + 10×5 = 80 m over 10 s ⇒ 8 m/s."
+  },
+  {
+    "id": "mot-96",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 5,
+    "prompt": "From a velocity-time graph: a ball moves at 20 m/s for 2 s, then 5 m/s for 4 s. What is its average velocity over the whole interval?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m/s"
+      },
+      {
+        "id": "b",
+        "label": "20 m/s"
+      },
+      {
+        "id": "c",
+        "label": "12.5 m/s"
+      },
+      {
+        "id": "d",
+        "label": "60 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 10,
+    "given": {
+      "v1": 20,
+      "t1": 2,
+      "v2": 5,
+      "t2": 4
+    },
+    "formulas": [
+      "v_avg = total area / total time"
+    ],
+    "explanation": "total Δx = 20×2 + 5×4 = 60 m over 6 s ⇒ 10 m/s."
+  },
+  {
+    "id": "mot-97",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 5,
+    "prompt": "From a velocity-time graph: a ball moves at 12 m/s for 3 s, then 6 m/s for 3 s. What is its average velocity over the whole interval?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "9 m/s"
+      },
+      {
+        "id": "b",
+        "label": "54 m/s"
+      },
+      {
+        "id": "c",
+        "label": "12 m/s"
+      },
+      {
+        "id": "d",
+        "label": "10.8 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 9,
+    "given": {
+      "v1": 12,
+      "t1": 3,
+      "v2": 6,
+      "t2": 3
+    },
+    "formulas": [
+      "v_avg = total area / total time"
+    ],
+    "explanation": "total Δx = 12×3 + 6×3 = 54 m over 6 s ⇒ 9 m/s."
+  },
+  {
+    "id": "mot-98",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 5,
+    "prompt": "From a velocity-time graph: a ball moves at 4 m/s for 5 s, then 16 m/s for 5 s. What is its average velocity over the whole interval?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m/s"
+      },
+      {
+        "id": "b",
+        "label": "100 m/s"
+      },
+      {
+        "id": "c",
+        "label": "4 m/s"
+      },
+      {
+        "id": "d",
+        "label": "12 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 10,
+    "given": {
+      "v1": 4,
+      "t1": 5,
+      "v2": 16,
+      "t2": 5
+    },
+    "formulas": [
+      "v_avg = total area / total time"
+    ],
+    "explanation": "total Δx = 4×5 + 16×5 = 100 m over 10 s ⇒ 10 m/s."
+  },
+  {
+    "id": "mot-99",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 5,
+    "prompt": "From a velocity-time graph: a ball moves at 15 m/s for 2 s, then 5 m/s for 4 s. What is its average velocity over the whole interval?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "15 m/s"
+      },
+      {
+        "id": "b",
+        "label": "50 m/s"
+      },
+      {
+        "id": "c",
+        "label": "8.33 m/s"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 8.33,
+    "given": {
+      "v1": 15,
+      "t1": 2,
+      "v2": 5,
+      "t2": 4
+    },
+    "formulas": [
+      "v_avg = total area / total time"
+    ],
+    "explanation": "total Δx = 15×2 + 5×4 = 50 m over 6 s ⇒ 8.33 m/s."
+  },
+  {
+    "id": "mot-100",
+    "unitId": "motion-graphs",
+    "conceptTag": "average-velocity",
+    "difficulty": 5,
+    "prompt": "From a velocity-time graph: a ball moves at 9 m/s for 4 s, then 3 m/s for 2 s. What is its average velocity over the whole interval?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "9 m/s"
+      },
+      {
+        "id": "b",
+        "label": "42 m/s"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s"
+      },
+      {
+        "id": "d",
+        "label": "7 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 7,
+    "given": {
+      "v1": 9,
+      "t1": 4,
+      "v2": 3,
+      "t2": 2
+    },
+    "formulas": [
+      "v_avg = total area / total time"
+    ],
+    "explanation": "total Δx = 9×4 + 3×2 = 42 m over 6 s ⇒ 7 m/s."
+  }
+]

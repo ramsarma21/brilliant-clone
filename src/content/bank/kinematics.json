@@ -1,0 +1,3594 @@
+[
+  {
+    "id": "kin-1",
+    "unitId": "kinematics",
+    "conceptTag": "average-speed",
+    "difficulty": 1,
+    "prompt": "A winger covers 20 m in 4 s at a steady pace. What is the average speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "16 m/s"
+      },
+      {
+        "id": "b",
+        "label": "5 m/s"
+      },
+      {
+        "id": "c",
+        "label": "80 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.2 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 5,
+    "given": {
+      "d": 20,
+      "t": 4
+    },
+    "formulas": [
+      "v = d / t"
+    ],
+    "explanation": "v = d/t = 20/4 = 5 m/s."
+  },
+  {
+    "id": "kin-2",
+    "unitId": "kinematics",
+    "conceptTag": "average-speed",
+    "difficulty": 1,
+    "prompt": "A winger covers 40 m in 5 s at a steady pace. What is the average speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "200 m/s"
+      },
+      {
+        "id": "b",
+        "label": "35 m/s"
+      },
+      {
+        "id": "c",
+        "label": "8 m/s"
+      },
+      {
+        "id": "d",
+        "label": "0.13 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 8,
+    "given": {
+      "d": 40,
+      "t": 5
+    },
+    "formulas": [
+      "v = d / t"
+    ],
+    "explanation": "v = d/t = 40/5 = 8 m/s."
+  },
+  {
+    "id": "kin-3",
+    "unitId": "kinematics",
+    "conceptTag": "average-speed",
+    "difficulty": 1,
+    "prompt": "A winger covers 60 m in 10 s at a steady pace. What is the average speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6 m/s"
+      },
+      {
+        "id": "b",
+        "label": "50 m/s"
+      },
+      {
+        "id": "c",
+        "label": "0.17 m/s"
+      },
+      {
+        "id": "d",
+        "label": "600 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 6,
+    "given": {
+      "d": 60,
+      "t": 10
+    },
+    "formulas": [
+      "v = d / t"
+    ],
+    "explanation": "v = d/t = 60/10 = 6 m/s."
+  },
+  {
+    "id": "kin-4",
+    "unitId": "kinematics",
+    "conceptTag": "average-speed",
+    "difficulty": 1,
+    "prompt": "A winger covers 100 m in 5 s at a steady pace. What is the average speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "500 m/s"
+      },
+      {
+        "id": "b",
+        "label": "95 m/s"
+      },
+      {
+        "id": "c",
+        "label": "0.05 m/s"
+      },
+      {
+        "id": "d",
+        "label": "20 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 20,
+    "given": {
+      "d": 100,
+      "t": 5
+    },
+    "formulas": [
+      "v = d / t"
+    ],
+    "explanation": "v = d/t = 100/5 = 20 m/s."
+  },
+  {
+    "id": "kin-5",
+    "unitId": "kinematics",
+    "conceptTag": "average-speed",
+    "difficulty": 1,
+    "prompt": "A winger covers 40 m in 4 s at a steady pace. What is the average speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.1 m/s"
+      },
+      {
+        "id": "b",
+        "label": "160 m/s"
+      },
+      {
+        "id": "c",
+        "label": "10 m/s"
+      },
+      {
+        "id": "d",
+        "label": "36 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 10,
+    "given": {
+      "d": 40,
+      "t": 4
+    },
+    "formulas": [
+      "v = d / t"
+    ],
+    "explanation": "v = d/t = 40/4 = 10 m/s."
+  },
+  {
+    "id": "kin-6",
+    "unitId": "kinematics",
+    "conceptTag": "average-speed",
+    "difficulty": 1,
+    "prompt": "A winger covers 60 m in 5 s at a steady pace. What is the average speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.08 m/s"
+      },
+      {
+        "id": "b",
+        "label": "55 m/s"
+      },
+      {
+        "id": "c",
+        "label": "12 m/s"
+      },
+      {
+        "id": "d",
+        "label": "300 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 12,
+    "given": {
+      "d": 60,
+      "t": 5
+    },
+    "formulas": [
+      "v = d / t"
+    ],
+    "explanation": "v = d/t = 60/5 = 12 m/s."
+  },
+  {
+    "id": "kin-7",
+    "unitId": "kinematics",
+    "conceptTag": "acceleration-definition",
+    "difficulty": 1,
+    "prompt": "A ball speeds up by 20 m/s over 4 s. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "80 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "0.2 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "5 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "20 m/s²"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 5,
+    "given": {
+      "dv": 20,
+      "dt": 4
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "explanation": "a = Δv/Δt = 20/4 = 5 m/s²."
+  },
+  {
+    "id": "kin-8",
+    "unitId": "kinematics",
+    "conceptTag": "acceleration-definition",
+    "difficulty": 1,
+    "prompt": "A ball speeds up by 30 m/s over 5 s. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "0.17 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "150 m/s²"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 6,
+    "given": {
+      "dv": 30,
+      "dt": 5
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "explanation": "a = Δv/Δt = 30/5 = 6 m/s²."
+  },
+  {
+    "id": "kin-9",
+    "unitId": "kinematics",
+    "conceptTag": "acceleration-definition",
+    "difficulty": 1,
+    "prompt": "A ball speeds up by 40 m/s over 5 s. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.13 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "8 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "40 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "200 m/s²"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 8,
+    "given": {
+      "dv": 40,
+      "dt": 5
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "explanation": "a = Δv/Δt = 40/5 = 8 m/s²."
+  },
+  {
+    "id": "kin-10",
+    "unitId": "kinematics",
+    "conceptTag": "acceleration-definition",
+    "difficulty": 1,
+    "prompt": "A ball speeds up by 10 m/s over 2 s. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "20 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "0.2 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s²"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 5,
+    "given": {
+      "dv": 10,
+      "dt": 2
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "explanation": "a = Δv/Δt = 10/2 = 5 m/s²."
+  },
+  {
+    "id": "kin-11",
+    "unitId": "kinematics",
+    "conceptTag": "acceleration-definition",
+    "difficulty": 1,
+    "prompt": "A ball speeds up by 60 m/s over 10 s. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "60 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "0.17 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "600 m/s²"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 6,
+    "given": {
+      "dv": 60,
+      "dt": 10
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "explanation": "a = Δv/Δt = 60/10 = 6 m/s²."
+  },
+  {
+    "id": "kin-12",
+    "unitId": "kinematics",
+    "conceptTag": "acceleration-definition",
+    "difficulty": 1,
+    "prompt": "A ball speeds up by 50 m/s over 5 s. What is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "250 m/s²"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s²"
+      },
+      {
+        "id": "c",
+        "label": "50 m/s²"
+      },
+      {
+        "id": "d",
+        "label": "0.1 m/s²"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "dv": 50,
+      "dt": 5
+    },
+    "formulas": [
+      "a = Δv / Δt"
+    ],
+    "explanation": "a = Δv/Δt = 50/5 = 10 m/s²."
+  },
+  {
+    "id": "kin-13",
+    "unitId": "kinematics",
+    "conceptTag": "velocity-from-rest",
+    "difficulty": 1,
+    "prompt": "Starting from rest, a ball accelerates at 2 m/s² for 3 s. What is its final speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m/s"
+      },
+      {
+        "id": "b",
+        "label": "6 m/s"
+      },
+      {
+        "id": "c",
+        "label": "3 m/s"
+      },
+      {
+        "id": "d",
+        "label": "2 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 6,
+    "given": {
+      "a": 2,
+      "t": 3
+    },
+    "formulas": [
+      "v = u + a t",
+      "u = 0"
+    ],
+    "explanation": "v = u + a t = 0 + 2×3 = 6 m/s."
+  },
+  {
+    "id": "kin-14",
+    "unitId": "kinematics",
+    "conceptTag": "velocity-from-rest",
+    "difficulty": 1,
+    "prompt": "Starting from rest, a ball accelerates at 5 m/s² for 4 s. What is its final speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m/s"
+      },
+      {
+        "id": "b",
+        "label": "20 m/s"
+      },
+      {
+        "id": "c",
+        "label": "5 m/s"
+      },
+      {
+        "id": "d",
+        "label": "9 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 20,
+    "given": {
+      "a": 5,
+      "t": 4
+    },
+    "formulas": [
+      "v = u + a t",
+      "u = 0"
+    ],
+    "explanation": "v = u + a t = 0 + 5×4 = 20 m/s."
+  },
+  {
+    "id": "kin-15",
+    "unitId": "kinematics",
+    "conceptTag": "velocity-from-rest",
+    "difficulty": 1,
+    "prompt": "Starting from rest, a ball accelerates at 3 m/s² for 5 s. What is its final speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "7.5 m/s"
+      },
+      {
+        "id": "b",
+        "label": "8 m/s"
+      },
+      {
+        "id": "c",
+        "label": "3 m/s"
+      },
+      {
+        "id": "d",
+        "label": "15 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 15,
+    "given": {
+      "a": 3,
+      "t": 5
+    },
+    "formulas": [
+      "v = u + a t",
+      "u = 0"
+    ],
+    "explanation": "v = u + a t = 0 + 3×5 = 15 m/s."
+  },
+  {
+    "id": "kin-16",
+    "unitId": "kinematics",
+    "conceptTag": "velocity-from-rest",
+    "difficulty": 1,
+    "prompt": "Starting from rest, a ball accelerates at 4 m/s² for 4 s. What is its final speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "16 m/s"
+      },
+      {
+        "id": "b",
+        "label": "19.2 m/s"
+      },
+      {
+        "id": "c",
+        "label": "8 m/s"
+      },
+      {
+        "id": "d",
+        "label": "4 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 16,
+    "given": {
+      "a": 4,
+      "t": 4
+    },
+    "formulas": [
+      "v = u + a t",
+      "u = 0"
+    ],
+    "explanation": "v = u + a t = 0 + 4×4 = 16 m/s."
+  },
+  {
+    "id": "kin-17",
+    "unitId": "kinematics",
+    "conceptTag": "velocity-from-rest",
+    "difficulty": 1,
+    "prompt": "Starting from rest, a ball accelerates at 2 m/s² for 5 s. What is its final speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m/s"
+      },
+      {
+        "id": "b",
+        "label": "7 m/s"
+      },
+      {
+        "id": "c",
+        "label": "10 m/s"
+      },
+      {
+        "id": "d",
+        "label": "2 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 10,
+    "given": {
+      "a": 2,
+      "t": 5
+    },
+    "formulas": [
+      "v = u + a t",
+      "u = 0"
+    ],
+    "explanation": "v = u + a t = 0 + 2×5 = 10 m/s."
+  },
+  {
+    "id": "kin-18",
+    "unitId": "kinematics",
+    "conceptTag": "velocity-from-rest",
+    "difficulty": 1,
+    "prompt": "Starting from rest, a ball accelerates at 5 m/s² for 2 s. What is its final speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "7 m/s"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s"
+      },
+      {
+        "id": "c",
+        "label": "12 m/s"
+      },
+      {
+        "id": "d",
+        "label": "5 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "a": 5,
+      "t": 2
+    },
+    "formulas": [
+      "v = u + a t",
+      "u = 0"
+    ],
+    "explanation": "v = u + a t = 0 + 5×2 = 10 m/s."
+  },
+  {
+    "id": "kin-19",
+    "unitId": "kinematics",
+    "conceptTag": "velocity-from-rest",
+    "difficulty": 1,
+    "prompt": "Starting from rest, a ball accelerates at 3 m/s² for 3 s. What is its final speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "3 m/s"
+      },
+      {
+        "id": "b",
+        "label": "9 m/s"
+      },
+      {
+        "id": "c",
+        "label": "4.5 m/s"
+      },
+      {
+        "id": "d",
+        "label": "6 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 9,
+    "given": {
+      "a": 3,
+      "t": 3
+    },
+    "formulas": [
+      "v = u + a t",
+      "u = 0"
+    ],
+    "explanation": "v = u + a t = 0 + 3×3 = 9 m/s."
+  },
+  {
+    "id": "kin-20",
+    "unitId": "kinematics",
+    "conceptTag": "velocity-from-rest",
+    "difficulty": 1,
+    "prompt": "Starting from rest, a ball accelerates at 10 m/s² for 2 s. What is its final speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "12 m/s"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s"
+      },
+      {
+        "id": "c",
+        "label": "24 m/s"
+      },
+      {
+        "id": "d",
+        "label": "20 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 20,
+    "given": {
+      "a": 10,
+      "t": 2
+    },
+    "formulas": [
+      "v = u + a t",
+      "u = 0"
+    ],
+    "explanation": "v = u + a t = 0 + 10×2 = 20 m/s."
+  },
+  {
+    "id": "kin-21",
+    "unitId": "kinematics",
+    "conceptTag": "gravity-effect",
+    "difficulty": 1,
+    "prompt": "A ball is in mid-air after a chip. Ignoring air resistance, what is its acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0, since nothing touches it"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s² directed downward"
+      },
+      {
+        "id": "c",
+        "label": "It increases as the ball rises"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s² toward the goal"
+      }
+    ],
+    "correctChoiceId": "b",
+    "formulas": [
+      "g = 10 m/s²"
+    ],
+    "explanation": "In free flight the only force is gravity, so a = g = 10 m/s² downward."
+  },
+  {
+    "id": "kin-22",
+    "unitId": "kinematics",
+    "conceptTag": "units",
+    "difficulty": 1,
+    "prompt": "Which set of units is correct for acceleration?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "m/s"
+      },
+      {
+        "id": "b",
+        "label": "m/s²"
+      },
+      {
+        "id": "c",
+        "label": "m"
+      },
+      {
+        "id": "d",
+        "label": "kg·m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "explanation": "Acceleration is change in velocity (m/s) per second, so m/s²."
+  },
+  {
+    "id": "kin-23",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A free kick leaves the boot at v = 10 m/s, 30° above the pitch. What is the VERTICAL component of the launch velocity? (sin 30° = 0.5)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m/s"
+      },
+      {
+        "id": "b",
+        "label": "6 m/s"
+      },
+      {
+        "id": "c",
+        "label": "5 m/s"
+      },
+      {
+        "id": "d",
+        "label": "8.7 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 5,
+    "given": {
+      "v": 10,
+      "angleDeg": 30
+    },
+    "formulas": [
+      "v_y = v sinθ"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 30,
+        "vLabel": "v = 10 m/s"
+      },
+      "caption": "Launch at 30°"
+    },
+    "explanation": "v_y = v sinθ = 10 × 0.5 = 5 m/s."
+  },
+  {
+    "id": "kin-24",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A free kick leaves the boot at v = 10 m/s, 37° above the pitch. What is the VERTICAL component of the launch velocity? (sin 37° = 0.6)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6 m/s"
+      },
+      {
+        "id": "b",
+        "label": "12 m/s"
+      },
+      {
+        "id": "c",
+        "label": "8 m/s"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 6,
+    "given": {
+      "v": 10,
+      "angleDeg": 37
+    },
+    "formulas": [
+      "v_y = v sinθ"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 37,
+        "vLabel": "v = 10 m/s"
+      },
+      "caption": "Launch at 37°"
+    },
+    "explanation": "v_y = v sinθ = 10 × 0.6 = 6 m/s."
+  },
+  {
+    "id": "kin-25",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A free kick leaves the boot at v = 10 m/s, 53° above the pitch. What is the VERTICAL component of the launch velocity? (sin 53° = 0.8)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "8 m/s"
+      },
+      {
+        "id": "b",
+        "label": "16 m/s"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 8,
+    "given": {
+      "v": 10,
+      "angleDeg": 53
+    },
+    "formulas": [
+      "v_y = v sinθ"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 53,
+        "vLabel": "v = 10 m/s"
+      },
+      "caption": "Launch at 53°"
+    },
+    "explanation": "v_y = v sinθ = 10 × 0.8 = 8 m/s."
+  },
+  {
+    "id": "kin-26",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A free kick leaves the boot at v = 20 m/s, 30° above the pitch. What is the VERTICAL component of the launch velocity? (sin 30° = 0.5)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "17.4 m/s"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s"
+      },
+      {
+        "id": "c",
+        "label": "20 m/s"
+      },
+      {
+        "id": "d",
+        "label": "12 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "v": 20,
+      "angleDeg": 30
+    },
+    "formulas": [
+      "v_y = v sinθ"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 30,
+        "vLabel": "v = 20 m/s"
+      },
+      "caption": "Launch at 30°"
+    },
+    "explanation": "v_y = v sinθ = 20 × 0.5 = 10 m/s."
+  },
+  {
+    "id": "kin-27",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A free kick leaves the boot at v = 20 m/s, 37° above the pitch. What is the VERTICAL component of the launch velocity? (sin 37° = 0.6)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "24 m/s"
+      },
+      {
+        "id": "b",
+        "label": "20 m/s"
+      },
+      {
+        "id": "c",
+        "label": "16 m/s"
+      },
+      {
+        "id": "d",
+        "label": "12 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 12,
+    "given": {
+      "v": 20,
+      "angleDeg": 37
+    },
+    "formulas": [
+      "v_y = v sinθ"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 37,
+        "vLabel": "v = 20 m/s"
+      },
+      "caption": "Launch at 37°"
+    },
+    "explanation": "v_y = v sinθ = 20 × 0.6 = 12 m/s."
+  },
+  {
+    "id": "kin-28",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A free kick leaves the boot at v = 20 m/s, 53° above the pitch. What is the VERTICAL component of the launch velocity? (sin 53° = 0.8)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "12 m/s"
+      },
+      {
+        "id": "b",
+        "label": "32 m/s"
+      },
+      {
+        "id": "c",
+        "label": "20 m/s"
+      },
+      {
+        "id": "d",
+        "label": "16 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 16,
+    "given": {
+      "v": 20,
+      "angleDeg": 53
+    },
+    "formulas": [
+      "v_y = v sinθ"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 53,
+        "vLabel": "v = 20 m/s"
+      },
+      "caption": "Launch at 53°"
+    },
+    "explanation": "v_y = v sinθ = 20 × 0.8 = 16 m/s."
+  },
+  {
+    "id": "kin-29",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A free kick leaves the boot at v = 30 m/s, 30° above the pitch. What is the VERTICAL component of the launch velocity? (sin 30° = 0.5)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 m/s"
+      },
+      {
+        "id": "b",
+        "label": "26.1 m/s"
+      },
+      {
+        "id": "c",
+        "label": "18 m/s"
+      },
+      {
+        "id": "d",
+        "label": "15 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 15,
+    "given": {
+      "v": 30,
+      "angleDeg": 30
+    },
+    "formulas": [
+      "v_y = v sinθ"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 30,
+        "vLabel": "v = 30 m/s"
+      },
+      "caption": "Launch at 30°"
+    },
+    "explanation": "v_y = v sinθ = 30 × 0.5 = 15 m/s."
+  },
+  {
+    "id": "kin-30",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A free kick leaves the boot at v = 30 m/s, 37° above the pitch. What is the VERTICAL component of the launch velocity? (sin 37° = 0.6)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "36 m/s"
+      },
+      {
+        "id": "b",
+        "label": "24 m/s"
+      },
+      {
+        "id": "c",
+        "label": "30 m/s"
+      },
+      {
+        "id": "d",
+        "label": "18 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 18,
+    "given": {
+      "v": 30,
+      "angleDeg": 37
+    },
+    "formulas": [
+      "v_y = v sinθ"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 37,
+        "vLabel": "v = 30 m/s"
+      },
+      "caption": "Launch at 37°"
+    },
+    "explanation": "v_y = v sinθ = 30 × 0.6 = 18 m/s."
+  },
+  {
+    "id": "kin-31",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A free kick leaves the boot at v = 30 m/s, 53° above the pitch. What is the VERTICAL component of the launch velocity? (sin 53° = 0.8)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "18 m/s"
+      },
+      {
+        "id": "b",
+        "label": "24 m/s"
+      },
+      {
+        "id": "c",
+        "label": "48 m/s"
+      },
+      {
+        "id": "d",
+        "label": "30 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 24,
+    "given": {
+      "v": 30,
+      "angleDeg": 53
+    },
+    "formulas": [
+      "v_y = v sinθ"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 53,
+        "vLabel": "v = 30 m/s"
+      },
+      "caption": "Launch at 53°"
+    },
+    "explanation": "v_y = v sinθ = 30 × 0.8 = 24 m/s."
+  },
+  {
+    "id": "kin-32",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A free kick leaves the boot at v = 40 m/s, 30° above the pitch. What is the VERTICAL component of the launch velocity? (sin 30° = 0.5)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "24 m/s"
+      },
+      {
+        "id": "b",
+        "label": "20 m/s"
+      },
+      {
+        "id": "c",
+        "label": "40 m/s"
+      },
+      {
+        "id": "d",
+        "label": "34.8 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 20,
+    "given": {
+      "v": 40,
+      "angleDeg": 30
+    },
+    "formulas": [
+      "v_y = v sinθ"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 30,
+        "vLabel": "v = 40 m/s"
+      },
+      "caption": "Launch at 30°"
+    },
+    "explanation": "v_y = v sinθ = 40 × 0.5 = 20 m/s."
+  },
+  {
+    "id": "kin-33",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A free kick leaves the boot at v = 40 m/s, 37° above the pitch. What is the VERTICAL component of the launch velocity? (sin 37° = 0.6)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "40 m/s"
+      },
+      {
+        "id": "b",
+        "label": "32 m/s"
+      },
+      {
+        "id": "c",
+        "label": "24 m/s"
+      },
+      {
+        "id": "d",
+        "label": "48 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 24,
+    "given": {
+      "v": 40,
+      "angleDeg": 37
+    },
+    "formulas": [
+      "v_y = v sinθ"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 37,
+        "vLabel": "v = 40 m/s"
+      },
+      "caption": "Launch at 37°"
+    },
+    "explanation": "v_y = v sinθ = 40 × 0.6 = 24 m/s."
+  },
+  {
+    "id": "kin-34",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A free kick leaves the boot at v = 40 m/s, 53° above the pitch. What is the VERTICAL component of the launch velocity? (sin 53° = 0.8)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "24 m/s"
+      },
+      {
+        "id": "b",
+        "label": "40 m/s"
+      },
+      {
+        "id": "c",
+        "label": "64 m/s"
+      },
+      {
+        "id": "d",
+        "label": "32 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 32,
+    "given": {
+      "v": 40,
+      "angleDeg": 53
+    },
+    "formulas": [
+      "v_y = v sinθ"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 53,
+        "vLabel": "v = 40 m/s"
+      },
+      "caption": "Launch at 53°"
+    },
+    "explanation": "v_y = v sinθ = 40 × 0.8 = 32 m/s."
+  },
+  {
+    "id": "kin-35",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A shot leaves the foot at v = 10 m/s, 37° above the ground. What is the HORIZONTAL component of velocity? (cos 37° = 0.8)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m/s"
+      },
+      {
+        "id": "b",
+        "label": "8 m/s"
+      },
+      {
+        "id": "c",
+        "label": "4 m/s"
+      },
+      {
+        "id": "d",
+        "label": "6 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 8,
+    "given": {
+      "v": 10,
+      "angleDeg": 37
+    },
+    "formulas": [
+      "v_x = v cosθ"
+    ],
+    "explanation": "v_x = v cosθ = 10 × 0.8 = 8 m/s."
+  },
+  {
+    "id": "kin-36",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A shot leaves the foot at v = 10 m/s, 53° above the ground. What is the HORIZONTAL component of velocity? (cos 53° = 0.6)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "8 m/s"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s"
+      },
+      {
+        "id": "d",
+        "label": "3 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 6,
+    "given": {
+      "v": 10,
+      "angleDeg": 53
+    },
+    "formulas": [
+      "v_x = v cosθ"
+    ],
+    "explanation": "v_x = v cosθ = 10 × 0.6 = 6 m/s."
+  },
+  {
+    "id": "kin-37",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A shot leaves the foot at v = 10 m/s, 60° above the ground. What is the HORIZONTAL component of velocity? (cos 60° = 0.5)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m/s"
+      },
+      {
+        "id": "b",
+        "label": "8.7 m/s"
+      },
+      {
+        "id": "c",
+        "label": "2.5 m/s"
+      },
+      {
+        "id": "d",
+        "label": "10 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 5,
+    "given": {
+      "v": 10,
+      "angleDeg": 60
+    },
+    "formulas": [
+      "v_x = v cosθ"
+    ],
+    "explanation": "v_x = v cosθ = 10 × 0.5 = 5 m/s."
+  },
+  {
+    "id": "kin-38",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A shot leaves the foot at v = 20 m/s, 37° above the ground. What is the HORIZONTAL component of velocity? (cos 37° = 0.8)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "16 m/s"
+      },
+      {
+        "id": "b",
+        "label": "12 m/s"
+      },
+      {
+        "id": "c",
+        "label": "8 m/s"
+      },
+      {
+        "id": "d",
+        "label": "20 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 16,
+    "given": {
+      "v": 20,
+      "angleDeg": 37
+    },
+    "formulas": [
+      "v_x = v cosθ"
+    ],
+    "explanation": "v_x = v cosθ = 20 × 0.8 = 16 m/s."
+  },
+  {
+    "id": "kin-39",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A shot leaves the foot at v = 20 m/s, 53° above the ground. What is the HORIZONTAL component of velocity? (cos 53° = 0.6)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 m/s"
+      },
+      {
+        "id": "b",
+        "label": "12 m/s"
+      },
+      {
+        "id": "c",
+        "label": "6 m/s"
+      },
+      {
+        "id": "d",
+        "label": "16 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 12,
+    "given": {
+      "v": 20,
+      "angleDeg": 53
+    },
+    "formulas": [
+      "v_x = v cosθ"
+    ],
+    "explanation": "v_x = v cosθ = 20 × 0.6 = 12 m/s."
+  },
+  {
+    "id": "kin-40",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A shot leaves the foot at v = 20 m/s, 60° above the ground. What is the HORIZONTAL component of velocity? (cos 60° = 0.5)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 m/s"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s"
+      },
+      {
+        "id": "c",
+        "label": "17.4 m/s"
+      },
+      {
+        "id": "d",
+        "label": "5 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "v": 20,
+      "angleDeg": 60
+    },
+    "formulas": [
+      "v_x = v cosθ"
+    ],
+    "explanation": "v_x = v cosθ = 20 × 0.5 = 10 m/s."
+  },
+  {
+    "id": "kin-41",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A shot leaves the foot at v = 30 m/s, 37° above the ground. What is the HORIZONTAL component of velocity? (cos 37° = 0.8)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "18 m/s"
+      },
+      {
+        "id": "b",
+        "label": "30 m/s"
+      },
+      {
+        "id": "c",
+        "label": "24 m/s"
+      },
+      {
+        "id": "d",
+        "label": "12 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 24,
+    "given": {
+      "v": 30,
+      "angleDeg": 37
+    },
+    "formulas": [
+      "v_x = v cosθ"
+    ],
+    "explanation": "v_x = v cosθ = 30 × 0.8 = 24 m/s."
+  },
+  {
+    "id": "kin-42",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A shot leaves the foot at v = 30 m/s, 53° above the ground. What is the HORIZONTAL component of velocity? (cos 53° = 0.6)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "24 m/s"
+      },
+      {
+        "id": "b",
+        "label": "9 m/s"
+      },
+      {
+        "id": "c",
+        "label": "18 m/s"
+      },
+      {
+        "id": "d",
+        "label": "30 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 18,
+    "given": {
+      "v": 30,
+      "angleDeg": 53
+    },
+    "formulas": [
+      "v_x = v cosθ"
+    ],
+    "explanation": "v_x = v cosθ = 30 × 0.6 = 18 m/s."
+  },
+  {
+    "id": "kin-43",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-components",
+    "difficulty": 2,
+    "prompt": "A shot leaves the foot at v = 30 m/s, 60° above the ground. What is the HORIZONTAL component of velocity? (cos 60° = 0.5)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 m/s"
+      },
+      {
+        "id": "b",
+        "label": "26.1 m/s"
+      },
+      {
+        "id": "c",
+        "label": "15 m/s"
+      },
+      {
+        "id": "d",
+        "label": "7.5 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 15,
+    "given": {
+      "v": 30,
+      "angleDeg": 60
+    },
+    "formulas": [
+      "v_x = v cosθ"
+    ],
+    "explanation": "v_x = v cosθ = 30 × 0.5 = 15 m/s."
+  },
+  {
+    "id": "kin-44",
+    "unitId": "kinematics",
+    "conceptTag": "time-to-apex",
+    "difficulty": 2,
+    "prompt": "A ball is kicked straight up at 5 m/s. How long until it reaches the top of its arc? (g = 10 m/s²)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.5 s"
+      },
+      {
+        "id": "b",
+        "label": "1.5 s"
+      },
+      {
+        "id": "c",
+        "label": "1 s"
+      },
+      {
+        "id": "d",
+        "label": "5 s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 0.5,
+    "given": {
+      "vy": 5,
+      "g": 10
+    },
+    "formulas": [
+      "t = v_y / g"
+    ],
+    "explanation": "At the top v_y = 0, so t = v_y/g = 5/10 = 0.5 s."
+  },
+  {
+    "id": "kin-45",
+    "unitId": "kinematics",
+    "conceptTag": "max-height",
+    "difficulty": 3,
+    "prompt": "A ball leaves the ground with vertical velocity 10 m/s. What maximum height does it reach? (g = 10 m/s²)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m"
+      },
+      {
+        "id": "b",
+        "label": "0.5 m"
+      },
+      {
+        "id": "c",
+        "label": "5 m"
+      },
+      {
+        "id": "d",
+        "label": "20 m"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 5,
+    "given": {
+      "vy": 10,
+      "g": 10
+    },
+    "formulas": [
+      "H = v_y² / (2g)"
+    ],
+    "explanation": "H = v_y²/(2g) = 10²/20 = 5 m."
+  },
+  {
+    "id": "kin-46",
+    "unitId": "kinematics",
+    "conceptTag": "max-height",
+    "difficulty": 3,
+    "prompt": "A ball leaves the ground with vertical velocity 20 m/s. What maximum height does it reach? (g = 10 m/s²)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 m"
+      },
+      {
+        "id": "b",
+        "label": "24 m"
+      },
+      {
+        "id": "c",
+        "label": "1 m"
+      },
+      {
+        "id": "d",
+        "label": "40 m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 20,
+    "given": {
+      "vy": 20,
+      "g": 10
+    },
+    "formulas": [
+      "H = v_y² / (2g)"
+    ],
+    "explanation": "H = v_y²/(2g) = 20²/20 = 20 m."
+  },
+  {
+    "id": "kin-47",
+    "unitId": "kinematics",
+    "conceptTag": "max-height",
+    "difficulty": 3,
+    "prompt": "A ball leaves the ground with vertical velocity 30 m/s. What maximum height does it reach? (g = 10 m/s²)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "1.5 m"
+      },
+      {
+        "id": "b",
+        "label": "45 m"
+      },
+      {
+        "id": "c",
+        "label": "90 m"
+      },
+      {
+        "id": "d",
+        "label": "60 m"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 45,
+    "given": {
+      "vy": 30,
+      "g": 10
+    },
+    "formulas": [
+      "H = v_y² / (2g)"
+    ],
+    "explanation": "H = v_y²/(2g) = 30²/20 = 45 m."
+  },
+  {
+    "id": "kin-48",
+    "unitId": "kinematics",
+    "conceptTag": "max-height",
+    "difficulty": 3,
+    "prompt": "A ball leaves the ground with vertical velocity 5 m/s. What maximum height does it reach? (g = 10 m/s²)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m"
+      },
+      {
+        "id": "b",
+        "label": "0.25 m"
+      },
+      {
+        "id": "c",
+        "label": "2.5 m"
+      },
+      {
+        "id": "d",
+        "label": "1.25 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 1.25,
+    "given": {
+      "vy": 5,
+      "g": 10
+    },
+    "formulas": [
+      "H = v_y² / (2g)"
+    ],
+    "explanation": "H = v_y²/(2g) = 5²/20 = 1.25 m."
+  },
+  {
+    "id": "kin-49",
+    "unitId": "kinematics",
+    "conceptTag": "max-height",
+    "difficulty": 3,
+    "prompt": "A ball leaves the ground with vertical velocity 15 m/s. What maximum height does it reach? (g = 10 m/s²)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "22.5 m"
+      },
+      {
+        "id": "b",
+        "label": "30 m"
+      },
+      {
+        "id": "c",
+        "label": "0.75 m"
+      },
+      {
+        "id": "d",
+        "label": "11.25 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 11.25,
+    "given": {
+      "vy": 15,
+      "g": 10
+    },
+    "formulas": [
+      "H = v_y² / (2g)"
+    ],
+    "explanation": "H = v_y²/(2g) = 15²/20 = 11.25 m."
+  },
+  {
+    "id": "kin-50",
+    "unitId": "kinematics",
+    "conceptTag": "max-height",
+    "difficulty": 3,
+    "prompt": "A ball leaves the ground with vertical velocity 25 m/s. What maximum height does it reach? (g = 10 m/s²)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "62.5 m"
+      },
+      {
+        "id": "b",
+        "label": "50 m"
+      },
+      {
+        "id": "c",
+        "label": "1.25 m"
+      },
+      {
+        "id": "d",
+        "label": "31.25 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 31.25,
+    "given": {
+      "vy": 25,
+      "g": 10
+    },
+    "formulas": [
+      "H = v_y² / (2g)"
+    ],
+    "explanation": "H = v_y²/(2g) = 25²/20 = 31.25 m."
+  },
+  {
+    "id": "kin-51",
+    "unitId": "kinematics",
+    "conceptTag": "flight-time",
+    "difficulty": 3,
+    "prompt": "A ball is launched straight up at 10 m/s. How long is it in the air before landing back at launch height?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "2 s"
+      },
+      {
+        "id": "b",
+        "label": "3 s"
+      },
+      {
+        "id": "c",
+        "label": "4 s"
+      },
+      {
+        "id": "d",
+        "label": "1 s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 2,
+    "given": {
+      "vy": 10,
+      "g": 10
+    },
+    "formulas": [
+      "T = 2v_y / g"
+    ],
+    "explanation": "T = 2v_y/g = 2×10/10 = 2 s."
+  },
+  {
+    "id": "kin-52",
+    "unitId": "kinematics",
+    "conceptTag": "flight-time",
+    "difficulty": 3,
+    "prompt": "A ball is launched straight up at 20 m/s. How long is it in the air before landing back at launch height?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "8 s"
+      },
+      {
+        "id": "b",
+        "label": "4 s"
+      },
+      {
+        "id": "c",
+        "label": "2 s"
+      },
+      {
+        "id": "d",
+        "label": "5 s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 4,
+    "given": {
+      "vy": 20,
+      "g": 10
+    },
+    "formulas": [
+      "T = 2v_y / g"
+    ],
+    "explanation": "T = 2v_y/g = 2×20/10 = 4 s."
+  },
+  {
+    "id": "kin-53",
+    "unitId": "kinematics",
+    "conceptTag": "flight-time",
+    "difficulty": 3,
+    "prompt": "A ball is launched straight up at 30 m/s. How long is it in the air before landing back at launch height?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "7.2 s"
+      },
+      {
+        "id": "b",
+        "label": "6 s"
+      },
+      {
+        "id": "c",
+        "label": "12 s"
+      },
+      {
+        "id": "d",
+        "label": "3 s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 6,
+    "given": {
+      "vy": 30,
+      "g": 10
+    },
+    "formulas": [
+      "T = 2v_y / g"
+    ],
+    "explanation": "T = 2v_y/g = 2×30/10 = 6 s."
+  },
+  {
+    "id": "kin-54",
+    "unitId": "kinematics",
+    "conceptTag": "flight-time",
+    "difficulty": 3,
+    "prompt": "A ball is launched straight up at 5 m/s. How long is it in the air before landing back at launch height?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.5 s"
+      },
+      {
+        "id": "b",
+        "label": "1 s"
+      },
+      {
+        "id": "c",
+        "label": "2 s"
+      },
+      {
+        "id": "d",
+        "label": "3 s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 1,
+    "given": {
+      "vy": 5,
+      "g": 10
+    },
+    "formulas": [
+      "T = 2v_y / g"
+    ],
+    "explanation": "T = 2v_y/g = 2×5/10 = 1 s."
+  },
+  {
+    "id": "kin-55",
+    "unitId": "kinematics",
+    "conceptTag": "flight-time",
+    "difficulty": 3,
+    "prompt": "A ball is launched straight up at 15 m/s. How long is it in the air before landing back at launch height?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "1.5 s"
+      },
+      {
+        "id": "b",
+        "label": "4 s"
+      },
+      {
+        "id": "c",
+        "label": "3 s"
+      },
+      {
+        "id": "d",
+        "label": "6 s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 3,
+    "given": {
+      "vy": 15,
+      "g": 10
+    },
+    "formulas": [
+      "T = 2v_y / g"
+    ],
+    "explanation": "T = 2v_y/g = 2×15/10 = 3 s."
+  },
+  {
+    "id": "kin-56",
+    "unitId": "kinematics",
+    "conceptTag": "flight-time",
+    "difficulty": 3,
+    "prompt": "A ball is launched straight up at 25 m/s. How long is it in the air before landing back at launch height?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 s"
+      },
+      {
+        "id": "b",
+        "label": "6 s"
+      },
+      {
+        "id": "c",
+        "label": "2.5 s"
+      },
+      {
+        "id": "d",
+        "label": "10 s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 5,
+    "given": {
+      "vy": 25,
+      "g": 10
+    },
+    "formulas": [
+      "T = 2v_y / g"
+    ],
+    "explanation": "T = 2v_y/g = 2×25/10 = 5 s."
+  },
+  {
+    "id": "kin-57",
+    "unitId": "kinematics",
+    "conceptTag": "displacement-accel",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a ball accelerates at 2 m/s² for 4 s. How far does it travel?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "4 m"
+      },
+      {
+        "id": "b",
+        "label": "32 m"
+      },
+      {
+        "id": "c",
+        "label": "8 m"
+      },
+      {
+        "id": "d",
+        "label": "16 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 16,
+    "given": {
+      "a": 2,
+      "t": 4
+    },
+    "formulas": [
+      "s = ½ a t²",
+      "u = 0"
+    ],
+    "explanation": "s = ½at² = 0.5×2×4² = 16 m."
+  },
+  {
+    "id": "kin-58",
+    "unitId": "kinematics",
+    "conceptTag": "displacement-accel",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a ball accelerates at 4 m/s² for 3 s. How far does it travel?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "18 m"
+      },
+      {
+        "id": "b",
+        "label": "6 m"
+      },
+      {
+        "id": "c",
+        "label": "12 m"
+      },
+      {
+        "id": "d",
+        "label": "36 m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 18,
+    "given": {
+      "a": 4,
+      "t": 3
+    },
+    "formulas": [
+      "s = ½ a t²",
+      "u = 0"
+    ],
+    "explanation": "s = ½at² = 0.5×4×3² = 18 m."
+  },
+  {
+    "id": "kin-59",
+    "unitId": "kinematics",
+    "conceptTag": "displacement-accel",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a ball accelerates at 10 m/s² for 2 s. How far does it travel?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "40 m"
+      },
+      {
+        "id": "b",
+        "label": "10 m"
+      },
+      {
+        "id": "c",
+        "label": "20 m"
+      },
+      {
+        "id": "d",
+        "label": "24 m"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 20,
+    "given": {
+      "a": 10,
+      "t": 2
+    },
+    "formulas": [
+      "s = ½ a t²",
+      "u = 0"
+    ],
+    "explanation": "s = ½at² = 0.5×10×2² = 20 m."
+  },
+  {
+    "id": "kin-60",
+    "unitId": "kinematics",
+    "conceptTag": "displacement-accel",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a ball accelerates at 2 m/s² for 5 s. How far does it travel?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m"
+      },
+      {
+        "id": "b",
+        "label": "5 m"
+      },
+      {
+        "id": "c",
+        "label": "25 m"
+      },
+      {
+        "id": "d",
+        "label": "50 m"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 25,
+    "given": {
+      "a": 2,
+      "t": 5
+    },
+    "formulas": [
+      "s = ½ a t²",
+      "u = 0"
+    ],
+    "explanation": "s = ½at² = 0.5×2×5² = 25 m."
+  },
+  {
+    "id": "kin-61",
+    "unitId": "kinematics",
+    "conceptTag": "displacement-accel",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a ball accelerates at 4 m/s² for 4 s. How far does it travel?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "64 m"
+      },
+      {
+        "id": "b",
+        "label": "16 m"
+      },
+      {
+        "id": "c",
+        "label": "32 m"
+      },
+      {
+        "id": "d",
+        "label": "8 m"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 32,
+    "given": {
+      "a": 4,
+      "t": 4
+    },
+    "formulas": [
+      "s = ½ a t²",
+      "u = 0"
+    ],
+    "explanation": "s = ½at² = 0.5×4×4² = 32 m."
+  },
+  {
+    "id": "kin-62",
+    "unitId": "kinematics",
+    "conceptTag": "displacement-accel",
+    "difficulty": 3,
+    "prompt": "Starting from rest, a ball accelerates at 10 m/s² for 3 s. How far does it travel?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "90 m"
+      },
+      {
+        "id": "b",
+        "label": "15 m"
+      },
+      {
+        "id": "c",
+        "label": "30 m"
+      },
+      {
+        "id": "d",
+        "label": "45 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 45,
+    "given": {
+      "a": 10,
+      "t": 3
+    },
+    "formulas": [
+      "s = ½ a t²",
+      "u = 0"
+    ],
+    "explanation": "s = ½at² = 0.5×10×3² = 45 m."
+  },
+  {
+    "id": "kin-63",
+    "unitId": "kinematics",
+    "conceptTag": "horizontal-range",
+    "difficulty": 3,
+    "prompt": "During a flight the horizontal velocity is 10 m/s and the ball is airborne 3 s. How far does it travel horizontally?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "3.33 m"
+      },
+      {
+        "id": "b",
+        "label": "30 m"
+      },
+      {
+        "id": "c",
+        "label": "10 m"
+      },
+      {
+        "id": "d",
+        "label": "13 m"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 30,
+    "given": {
+      "vx": 10,
+      "t": 3
+    },
+    "formulas": [
+      "x = v_x t"
+    ],
+    "explanation": "x = v_x t = 10×3 = 30 m."
+  },
+  {
+    "id": "kin-64",
+    "unitId": "kinematics",
+    "conceptTag": "horizontal-range",
+    "difficulty": 3,
+    "prompt": "During a flight the horizontal velocity is 20 m/s and the ball is airborne 2 s. How far does it travel horizontally?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "22 m"
+      },
+      {
+        "id": "b",
+        "label": "10 m"
+      },
+      {
+        "id": "c",
+        "label": "20 m"
+      },
+      {
+        "id": "d",
+        "label": "40 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 40,
+    "given": {
+      "vx": 20,
+      "t": 2
+    },
+    "formulas": [
+      "x = v_x t"
+    ],
+    "explanation": "x = v_x t = 20×2 = 40 m."
+  },
+  {
+    "id": "kin-65",
+    "unitId": "kinematics",
+    "conceptTag": "kinematics-vsquared",
+    "difficulty": 4,
+    "prompt": "Starting from rest, a ball accelerates at 5 m/s² over 10 m. What is its final speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "15 m/s"
+      },
+      {
+        "id": "b",
+        "label": "8 m/s"
+      },
+      {
+        "id": "c",
+        "label": "10 m/s"
+      },
+      {
+        "id": "d",
+        "label": "100 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 10,
+    "given": {
+      "a": 5,
+      "s": 10
+    },
+    "formulas": [
+      "v² = u² + 2 a s",
+      "u = 0"
+    ],
+    "explanation": "v = √(2as) = √(2×5×10) = √100 = 10 m/s."
+  },
+  {
+    "id": "kin-66",
+    "unitId": "kinematics",
+    "conceptTag": "kinematics-vsquared",
+    "difficulty": 4,
+    "prompt": "Starting from rest, a ball accelerates at 10 m/s² over 5 m. What is its final speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m/s"
+      },
+      {
+        "id": "b",
+        "label": "100 m/s"
+      },
+      {
+        "id": "c",
+        "label": "8 m/s"
+      },
+      {
+        "id": "d",
+        "label": "15 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 10,
+    "given": {
+      "a": 10,
+      "s": 5
+    },
+    "formulas": [
+      "v² = u² + 2 a s",
+      "u = 0"
+    ],
+    "explanation": "v = √(2as) = √(2×10×5) = √100 = 10 m/s."
+  },
+  {
+    "id": "kin-67",
+    "unitId": "kinematics",
+    "conceptTag": "kinematics-vsquared",
+    "difficulty": 4,
+    "prompt": "Starting from rest, a ball accelerates at 2 m/s² over 9 m. What is its final speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "9 m/s"
+      },
+      {
+        "id": "b",
+        "label": "36 m/s"
+      },
+      {
+        "id": "c",
+        "label": "4 m/s"
+      },
+      {
+        "id": "d",
+        "label": "6 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 6,
+    "given": {
+      "a": 2,
+      "s": 9
+    },
+    "formulas": [
+      "v² = u² + 2 a s",
+      "u = 0"
+    ],
+    "explanation": "v = √(2as) = √(2×2×9) = √36 = 6 m/s."
+  },
+  {
+    "id": "kin-68",
+    "unitId": "kinematics",
+    "conceptTag": "kinematics-vsquared",
+    "difficulty": 4,
+    "prompt": "Starting from rest, a ball accelerates at 2 m/s² over 16 m. What is its final speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "8 m/s"
+      },
+      {
+        "id": "b",
+        "label": "12 m/s"
+      },
+      {
+        "id": "c",
+        "label": "64 m/s"
+      },
+      {
+        "id": "d",
+        "label": "6 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 8,
+    "given": {
+      "a": 2,
+      "s": 16
+    },
+    "formulas": [
+      "v² = u² + 2 a s",
+      "u = 0"
+    ],
+    "explanation": "v = √(2as) = √(2×2×16) = √64 = 8 m/s."
+  },
+  {
+    "id": "kin-69",
+    "unitId": "kinematics",
+    "conceptTag": "kinematics-vsquared",
+    "difficulty": 4,
+    "prompt": "Starting from rest, a ball accelerates at 8 m/s² over 4 m. What is its final speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "64 m/s"
+      },
+      {
+        "id": "b",
+        "label": "8 m/s"
+      },
+      {
+        "id": "c",
+        "label": "12 m/s"
+      },
+      {
+        "id": "d",
+        "label": "6 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 8,
+    "given": {
+      "a": 8,
+      "s": 4
+    },
+    "formulas": [
+      "v² = u² + 2 a s",
+      "u = 0"
+    ],
+    "explanation": "v = √(2as) = √(2×8×4) = √64 = 8 m/s."
+  },
+  {
+    "id": "kin-70",
+    "unitId": "kinematics",
+    "conceptTag": "kinematics-vsquared",
+    "difficulty": 4,
+    "prompt": "Starting from rest, a ball accelerates at 5 m/s² over 90 m. What is its final speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 m/s"
+      },
+      {
+        "id": "b",
+        "label": "900 m/s"
+      },
+      {
+        "id": "c",
+        "label": "28 m/s"
+      },
+      {
+        "id": "d",
+        "label": "45 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 30,
+    "given": {
+      "a": 5,
+      "s": 90
+    },
+    "formulas": [
+      "v² = u² + 2 a s",
+      "u = 0"
+    ],
+    "explanation": "v = √(2as) = √(2×5×90) = √900 = 30 m/s."
+  },
+  {
+    "id": "kin-71",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-range",
+    "difficulty": 4,
+    "prompt": "A ball is struck at 10 m/s, 45° above the ground on level turf. How far away does it land? (sin 90° = 1, g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "12 m"
+      },
+      {
+        "id": "b",
+        "label": "10 m"
+      },
+      {
+        "id": "c",
+        "label": "20 m"
+      },
+      {
+        "id": "d",
+        "label": "1 m"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "v": 10,
+      "angleDeg": 45
+    },
+    "formulas": [
+      "R = v² sin(2θ) / g"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 45,
+        "vLabel": "v = 10 m/s"
+      },
+      "caption": "Launch at 45°"
+    },
+    "explanation": "R = v² sin(2θ)/g = 10²×1/10 = 10 m."
+  },
+  {
+    "id": "kin-72",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-range",
+    "difficulty": 4,
+    "prompt": "A ball is struck at 20 m/s, 45° above the ground on level turf. How far away does it land? (sin 90° = 1, g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "40 m"
+      },
+      {
+        "id": "b",
+        "label": "2 m"
+      },
+      {
+        "id": "c",
+        "label": "48 m"
+      },
+      {
+        "id": "d",
+        "label": "80 m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 40,
+    "given": {
+      "v": 20,
+      "angleDeg": 45
+    },
+    "formulas": [
+      "R = v² sin(2θ) / g"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 45,
+        "vLabel": "v = 20 m/s"
+      },
+      "caption": "Launch at 45°"
+    },
+    "explanation": "R = v² sin(2θ)/g = 20²×1/10 = 40 m."
+  },
+  {
+    "id": "kin-73",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-range",
+    "difficulty": 4,
+    "prompt": "A ball is struck at 30 m/s, 45° above the ground on level turf. How far away does it land? (sin 90° = 1, g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "108 m"
+      },
+      {
+        "id": "b",
+        "label": "3 m"
+      },
+      {
+        "id": "c",
+        "label": "180 m"
+      },
+      {
+        "id": "d",
+        "label": "90 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 90,
+    "given": {
+      "v": 30,
+      "angleDeg": 45
+    },
+    "formulas": [
+      "R = v² sin(2θ) / g"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 45,
+        "vLabel": "v = 30 m/s"
+      },
+      "caption": "Launch at 45°"
+    },
+    "explanation": "R = v² sin(2θ)/g = 30²×1/10 = 90 m."
+  },
+  {
+    "id": "kin-74",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-range",
+    "difficulty": 4,
+    "prompt": "A ball is struck at 20 m/s, 15° above the ground on level turf. How far away does it land? (sin 30° = 0.5, g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "40 m"
+      },
+      {
+        "id": "b",
+        "label": "1 m"
+      },
+      {
+        "id": "c",
+        "label": "20 m"
+      },
+      {
+        "id": "d",
+        "label": "24 m"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 20,
+    "given": {
+      "v": 20,
+      "angleDeg": 15
+    },
+    "formulas": [
+      "R = v² sin(2θ) / g"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 15,
+        "vLabel": "v = 20 m/s"
+      },
+      "caption": "Launch at 15°"
+    },
+    "explanation": "R = v² sin(2θ)/g = 20²×0.5/10 = 20 m."
+  },
+  {
+    "id": "kin-75",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-range",
+    "difficulty": 4,
+    "prompt": "A ball is struck at 10 m/s, 15° above the ground on level turf. How far away does it land? (sin 30° = 0.5, g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m"
+      },
+      {
+        "id": "b",
+        "label": "6 m"
+      },
+      {
+        "id": "c",
+        "label": "10 m"
+      },
+      {
+        "id": "d",
+        "label": "0.5 m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 5,
+    "given": {
+      "v": 10,
+      "angleDeg": 15
+    },
+    "formulas": [
+      "R = v² sin(2θ) / g"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 15,
+        "vLabel": "v = 10 m/s"
+      },
+      "caption": "Launch at 15°"
+    },
+    "explanation": "R = v² sin(2θ)/g = 10²×0.5/10 = 5 m."
+  },
+  {
+    "id": "kin-76",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-range",
+    "difficulty": 4,
+    "prompt": "A ball is struck at 40 m/s, 45° above the ground on level turf. How far away does it land? (sin 90° = 1, g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "192 m"
+      },
+      {
+        "id": "b",
+        "label": "4 m"
+      },
+      {
+        "id": "c",
+        "label": "320 m"
+      },
+      {
+        "id": "d",
+        "label": "160 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 160,
+    "given": {
+      "v": 40,
+      "angleDeg": 45
+    },
+    "formulas": [
+      "R = v² sin(2θ) / g"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 45,
+        "vLabel": "v = 40 m/s"
+      },
+      "caption": "Launch at 45°"
+    },
+    "explanation": "R = v² sin(2θ)/g = 40²×1/10 = 160 m."
+  },
+  {
+    "id": "kin-77",
+    "unitId": "kinematics",
+    "conceptTag": "displacement-general",
+    "difficulty": 4,
+    "prompt": "A ball moving at 10 m/s accelerates at 2 m/s² for 4 s. How far does it travel?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "72 m"
+      },
+      {
+        "id": "b",
+        "label": "16 m"
+      },
+      {
+        "id": "c",
+        "label": "56 m"
+      },
+      {
+        "id": "d",
+        "label": "40 m"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 56,
+    "given": {
+      "u": 10,
+      "a": 2,
+      "t": 4
+    },
+    "formulas": [
+      "s = u t + ½ a t²"
+    ],
+    "explanation": "s = ut + ½at² = 10×4 + 0.5×2×4² = 56 m."
+  },
+  {
+    "id": "kin-78",
+    "unitId": "kinematics",
+    "conceptTag": "displacement-general",
+    "difficulty": 4,
+    "prompt": "A ball moving at 5 m/s accelerates at 4 m/s² for 3 s. How far does it travel?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "18 m"
+      },
+      {
+        "id": "b",
+        "label": "33 m"
+      },
+      {
+        "id": "c",
+        "label": "51 m"
+      },
+      {
+        "id": "d",
+        "label": "15 m"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 33,
+    "given": {
+      "u": 5,
+      "a": 4,
+      "t": 3
+    },
+    "formulas": [
+      "s = u t + ½ a t²"
+    ],
+    "explanation": "s = ut + ½at² = 5×3 + 0.5×4×3² = 33 m."
+  },
+  {
+    "id": "kin-79",
+    "unitId": "kinematics",
+    "conceptTag": "displacement-general",
+    "difficulty": 4,
+    "prompt": "A ball moving at 0 m/s accelerates at 10 m/s² for 3 s. How far does it travel?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "45 m"
+      },
+      {
+        "id": "b",
+        "label": "90 m"
+      },
+      {
+        "id": "c",
+        "label": "0 m"
+      },
+      {
+        "id": "d",
+        "label": "54 m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 45,
+    "given": {
+      "u": 0,
+      "a": 10,
+      "t": 3
+    },
+    "formulas": [
+      "s = u t + ½ a t²"
+    ],
+    "explanation": "s = ut + ½at² = 0×3 + 0.5×10×3² = 45 m."
+  },
+  {
+    "id": "kin-80",
+    "unitId": "kinematics",
+    "conceptTag": "displacement-general",
+    "difficulty": 4,
+    "prompt": "A ball moving at 8 m/s accelerates at 2 m/s² for 5 s. How far does it travel?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "65 m"
+      },
+      {
+        "id": "b",
+        "label": "40 m"
+      },
+      {
+        "id": "c",
+        "label": "25 m"
+      },
+      {
+        "id": "d",
+        "label": "90 m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 65,
+    "given": {
+      "u": 8,
+      "a": 2,
+      "t": 5
+    },
+    "formulas": [
+      "s = u t + ½ a t²"
+    ],
+    "explanation": "s = ut + ½at² = 8×5 + 0.5×2×5² = 65 m."
+  },
+  {
+    "id": "kin-81",
+    "unitId": "kinematics",
+    "conceptTag": "displacement-general",
+    "difficulty": 4,
+    "prompt": "A ball moving at 10 m/s accelerates at 4 m/s² for 2 s. How far does it travel?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "8 m"
+      },
+      {
+        "id": "b",
+        "label": "36 m"
+      },
+      {
+        "id": "c",
+        "label": "28 m"
+      },
+      {
+        "id": "d",
+        "label": "20 m"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 28,
+    "given": {
+      "u": 10,
+      "a": 4,
+      "t": 2
+    },
+    "formulas": [
+      "s = u t + ½ a t²"
+    ],
+    "explanation": "s = ut + ½at² = 10×2 + 0.5×4×2² = 28 m."
+  },
+  {
+    "id": "kin-82",
+    "unitId": "kinematics",
+    "conceptTag": "displacement-general",
+    "difficulty": 4,
+    "prompt": "A ball moving at 6 m/s accelerates at 4 m/s² for 4 s. How far does it travel?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "24 m"
+      },
+      {
+        "id": "b",
+        "label": "56 m"
+      },
+      {
+        "id": "c",
+        "label": "88 m"
+      },
+      {
+        "id": "d",
+        "label": "32 m"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 56,
+    "given": {
+      "u": 6,
+      "a": 4,
+      "t": 4
+    },
+    "formulas": [
+      "s = u t + ½ a t²"
+    ],
+    "explanation": "s = ut + ½at² = 6×4 + 0.5×4×4² = 56 m."
+  },
+  {
+    "id": "kin-83",
+    "unitId": "kinematics",
+    "conceptTag": "horizontal-launch",
+    "difficulty": 4,
+    "prompt": "A ball is kicked horizontally at 10 m/s off a ledge 5 m high. How far from the base does it land? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m"
+      },
+      {
+        "id": "b",
+        "label": "20 m"
+      },
+      {
+        "id": "c",
+        "label": "12 m"
+      },
+      {
+        "id": "d",
+        "label": "10 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 10,
+    "given": {
+      "h": 5,
+      "vx": 10
+    },
+    "formulas": [
+      "t = √(2h/g)",
+      "x = v_x t"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 0,
+        "vLabel": "v = 10 m/s"
+      },
+      "caption": "Launch at 0°"
+    },
+    "explanation": "t = √(2h/g) = √(10/10) = 1 s, so x = v_x t = 10×1 = 10 m."
+  },
+  {
+    "id": "kin-84",
+    "unitId": "kinematics",
+    "conceptTag": "horizontal-launch",
+    "difficulty": 4,
+    "prompt": "A ball is kicked horizontally at 15 m/s off a ledge 20 m high. How far from the base does it land? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "36 m"
+      },
+      {
+        "id": "b",
+        "label": "30 m"
+      },
+      {
+        "id": "c",
+        "label": "15 m"
+      },
+      {
+        "id": "d",
+        "label": "60 m"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 30,
+    "given": {
+      "h": 20,
+      "vx": 15
+    },
+    "formulas": [
+      "t = √(2h/g)",
+      "x = v_x t"
+    ],
+    "diagram": {
+      "kind": "projectile",
+      "params": {
+        "angleDeg": 0,
+        "vLabel": "v = 15 m/s"
+      },
+      "caption": "Launch at 0°"
+    },
+    "explanation": "t = √(2h/g) = √(40/10) = 2 s, so x = v_x t = 15×2 = 30 m."
+  },
+  {
+    "id": "kin-85",
+    "unitId": "kinematics",
+    "conceptTag": "apex-velocity-accel",
+    "difficulty": 5,
+    "prompt": "At the highest point of a ball’s vertical flight, which statement is true?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Acceleration points upward"
+      },
+      {
+        "id": "b",
+        "label": "Velocity is maximum, acceleration 0"
+      },
+      {
+        "id": "c",
+        "label": "Velocity is 0 but acceleration is 10 m/s² downward"
+      },
+      {
+        "id": "d",
+        "label": "Both velocity and acceleration are 0"
+      }
+    ],
+    "correctChoiceId": "c",
+    "explanation": "At the apex the ball is momentarily at rest (v = 0), but gravity still acts, so a = 10 m/s² down."
+  },
+  {
+    "id": "kin-86",
+    "unitId": "kinematics",
+    "conceptTag": "horizontal-vertical-independence",
+    "difficulty": 5,
+    "prompt": "One ball is dropped and another is kicked horizontally from the same height at the same instant. Which lands first?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "The dropped ball"
+      },
+      {
+        "id": "b",
+        "label": "They land at the same time"
+      },
+      {
+        "id": "c",
+        "label": "The kicked ball"
+      },
+      {
+        "id": "d",
+        "label": "Depends on the kick speed"
+      }
+    ],
+    "correctChoiceId": "b",
+    "explanation": "Vertical motion is independent of horizontal motion; both have the same vertical drop and g, so equal fall times."
+  },
+  {
+    "id": "kin-87",
+    "unitId": "kinematics",
+    "conceptTag": "range-vs-angle",
+    "difficulty": 5,
+    "prompt": "At a fixed launch speed, increasing the launch angle from 30° to 45° does what to the range on level ground?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Decreases it"
+      },
+      {
+        "id": "b",
+        "label": "Doubles it exactly"
+      },
+      {
+        "id": "c",
+        "label": "No change"
+      },
+      {
+        "id": "d",
+        "label": "Increases it (45° gives maximum range)"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "Range ∝ sin(2θ), which is largest at θ = 45°, so going 30°→45° increases range."
+  },
+  {
+    "id": "kin-88",
+    "unitId": "kinematics",
+    "conceptTag": "projectile-horizontal-velocity",
+    "difficulty": 5,
+    "prompt": "Ignoring air resistance, what happens to the horizontal velocity of a ball during its flight?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "It decreases to zero at the top"
+      },
+      {
+        "id": "b",
+        "label": "It stays constant"
+      },
+      {
+        "id": "c",
+        "label": "It reverses direction"
+      },
+      {
+        "id": "d",
+        "label": "It increases steadily"
+      }
+    ],
+    "correctChoiceId": "b",
+    "explanation": "No horizontal force acts, so horizontal velocity is constant the whole flight."
+  },
+  {
+    "id": "kin-89",
+    "unitId": "kinematics",
+    "conceptTag": "symmetry-up-down",
+    "difficulty": 5,
+    "prompt": "A ball thrown straight up returns to the launch height. How does its speed there compare to the launch speed?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Smaller"
+      },
+      {
+        "id": "b",
+        "label": "Larger"
+      },
+      {
+        "id": "c",
+        "label": "Zero"
+      },
+      {
+        "id": "d",
+        "label": "Equal in magnitude"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "With no air resistance the motion is symmetric: it returns with the same speed (opposite direction)."
+  },
+  {
+    "id": "kin-90",
+    "unitId": "kinematics",
+    "conceptTag": "range-doubling-speed",
+    "difficulty": 5,
+    "prompt": "If you double the launch speed at the same angle, the range on level ground becomes about:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "2× as far"
+      },
+      {
+        "id": "b",
+        "label": "4× as far"
+      },
+      {
+        "id": "c",
+        "label": "Half as far"
+      },
+      {
+        "id": "d",
+        "label": "Unchanged"
+      }
+    ],
+    "correctChoiceId": "b",
+    "explanation": "Range ∝ v², so doubling v gives 2² = 4× the range."
+  },
+  {
+    "id": "kin-91",
+    "unitId": "kinematics",
+    "conceptTag": "free-fall-graph",
+    "difficulty": 5,
+    "prompt": "For a ball in free fall (downward positive), which describes its velocity-time graph?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "A line with slope 0"
+      },
+      {
+        "id": "b",
+        "label": "A horizontal line"
+      },
+      {
+        "id": "c",
+        "label": "A curve that flattens out"
+      },
+      {
+        "id": "d",
+        "label": "A straight line with constant positive slope of 10"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "Constant acceleration g means velocity rises linearly: slope = 10 m/s²."
+  },
+  {
+    "id": "kin-92",
+    "unitId": "kinematics",
+    "conceptTag": "cliff-speed-independence",
+    "difficulty": 5,
+    "prompt": "Two balls roll off the same ledge, one faster than the other. Which hits the ground first?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "The faster one"
+      },
+      {
+        "id": "b",
+        "label": "The slower one"
+      },
+      {
+        "id": "c",
+        "label": "Cannot tell"
+      },
+      {
+        "id": "d",
+        "label": "They land at the same time"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "Time to fall depends only on the height and g, not horizontal speed — same fall time."
+  },
+  {
+    "id": "kin-93",
+    "unitId": "kinematics",
+    "conceptTag": "constant-acceleration",
+    "difficulty": 5,
+    "prompt": "During the entire flight of a kicked ball (ignoring air resistance), the acceleration is:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Constant, 10 m/s² downward"
+      },
+      {
+        "id": "b",
+        "label": "Zero at the top"
+      },
+      {
+        "id": "c",
+        "label": "Largest at the top"
+      },
+      {
+        "id": "d",
+        "label": "Always toward the goal"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "Gravity is the only force in flight, so acceleration is a constant 10 m/s² down the whole time."
+  },
+  {
+    "id": "kin-94",
+    "unitId": "kinematics",
+    "conceptTag": "velocity-direction-apex",
+    "difficulty": 5,
+    "prompt": "Just after a ball passes the peak of its arc, its vertical velocity is:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Downward and increasing in magnitude"
+      },
+      {
+        "id": "b",
+        "label": "Zero"
+      },
+      {
+        "id": "c",
+        "label": "Constant"
+      },
+      {
+        "id": "d",
+        "label": "Upward and decreasing"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "Past the apex gravity speeds the ball up downward, so v_y grows in the downward direction."
+  },
+  {
+    "id": "kin-95",
+    "unitId": "kinematics",
+    "conceptTag": "launch-angle-tradeoff",
+    "difficulty": 5,
+    "prompt": "Compared with a 45° kick at the same speed, a steeper 60° kick gives:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Greater range"
+      },
+      {
+        "id": "b",
+        "label": "The same trajectory"
+      },
+      {
+        "id": "c",
+        "label": "A flatter, longer shot"
+      },
+      {
+        "id": "d",
+        "label": "Higher peak but shorter range"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "A steeper angle sends more velocity upward (higher) and less horizontally (shorter range than 45°)."
+  },
+  {
+    "id": "kin-96",
+    "unitId": "kinematics",
+    "conceptTag": "stopping-distance",
+    "difficulty": 5,
+    "prompt": "A ball rolling at 20 m/s decelerates at 5 m/s². How far does it travel before stopping?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "40 m"
+      },
+      {
+        "id": "b",
+        "label": "100 m"
+      },
+      {
+        "id": "c",
+        "label": "2 m"
+      },
+      {
+        "id": "d",
+        "label": "80 m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 40,
+    "given": {
+      "u": 20,
+      "a": 5
+    },
+    "formulas": [
+      "v² = u² + 2 a s",
+      "v = 0"
+    ],
+    "explanation": "0 = u² − 2as ⇒ s = u²/(2a) = 20²/(2×5) = 40 m."
+  },
+  {
+    "id": "kin-97",
+    "unitId": "kinematics",
+    "conceptTag": "stopping-distance",
+    "difficulty": 5,
+    "prompt": "A ball rolling at 10 m/s decelerates at 2 m/s². How far does it travel before stopping?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "2.5 m"
+      },
+      {
+        "id": "b",
+        "label": "25 m"
+      },
+      {
+        "id": "c",
+        "label": "50 m"
+      },
+      {
+        "id": "d",
+        "label": "20 m"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 25,
+    "given": {
+      "u": 10,
+      "a": 2
+    },
+    "formulas": [
+      "v² = u² + 2 a s",
+      "v = 0"
+    ],
+    "explanation": "0 = u² − 2as ⇒ s = u²/(2a) = 10²/(2×2) = 25 m."
+  },
+  {
+    "id": "kin-98",
+    "unitId": "kinematics",
+    "conceptTag": "stopping-distance",
+    "difficulty": 5,
+    "prompt": "A ball rolling at 30 m/s decelerates at 10 m/s². How far does it travel before stopping?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "45 m"
+      },
+      {
+        "id": "b",
+        "label": "1.5 m"
+      },
+      {
+        "id": "c",
+        "label": "300 m"
+      },
+      {
+        "id": "d",
+        "label": "90 m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 45,
+    "given": {
+      "u": 30,
+      "a": 10
+    },
+    "formulas": [
+      "v² = u² + 2 a s",
+      "v = 0"
+    ],
+    "explanation": "0 = u² − 2as ⇒ s = u²/(2a) = 30²/(2×10) = 45 m."
+  },
+  {
+    "id": "kin-99",
+    "unitId": "kinematics",
+    "conceptTag": "stopping-distance",
+    "difficulty": 5,
+    "prompt": "A ball rolling at 12 m/s decelerates at 4 m/s². How far does it travel before stopping?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "36 m"
+      },
+      {
+        "id": "b",
+        "label": "48 m"
+      },
+      {
+        "id": "c",
+        "label": "1.5 m"
+      },
+      {
+        "id": "d",
+        "label": "18 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 18,
+    "given": {
+      "u": 12,
+      "a": 4
+    },
+    "formulas": [
+      "v² = u² + 2 a s",
+      "v = 0"
+    ],
+    "explanation": "0 = u² − 2as ⇒ s = u²/(2a) = 12²/(2×4) = 18 m."
+  },
+  {
+    "id": "kin-100",
+    "unitId": "kinematics",
+    "conceptTag": "stopping-distance",
+    "difficulty": 5,
+    "prompt": "A ball rolling at 18 m/s decelerates at 9 m/s². How far does it travel before stopping?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "36 m"
+      },
+      {
+        "id": "b",
+        "label": "18 m"
+      },
+      {
+        "id": "c",
+        "label": "1 m"
+      },
+      {
+        "id": "d",
+        "label": "162 m"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 18,
+    "given": {
+      "u": 18,
+      "a": 9
+    },
+    "formulas": [
+      "v² = u² + 2 a s",
+      "v = 0"
+    ],
+    "explanation": "0 = u² − 2as ⇒ s = u²/(2a) = 18²/(2×9) = 18 m."
+  }
+]

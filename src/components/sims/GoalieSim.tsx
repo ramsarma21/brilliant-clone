@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { ReactNode } from 'react'
 import type { SimProps } from './types'
 import { Calculator } from './Calculator'
-
 // ============================================================================
 // Impulse unit — soccer skill = GOALKEEPING (the dive-menu save drill).
 //
@@ -108,6 +108,10 @@ const randInt = (lo: number, hi: number) => lo + Math.floor(Math.random() * (hi 
 // per-direction display strings (the formula, short tags, field/var names, etc.)
 const FORMULA: Record<Dir, string> = {
   findJ: 'J = m · v', findV: 'v = J / m', findF: 'F = J / Δt', findJ_fromF: 'J = F · Δt',
+}
+// just the right-hand side of each formula (the unknown sits on the left)
+const FORMULA_RHS: Record<Dir, string> = {
+  findJ: 'm · v', findV: 'J / m', findF: 'J / Δt', findJ_fromF: 'F · Δt',
 }
 const ANSWER_FIELD: Record<Dir, string> = {
   findJ: 'Impulse J (N·s)', findV: 'Shot speed v (m/s)', findF: 'Force F (N)', findJ_fromF: 'Impulse J (N·s)',
@@ -320,6 +324,9 @@ function saveScene(side: number, shotDir: number, fate: Fate, yTarget: number, u
 }
 
 export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
+  // The goalkeeper keeps his own keeper kit (not driven by the outfield loadout).
+  const keeperKit: GkKit = GK_KIT
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [phase, setPhase] = useState<Phase>('menu')
   const [answerStr, setAnswerStr] = useState('')
@@ -327,7 +334,8 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const [best, setBest] = useState(() => { try { return Number(localStorage.getItem(BEST_KEY) ?? 0) || 0 } catch { return 0 } })
   const [sound, setSound] = useState(true)
   const [showCalc, setShowCalc] = useState(false)
-  const [missMsg, setMissMsg] = useState<string | null>(null)
+  // a WRONG impulse opens the animated worked-solution lesson for this problem
+  const [lesson, setLesson] = useState<{ p: Problem; used: number } | null>(null)
   const [robbed, setRobbed] = useState(false)
   const [wrongWay, setWrongWay] = useState(false)
   const [, force] = useState(0)
@@ -347,6 +355,8 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const answerRef = useRef(answerStr); answerRef.current = answerStr
   const streakRef = useRef(streak); streakRef.current = streak
   const bestRef = useRef(best); bestRef.current = best
+  // latest keeper kit, read by the canvas draw loop (so loadout changes apply live)
+  const keeperKitRef = useRef(keeperKit); keeperKitRef.current = keeperKit
 
   const project = useCallback((x: number, y: number, z: number): P2 => {
     const cz = Math.max(0.05, z + CAM_BACK)
@@ -358,7 +368,7 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const nextRun = useCallback(() => {
     gameRef.current = newGame(makeRound())
     goalFiredRef.current = false
-    setAnswerStr(''); setShowCalc(false); setMissMsg(null); setRobbed(false); setWrongWay(false)
+    setAnswerStr(''); setShowCalc(false); setLesson(null); setRobbed(false); setWrongWay(false)
     setPhase('menu')
   }, [])
 
@@ -425,10 +435,10 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
         setStreak(0)
         setWrongWay(true)
       } else if (p) {
-        // wrong impulse: he beats your hands. Show the brief result text (which
-        // states the correct answer), then continue — no remediation lesson.
+        // wrong impulse: he beats your hands. Open the animated, multi-step
+        // worked-solution lesson for THIS problem, then continue.
         setStreak(0)
-        setMissMsg(missText(p, g.played))
+        setLesson({ p, used: g.played })
       }
     }
     setPhase('result')
@@ -560,7 +570,7 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
       drawWorldPlayer(0, strikerRunning ? sz : SHOOT_Z, FOE_KIT, strikerRunning, tu < 0.34)
       const bz = tu < 0.34 ? sz - 0.35 : lerp(SHOOT_Z, GOAL_Z, easeOut(clamp((tu - 0.34) / 0.66, 0, 1)))
       const by = tu < 0.34 ? BALL_R : lerp(BALL_R, 0.9, easeOut(clamp((tu - 0.34) / 0.66, 0, 1)))
-      drawKeeper(ctx, project, 0, KEEP_Z, null, now)
+      drawKeeper(ctx, project, 0, KEEP_Z, null, now, keeperKitRef.current)
       drawWorldBall(0, by, bz, now / 180)
       drawGoalNet(ctx, project, e * (bz < KEEP_Z ? 1 : 0), W / 2, project(0, 0.9, GOAL_Z).sy)
     } else if (animating && g.picked && g.fate) {
@@ -571,7 +581,7 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
       drawWorldPlayer(sc.striker.x, sc.striker.z, FOE_KIT, sc.striker.running, false, strikerAct)
       const ballBehindKeeper = sc.ball.z > KEEP_Z + 0.25
       if (ballBehindKeeper) drawWorldBall(sc.ball.x, sc.ball.y, sc.ball.z, g.t * 11, sc.contact * 0.4)
-      drawKeeper(ctx, project, 0, KEEP_Z, sc.keeper, now)
+      drawKeeper(ctx, project, 0, KEEP_Z, sc.keeper, now, keeperKitRef.current)
       if (!ballBehindKeeper && !sc.caught) drawWorldBall(sc.ball.x, sc.ball.y, sc.ball.z, g.t * 11, sc.contact * 0.4)
       if (sc.caught) {
         // ball held in the gloves at the save point
@@ -585,7 +595,7 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
       // stance in the goal, shuffling along your line.
       const shuffle = Math.sin(now / 520) * 0.18
       drawWorldPlayer(0, RUN_FROM, FOE_KIT, false, true)
-      drawKeeper(ctx, project, shuffle, KEEP_Z, null, now)
+      drawKeeper(ctx, project, shuffle, KEEP_Z, null, now, keeperKitRef.current)
       drawGoalNet(ctx, project, 0, null, null)
     }
 
@@ -664,7 +674,9 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const p = g.picked
   const fate = g.fate
   const unlimited = !showGoal
-  const canClickContinue = phase === 'result'
+  // while the worked-solution lesson is up, it owns its own navigation — a stray
+  // click must NOT skip straight to the next shot.
+  const canClickContinue = phase === 'result' && !lesson
 
   return (
     <div
@@ -723,11 +735,8 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
           </div>
         )}
 
-        {phase === 'result' && missMsg && (
-          <div className="soccer__banner soccer__banner--save">
-            <strong>GOAL 😖</strong>
-            <span>{missMsg} Click anywhere to try again.</span>
-          </div>
+        {phase === 'result' && lesson && (
+          <SolveLesson p={lesson.p} used={lesson.used} onDone={nextRun} />
         )}
 
         {phase === 'result' && robbed && (
@@ -775,7 +784,7 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
                     type="text"
                     inputMode="decimal"
                     value={answerStr}
-                    placeholder={p.unit}
+                    placeholder={p.answer.toFixed(1)}
                     onChange={(e) => setAnswerStr(e.target.value)}
                   />
                 </label>
@@ -803,12 +812,253 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
   )
 }
 
-function missText(p: Problem | null, used: number): string {
-  if (!p) return 'Not quite — work the impulse again.'
-  const sol = workedSolution(p)
-  return round1(used) > round1(p.answer)
-    ? `Too high — ${round1(used)} ${p.unit} overdoes it. ${sol}.`
-    : `Too low — ${round1(used)} ${p.unit} and it beats your hands. ${sol}.`
+// ============================================================================
+// Wrong-answer lesson: an animated, multi-step worked solution for THIS save's
+// impulse problem (J = Δp = m·v = F·Δt). Modeled on the KinematicsSim remediation
+// stepper — givens → write the law → plug in → compute — but explanation-slides
+// ONLY (no try-yourself sandbox). Each step is a fill-the-blank MCQ: a wrong pick
+// reveals the working and lets you move on; the final step gates on the right
+// answer. Read-only: it never grades or touches the score.
+// ============================================================================
+type Opt = { label: string; correct: boolean }
+
+// Build 3 options (correct + distractors), dropping any distractor that collides
+// with the correct label, then rotate so the right answer sits in slot `slot`.
+function mkOpts(correct: string, distractors: string[], slot: number): Opt[] {
+  const seen = new Set<string>([correct])
+  const dist: string[] = []
+  for (const d of distractors) { if (!seen.has(d)) { seen.add(d); dist.push(d) } }
+  const opts: Opt[] = [{ label: correct, correct: true }, ...dist.map((l) => ({ label: l, correct: false }))]
+  const k = slot % opts.length
+  return [...opts.slice(k), ...opts.slice(0, k)]
+}
+
+function SolveLesson({ p, used, onDone }: { p: Problem; used: number; onDone: () => void }) {
+  const { m, dt, givenVal: g, unit } = p
+  const ans = p.answer
+  const ansShown = round1(ans)
+  const fmtNum = (x: number) => `${round1(x)} ${unit}`
+  const correctNum = fmtNum(ans)
+
+  // wrong-operation distractors for the final computed step (the classic slips:
+  // mixing up multiply/divide or forgetting the constant entirely).
+  const numDistractors: Record<Dir, number[]> = {
+    findJ: [g, g / m],
+    findV: [g * m, g],
+    findF: [g * dt, g],
+    findJ_fromF: [g / dt, g],
+  }
+  // wrong substitutions for the "plug in" step.
+  const plugDistractors: Record<Dir, string[]> = {
+    findJ: [`${g} / ${m}`, `${m} + ${g}`],
+    findV: [`${g} · ${m}`, `${m} / ${g}`],
+    findF: [`${g} · ${dt}`, `${g} + ${dt}`],
+    findJ_fromF: [`${g} / ${dt}`, `${g} + ${dt}`],
+  }
+  // two other formula shapes as distractors (whichever aren't this problem's law).
+  const formulaDistractors = DIRS.filter((d) => FORMULA[d] !== FORMULA[p.dir])
+    .map((d) => FORMULA[d]).filter((f, i, a) => a.indexOf(f) === i).slice(0, 2)
+  // two other unknowns to choose from when identifying what we're solving for.
+  const fieldDistractors = DIRS.filter((d) => ANSWER_FIELD[d] !== ANSWER_FIELD[p.dir])
+    .map((d) => ANSWER_FIELD[d]).filter((f, i, a) => a.indexOf(f) === i).slice(0, 2)
+
+  // "What went wrong" — about the player's ACTUAL wrong answer (too much / too
+  // little impulse), not the worked walkthrough below.
+  const tooHigh = round1(used) > ansShown
+  const verdict = `You played ${round1(used)} ${unit}, ${tooHigh ? 'more than' : 'less than'} the ${ansShown} ${unit} this save needs — ${tooHigh ? 'you overdid the impulse.' : 'too little impulse, so the shot beat your hands.'}`
+
+  // stable-per-mount correct-slot for each step's MCQ (4 steps, 3 options)
+  const slots = useMemo(() => Array.from({ length: 4 }, () => Math.floor(Math.random() * 3)), [])
+
+  type Step = {
+    n: string; cmp?: boolean; prompt: string; options: Opt[]
+    gate: 'check' | 'correct'
+    card: (blank: ReactNode) => ReactNode
+    solution: ReactNode
+  }
+  const steps: Step[] = [
+    {
+      n: '1', prompt: 'First, what are you actually solving for on this shot?',
+      options: mkOpts(ANSWER_FIELD[p.dir], fieldDistractors, slots[0]), gate: 'check',
+      card: (blank) => (<>
+        <div className="soccer__step-formula">A save kills the shot's momentum: J = Δp</div>
+        <div className="soccer__step-plug">The save asks for ⟶ {blank}</div>
+      </>),
+      solution: <>This save asks you to find <b>{ANSWER_FIELD[p.dir]}</b>.</>,
+    },
+    {
+      n: '2', prompt: `Which relation gives ${ANSWER_NAME[p.dir]}?`,
+      options: mkOpts(FORMULA[p.dir], formulaDistractors, slots[1]), gate: 'check',
+      card: (blank) => (<>
+        <div className="soccer__step-formula">Impulse–momentum theorem: J = Δp = m·v = F·Δt</div>
+        <div className="soccer__step-plug">Pick the form you need ⟶ {blank}</div>
+      </>),
+      solution: <>For {ANSWER_NAME[p.dir]} use <b>{FORMULA[p.dir]}</b>.</>,
+    },
+    {
+      n: '3', prompt: `Drop the numbers into ${FORMULA[p.dir]}. What's the right-hand side?`,
+      options: mkOpts(plugText(p), plugDistractors[p.dir], slots[2]), gate: 'check',
+      card: (blank) => (<>
+        <div className="soccer__step-formula">Substitute the givens: {FORMULA_RHS[p.dir]}</div>
+        <div className="soccer__step-plug">{p.answerVar} = {blank}</div>
+      </>),
+      solution: <>{p.answerVar} = <b>{plugText(p)}</b>.</>,
+    },
+    {
+      n: '★', cmp: true, prompt: `Now compute it: what is ${ANSWER_NAME[p.dir]}?`,
+      options: mkOpts(correctNum, numDistractors[p.dir].map(fmtNum), slots[3]), gate: 'correct',
+      card: (blank) => (<>
+        <div className="soccer__step-formula">{FORMULA[p.dir]} = {plugText(p)}</div>
+        <div className="soccer__step-plug">{p.answerVar} = {blank}</div>
+      </>),
+      solution: <>{FORMULA[p.dir]} = {plugText(p)} = <b>{ansShown} {unit}</b> (rounding to the nearest whole number is accepted).</>,
+    },
+  ]
+  const N = steps.length
+
+  const [stepIdx, setStepIdx] = useState(0)
+  const [answered, setAnswered] = useState<boolean[]>(() => Array(N).fill(false))
+  const [pick, setPick] = useState<number | null>(null)
+  const [checked, setChecked] = useState(false)
+  const [revealed, setRevealed] = useState(false)
+  const [showLessonCalc, setShowLessonCalc] = useState(false)
+  useEffect(() => { setPick(null); setChecked(false); setRevealed(false) }, [stepIdx])
+
+  // count-up "time spent learning" bar (no auto-skip — explanation slides only)
+  const LEARN_LIMIT = 90
+  const [elapsed, setElapsed] = useState(0)
+  useEffect(() => {
+    const start = performance.now()
+    const id = window.setInterval(() => setElapsed((performance.now() - start) / 1000), 100)
+    return () => window.clearInterval(id)
+  }, [])
+  const barPct = Math.min(100, (elapsed / LEARN_LIMIT) * 100)
+
+  const cur = steps[stepIdx]
+  const last = stepIdx === N - 1
+  const stepDone = answered[stepIdx]
+  const pickedOpt = pick === null ? null : cur.options[pick]
+  const pickedCorrect = !!pickedOpt?.correct
+
+  const choose = (i: number) => { if (stepDone) return; setPick(i); setChecked(false) }
+  const checkAnswer = () => {
+    if (pick === null || stepDone) return
+    setChecked(true)
+    if (pickedCorrect) {
+      setAnswered((a) => { const b = [...a]; b[stepIdx] = true; return b })
+    } else if (cur.gate === 'check') {
+      setRevealed(true)
+      setAnswered((a) => { const b = [...a]; b[stepIdx] = true; return b })
+    }
+  }
+  const blankSlot: ReactNode = pick === null
+    ? <span className="soccer__blank">?</span>
+    : <span className={`soccer__blank soccer__blank--filled${checked ? (pickedCorrect ? ' soccer__blank--ok' : ' soccer__blank--no') : ''}`}>{pickedOpt!.label}{checked ? (pickedCorrect ? ' ✓' : ' ✗') : ''}</span>
+  const showSolution = revealed || (checked && !pickedCorrect && cur.gate === 'check')
+
+  const learnBar = (
+    <div className="soccer__learnbar">
+      <span>⏱ Time spent learning</span>
+      <div className="soccer__learnbar-track"><div className="soccer__learnbar-fill" style={{ width: `${barPct}%` }} /></div>
+      <span className="soccer__learnbar-num">{elapsed.toFixed(0)}s</span>
+    </div>
+  )
+
+  return (
+    <div className="soccer__lesson">
+      <div className="soccer__lesson-inner">
+        <div className="soccer__lesson-head">
+          <div className="soccer__lesson-emoji">😖</div>
+          <div>
+            <h2 className="soccer__lesson-title">He beat your hands!</h2>
+            <p className="soccer__lesson-sub">{verdict}</p>
+          </div>
+        </div>
+
+        <div className="soccer__lesson-chips">
+          <div className="chip"><span>save</span><strong>{p.move.emoji} {p.move.name}</strong></div>
+          {givenList(p).map((gv) => (
+            <div key={gv.label} className={gv.key ? 'chip chip--lock' : 'chip'}><span>{gv.label.toLowerCase()}</span><strong>{gv.val}</strong></div>
+          ))}
+        </div>
+
+        <div className="soccer__stepper">
+          <div className="soccer__stepper-progress">
+            <span>Step {stepIdx + 1} of {N}</span>
+            <div className="soccer__stepper-dots">
+              {steps.map((_, i) => <i key={i} className={i === stepIdx ? 'is-on' : i < stepIdx ? 'is-done' : ''} />)}
+            </div>
+          </div>
+          <div key={stepIdx} className={`soccer__step soccer__step--big${cur.cmp ? ' soccer__step--cmp' : ''}`}>
+            <span className="soccer__step-n">{cur.n}</span>
+            <div className="soccer__step-body">{cur.card(blankSlot)}</div>
+          </div>
+
+          {showSolution && (
+            <div className="soccer__solution">
+              <span className="soccer__solution-tag">Here's the working</span>
+              <div className="soccer__solution-body">{cur.solution}</div>
+            </div>
+          )}
+
+          <div key={`q${stepIdx}`} className="soccer__quiz">
+            <div className="soccer__quiz-q">
+              <span className="soccer__quiz-tag">{last ? 'Solve it' : 'Fill the blank'}</span>
+              {cur.prompt}
+            </div>
+            <div className="soccer__quiz-opts">
+              {cur.options.map((o, i) => {
+                const chosen = pick === i
+                const state = chosen
+                  ? (checked ? (o.correct ? ' is-correct' : ' is-wrong') : ' is-picked')
+                  : (stepDone && o.correct ? ' is-correct' : '')
+                return (
+                  <button key={i} type="button" className={`soccer__quiz-opt${state}`} onClick={() => choose(i)} disabled={stepDone}>
+                    <span className="soccer__quiz-key">{String.fromCharCode(65 + i)}</span>{o.label}
+                  </button>
+                )
+              })}
+            </div>
+            <div className="soccer__quiz-foot">
+              <span className={`soccer__quiz-fb${!checked ? '' : pickedCorrect ? ' is-good' : ' is-bad'}`}>
+                {!checked
+                  ? (pick === null ? 'Pick the value for the blank, then check it.' : 'Locked in? Hit "Check answer".')
+                  : pickedCorrect
+                    ? (last ? '✓ Correct! You worked the save out yourself.' : '✓ Correct! On you go.')
+                    : cur.gate === 'check'
+                      ? '✗ Not quite. Study the working below, then continue.'
+                      : '✗ Not quite. Try again, or reveal the worked solution.'}
+              </span>
+              <div className="soccer__quiz-actions">
+                {cur.gate === 'correct' && checked && !pickedCorrect && !revealed && (
+                  <button type="button" className="btn btn--ghost soccer__quiz-calc" onClick={() => setRevealed(true)}>Reveal solution</button>
+                )}
+                <button type="button" className="btn btn--ghost soccer__quiz-calc" onClick={() => setShowLessonCalc((s) => !s)}>🧮 {showLessonCalc ? 'Hide' : 'Calculator'}</button>
+                <button type="button" className="btn btn--primary soccer__quiz-check" onClick={checkAnswer} disabled={pick === null || stepDone}>{stepDone ? 'Checked ✓' : 'Check answer'}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {showLessonCalc && <Calculator onClose={() => setShowLessonCalc(false)} />}
+
+        <div className="soccer__lesson-foot">
+          {learnBar}
+          <div className="soccer__lesson-actions">
+            <button type="button" className="btn btn--ghost" onClick={() => setStepIdx((i) => Math.max(0, i - 1))} disabled={stepIdx === 0}>← Back</button>
+            {!last ? (
+              <button type="button" className="btn btn--primary soccer__try-btn" onClick={() => setStepIdx((i) => Math.min(N - 1, i + 1))} disabled={!stepDone}>{stepDone ? 'Next →' : 'Answer to continue'}</button>
+            ) : (
+              <>
+                <button type="button" className="btn btn--ghost" onClick={onDone}>Skip explanation</button>
+                <button type="button" className="btn btn--primary soccer__try-btn" onClick={onDone} disabled={!stepDone}>Next shot →</button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 // ============================================================================
@@ -834,6 +1084,7 @@ const GK_KIT = {
   shorts: '#15171f', sock: '#f4b942', sockBand: '#1b1f2a', boot: '#0e0f15',
   skin: '#e8b48a', skinDark: '#c2895f', glove: '#f4f6fa', gloveCuff: '#ef4444', hair: '#3a2a1a',
 }
+type GkKit = typeof GK_KIT
 
 function drawHair(ctx: CanvasRenderingContext2D, cx: number, headY: number, headR: number, style: number, color: string) {
   ctx.fillStyle = color
@@ -1117,7 +1368,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit,
 // (anticipation load → eased leap) that rotates the body toward horizontal so the
 // gloves land on the save point. On a goal he commits but comes up short/low so
 // the ball beats his outstretched gloves. Adapted from the KinematicsSim keeper.
-function drawKeeper(ctx: CanvasRenderingContext2D, project: (x: number, y: number, z: number) => P2, homeX: number, homeZ: number, dive: KeeperDive | null, now: number) {
+function drawKeeper(ctx: CanvasRenderingContext2D, project: (x: number, y: number, z: number) => P2, homeX: number, homeZ: number, dive: KeeperDive | null, now: number, kit: GkKit) {
   const baseFeet = project(homeX, 0, homeZ)
   const scale = baseFeet.scale
   if (scale < 4) return
@@ -1182,29 +1433,29 @@ function drawKeeper(ctx: CanvasRenderingContext2D, project: (x: number, y: numbe
       const kneeY = hipY - uy * legLen * 0.55 + py * s * wBody * 0.34 - uy * bend
       const footX = hipX - ux * legLen + px * s * wBody * 0.42
       const footY = hipY - uy * legLen + py * s * wBody * 0.42
-      ctx.strokeStyle = GK_KIT.sock
+      ctx.strokeStyle = kit.sock
       ctx.lineWidth = lw * 1.1
       ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(kneeX, kneeY); ctx.stroke()
       ctx.lineWidth = lw * 0.92
       ctx.beginPath(); ctx.moveTo(kneeX, kneeY); ctx.lineTo(footX, footY); ctx.stroke()
       ctx.strokeStyle = 'rgba(0,0,0,0.13)'; ctx.lineWidth = lw * 0.34
       ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(kneeX, kneeY); ctx.lineTo(footX, footY); ctx.stroke()
-      ctx.fillStyle = GK_KIT.boot
+      ctx.fillStyle = kit.boot
       ctx.beginPath(); ctx.ellipse(footX, footY, lw * 0.95, lw * 0.52, tilt, 0, Math.PI * 2); ctx.fill()
     }
 
     // torso: a clean rounded capsule from hip up to just below the head, in the
     // GK jersey, with a centre shade stripe and a lighter edge highlight.
-    ctx.strokeStyle = GK_KIT.jersey; ctx.lineWidth = wBody
+    ctx.strokeStyle = kit.jersey; ctx.lineWidth = wBody
     ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(neckBaseX, neckBaseY); ctx.stroke()
-    ctx.strokeStyle = GK_KIT.jerseyDark; ctx.lineWidth = wBody * 0.34
+    ctx.strokeStyle = kit.jerseyDark; ctx.lineWidth = wBody * 0.34
     ctx.beginPath(); ctx.moveTo(hipX + px * wBody * 0.18, hipY + py * wBody * 0.18); ctx.lineTo(neckBaseX + px * wBody * 0.18, neckBaseY + py * wBody * 0.18); ctx.stroke()
-    ctx.strokeStyle = GK_KIT.jerseyHi; ctx.lineWidth = wBody * 0.16
+    ctx.strokeStyle = kit.jerseyHi; ctx.lineWidth = wBody * 0.16
     ctx.beginPath(); ctx.moveTo(hipX - px * wBody * 0.34, hipY - py * wBody * 0.34); ctx.lineTo(neckBaseX - px * wBody * 0.34, neckBaseY - py * wBody * 0.34); ctx.stroke()
 
     // shorts: a distinct team-coloured block at the hip, drawn OVER the torso/leg
     // junction so it always reads as shorts covering the thigh tops.
-    ctx.fillStyle = GK_KIT.shorts
+    ctx.fillStyle = kit.shorts
     ctx.beginPath(); ctx.ellipse(hipX, hipY, wBody * 0.58, wBody * 0.5, tilt, 0, Math.PI * 2); ctx.fill()
     ctx.fillStyle = 'rgba(0,0,0,0.14)'
     ctx.beginPath(); ctx.ellipse(hipX + px * wBody * 0.16, hipY + py * wBody * 0.16, wBody * 0.34, wBody * 0.42, tilt, 0, Math.PI * 2); ctx.fill()
@@ -1230,27 +1481,27 @@ function drawKeeper(ctx: CanvasRenderingContext2D, project: (x: number, y: numbe
       const spread = wBody * (0.55 + 0.4 * reachE)
       const g1x = handX + px * spread, g1y = handY + py * spread
       const g2x = handX - px * spread, g2y = handY - py * spread
-      drawLimb(ctx, sh1x, sh1y, g1x, g1y, 0.08, GK_KIT.jersey, gkArmW * 1.05, gkArmW * 0.9, 'rgba(0,0,0,0.12)')
-      drawLimb(ctx, sh2x, sh2y, g2x, g2y, -0.08, GK_KIT.jersey, gkArmW * 1.05, gkArmW * 0.9, 'rgba(0,0,0,0.12)')
-      drawGkGlove(ctx, g1x, g1y, Math.atan2(g1y - sh1y, g1x - sh1x), gloveHw, GK_KIT.glove, GK_KIT.gloveCuff, '#c3cad6')
-      drawGkGlove(ctx, g2x, g2y, Math.atan2(g2y - sh2y, g2x - sh2x), gloveHw, GK_KIT.glove, GK_KIT.gloveCuff, '#c3cad6')
+      drawLimb(ctx, sh1x, sh1y, g1x, g1y, 0.08, kit.jersey, gkArmW * 1.05, gkArmW * 0.9, 'rgba(0,0,0,0.12)')
+      drawLimb(ctx, sh2x, sh2y, g2x, g2y, -0.08, kit.jersey, gkArmW * 1.05, gkArmW * 0.9, 'rgba(0,0,0,0.12)')
+      drawGkGlove(ctx, g1x, g1y, Math.atan2(g1y - sh1y, g1x - sh1x), gloveHw, kit.glove, kit.gloveCuff, '#c3cad6')
+      drawGkGlove(ctx, g2x, g2y, Math.atan2(g2y - sh2y, g2x - sh2x), gloveHw, kit.glove, kit.gloveCuff, '#c3cad6')
     } else {
       // both arms converge — strong hands right on the ball
-      drawLimb(ctx, sh1x, sh1y, handX, handY, 0.08, GK_KIT.jersey, gkArmW * 1.05, gkArmW * 0.9, 'rgba(0,0,0,0.12)')
-      drawLimb(ctx, sh2x, sh2y, handX, handY, -0.08, GK_KIT.jersey, gkArmW * 1.05, gkArmW * 0.9, 'rgba(0,0,0,0.12)')
-      drawGkGlove(ctx, handX, handY, Math.atan2(handY - shoY, handX - shoX), gloveHw, GK_KIT.glove, GK_KIT.gloveCuff, '#c3cad6')
+      drawLimb(ctx, sh1x, sh1y, handX, handY, 0.08, kit.jersey, gkArmW * 1.05, gkArmW * 0.9, 'rgba(0,0,0,0.12)')
+      drawLimb(ctx, sh2x, sh2y, handX, handY, -0.08, kit.jersey, gkArmW * 1.05, gkArmW * 0.9, 'rgba(0,0,0,0.12)')
+      drawGkGlove(ctx, handX, handY, Math.atan2(handY - shoY, handX - shoX), gloveHw, kit.glove, kit.gloveCuff, '#c3cad6')
     }
 
     // short neck stub linking the torso top to the head along the body axis
-    ctx.strokeStyle = GK_KIT.skin; ctx.lineCap = 'round'; ctx.lineWidth = headRk * 0.92
+    ctx.strokeStyle = kit.skin; ctx.lineCap = 'round'; ctx.lineWidth = headRk * 0.92
     ctx.beginPath(); ctx.moveTo(neckBaseX, neckBaseY); ctx.lineTo(headX - ux * headRk * 0.5, headY - uy * headRk * 0.5); ctx.stroke()
     // head: he faces downfield, so the camera sees the BACK of his head — a hair
     // cap (no face) that rotates with the diving body, plus a small nape shade.
-    ctx.fillStyle = GK_KIT.skin; ctx.beginPath(); ctx.arc(headX, headY, headRk, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = kit.skin; ctx.beginPath(); ctx.arc(headX, headY, headRk, 0, Math.PI * 2); ctx.fill()
     ctx.save(); ctx.translate(headX, headY); ctx.rotate(tilt)
-    ctx.fillStyle = GK_KIT.hair; ctx.beginPath(); ctx.arc(0, -headRk * 0.12, headRk * 0.96, 0, Math.PI * 2); ctx.fill()
+    ctx.fillStyle = kit.hair; ctx.beginPath(); ctx.arc(0, -headRk * 0.12, headRk * 0.96, 0, Math.PI * 2); ctx.fill()
     if (headRk > 5.2) {
-      ctx.fillStyle = GK_KIT.skinDark
+      ctx.fillStyle = kit.skinDark
       ctx.beginPath(); ctx.ellipse(0, headRk * 0.72, headRk * 0.46, headRk * 0.24, 0, 0, Math.PI * 2); ctx.fill()
     }
     ctx.restore()
@@ -1279,14 +1530,14 @@ function drawKeeper(ctx: CanvasRenderingContext2D, project: (x: number, y: numbe
   ctx.lineCap = 'round'
   // legs: thigh → knee → shin, near-equal segments with a slight knee bend
   const kThighW = lw * 1.08, kShinW = lw * 0.92
-  drawLimb(ctx, cx, hipY, cx - wBody * 0.5, footY, -0.06, GK_KIT.sock, kThighW, kShinW, 'rgba(0,0,0,0.12)')
-  drawLimb(ctx, cx, hipY, cx + wBody * 0.5, footY, 0.06, GK_KIT.sock, kThighW, kShinW, 'rgba(0,0,0,0.12)')
-  ctx.fillStyle = GK_KIT.boot
+  drawLimb(ctx, cx, hipY, cx - wBody * 0.5, footY, -0.06, kit.sock, kThighW, kShinW, 'rgba(0,0,0,0.12)')
+  drawLimb(ctx, cx, hipY, cx + wBody * 0.5, footY, 0.06, kit.sock, kThighW, kShinW, 'rgba(0,0,0,0.12)')
+  ctx.fillStyle = kit.boot
   ctx.beginPath(); ctx.ellipse(cx - wBody * 0.5, footY, lw * 0.82, lw * 0.46, 0, 0, Math.PI * 2); ctx.fill()
   ctx.beginPath(); ctx.ellipse(cx + wBody * 0.5, footY, lw * 0.82, lw * 0.46, 0, 0, Math.PI * 2); ctx.fill()
 
-  drawTorso(ctx, cx, torsoTopY, torsoBotY, wBody, GK_KIT.jersey, GK_KIT.jerseyDark, GK_KIT.jerseyHi)
-  ctx.fillStyle = GK_KIT.collar; ctx.fillRect(cx - wBody * 0.2, torsoTopY, wBody * 0.4, Math.max(1.5, newTorsoH * 0.08))
+  drawTorso(ctx, cx, torsoTopY, torsoBotY, wBody, kit.jersey, kit.jerseyDark, kit.jerseyHi)
+  ctx.fillStyle = kit.collar; ctx.fillRect(cx - wBody * 0.2, torsoTopY, wBody * 0.4, Math.max(1.5, newTorsoH * 0.08))
   if (wBody > 9) {
     ctx.fillStyle = '#1b1f2a'; ctx.font = `800 ${Math.round(wBody * 0.5)}px Plus Jakarta Sans, sans-serif`
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
@@ -1297,7 +1548,7 @@ function drawKeeper(ctx: CanvasRenderingContext2D, project: (x: number, y: numbe
   // shorts: a clear team-coloured block at the hips, over the torso bottom + thighs
   const shortsTop = hipY - newTorsoH * 0.05
   const shortsH = Math.max(4, newTorsoH * 0.32)
-  ctx.fillStyle = GK_KIT.shorts; roundRect(ctx, cx - wBody * 0.52, shortsTop, wBody * 1.04, shortsH, Math.max(2, wBody * 0.2)); ctx.fill()
+  ctx.fillStyle = kit.shorts; roundRect(ctx, cx - wBody * 0.52, shortsTop, wBody * 1.04, shortsH, Math.max(2, wBody * 0.2)); ctx.fill()
   ctx.fillStyle = 'rgba(0,0,0,0.14)'; ctx.fillRect(cx + wBody * 0.06, shortsTop, wBody * 0.3, shortsH)
 
   // arms (gloves up, ready): upper arm + forearm with a slight elbow bend
@@ -1305,14 +1556,14 @@ function drawKeeper(ctx: CanvasRenderingContext2D, project: (x: number, y: numbe
   const idleArmW = Math.max(2, 0.1 * scale)
   const gloveLx = cx - wBody * 1.05, gloveRx = cx + wBody * 1.05
   const gloveY = armTopY + wBody * 0.4
-  drawLimb(ctx, cx - wBody * 0.5, armTopY, gloveLx, gloveY, -0.08, GK_KIT.skin, idleArmW * 1.05, idleArmW * 0.9, 'rgba(0,0,0,0.1)')
-  drawLimb(ctx, cx + wBody * 0.5, armTopY, gloveRx, gloveY, 0.08, GK_KIT.skin, idleArmW * 1.05, idleArmW * 0.9, 'rgba(0,0,0,0.1)')
+  drawLimb(ctx, cx - wBody * 0.5, armTopY, gloveLx, gloveY, -0.08, kit.skin, idleArmW * 1.05, idleArmW * 0.9, 'rgba(0,0,0,0.1)')
+  drawLimb(ctx, cx + wBody * 0.5, armTopY, gloveRx, gloveY, 0.08, kit.skin, idleArmW * 1.05, idleArmW * 0.9, 'rgba(0,0,0,0.1)')
   const gloveHw = Math.max(3.5, idleArmW * 1.15)
-  drawGkGlove(ctx, gloveLx, gloveY, Math.atan2(gloveY - armTopY, gloveLx - (cx - wBody * 0.5)), gloveHw, GK_KIT.glove, GK_KIT.gloveCuff, '#c3cad6')
-  drawGkGlove(ctx, gloveRx, gloveY, Math.atan2(gloveY - armTopY, gloveRx - (cx + wBody * 0.5)), gloveHw, GK_KIT.glove, GK_KIT.gloveCuff, '#c3cad6')
+  drawGkGlove(ctx, gloveLx, gloveY, Math.atan2(gloveY - armTopY, gloveLx - (cx - wBody * 0.5)), gloveHw, kit.glove, kit.gloveCuff, '#c3cad6')
+  drawGkGlove(ctx, gloveRx, gloveY, Math.atan2(gloveY - armTopY, gloveRx - (cx + wBody * 0.5)), gloveHw, kit.glove, kit.gloveCuff, '#c3cad6')
 
   // he faces downfield → the camera sees the back of his head (no face)
-  drawHeadFace(ctx, cx, headY, headR, torsoTopY, GK_KIT.skin, GK_KIT.skinDark, GK_KIT.hair, 0, false)
+  drawHeadFace(ctx, cx, headY, headR, torsoTopY, kit.skin, kit.skinDark, kit.hair, 0, false)
   ctx.lineCap = 'butt'
 }
 

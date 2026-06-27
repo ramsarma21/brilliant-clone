@@ -440,7 +440,7 @@ function ChallengeView(props: StepViewProps & { step: ChallengeStep }) {
 }
 
 function SummaryView(props: StepViewProps & { body: string; prompt: string }) {
-  const { progress, isUnitMastered } = useApp()
+  const { progress, isUnitMastered, visitedToday } = useApp()
   const lesson = LESSONS[props.lessonId]
   const mastered = isUnitMastered(props.lessonId)
 
@@ -522,8 +522,8 @@ function SummaryView(props: StepViewProps & { body: string; prompt: string }) {
 
       <div className="summary-grid">
         <div className="summary-card">
-          <span className="muted">Streak</span>
-          <strong>🔥 {progress.streakCount} day{progress.streakCount === 1 ? '' : 's'}</strong>
+          <span className="muted">Today</span>
+          <strong>{visitedToday ? '✅ Checked in' : '— Not yet'}</strong>
         </div>
         <div className="summary-card">
           <span className="muted">Mastery checks</span>

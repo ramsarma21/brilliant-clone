@@ -9,7 +9,7 @@ import { SUPABASE_URL, SUPABASE_KEY, isSupabaseConfigured } from '../supabase'
 export type WeakConceptRequest = {
   conceptTag: string
   unitId: SkillId
-  difficulty: 1 | 2 | 3
+  difficulty: 1 | 2 | 3 | 4 | 5
   /** Plain-language description of what the learner keeps getting wrong. */
   note?: string
 }
@@ -45,7 +45,7 @@ function normalize(q: RawQuestion): ReviewQuestion {
     id: `review-${q.conceptTag}-${Math.random().toString(36).slice(2, 8)}`,
     unitId: q.unitId as SkillId,
     conceptTag: q.conceptTag as string,
-    difficulty: (Math.min(3, Math.max(1, q.difficulty ?? 2)) as 1 | 2 | 3),
+    difficulty: (Math.min(5, Math.max(1, q.difficulty ?? 2)) as 1 | 2 | 3 | 4 | 5),
     prompt: q.prompt as string,
     choices: q.choices as { id: string; label: string }[],
     correctChoiceId: q.correctChoiceId as string,

@@ -166,6 +166,11 @@ export type UserProgress = {
   lastActiveDate: string
   mastery: Record<string, number>
   lessonState: Record<string, LessonProgress>
+  /**
+   * Quantum League matches played after promotion. Each match is gated behind a
+   * completed top-flight assessment (matches & assessments advance 1:1).
+   */
+  quantumMatchesPlayed?: number
 }
 
 // ===========================================================================
@@ -198,6 +203,8 @@ export type PlayerSkills = Record<SkillId, number>
 
 export type CosmeticKind = 'jersey' | 'cleats'
 export type CosmeticRarity = 'starter' | 'common' | 'rare' | 'epic'
+/** Jersey artwork style rendered on the player card / locker preview. */
+export type JerseyPattern = 'plain' | 'stripes' | 'sash' | 'hoops' | 'halves' | 'galaxy'
 
 export type Cosmetic = {
   id: string
@@ -208,6 +215,9 @@ export type Cosmetic = {
   price: number
   /** Palette used by the in-sim character renderers. */
   colors: { primary: string; secondary: string; accent: string }
+  /** Jersey-only: artwork style + shorts colour for the detailed avatar. */
+  pattern?: JerseyPattern
+  shorts?: string
 }
 
 export type PlayerProfile = {
@@ -267,20 +277,63 @@ export type TestAttempt = {
   passed90: boolean
   pointsAwarded: number
   perUnit: Record<string, { correct: number; total: number; avgTimeMs: number }>
+  /**
+   * Snapshot of the exact questions shown (in order) and the learner's chosen
+   * choice id per question. Stored so a past attempt can be re-opened in the
+   * same results/review view. Optional: attempts recorded before this feature
+   * existed won't have it.
+   */
+  questions?: BankQuestion[]
+  answers?: (string | null)[]
+  /**
+   * The guided "Skills review" remediation (explain-why + solve-it-again on every
+   * missed question) must be finished before an attempt counts as a completed
+   * assessment for the Quantum League. Undefined = legacy attempt → treat as done.
+   */
+  reviewComplete?: boolean
 }
 
-/** A stored, pre-authored multiple-choice question from the 72-question bank. */
+/** Kinds of programmatic SVG diagram a question can show (no raster images). */
+export type DiagramKind =
+  | 'position-time'
+  | 'velocity-time'
+  | 'force-time'
+  | 'free-body'
+  | 'ramp'
+  | 'projectile'
+  | 'collision'
+
+/** A diagram reference: the renderer key + its parameters (drawn as SVG). */
+export type QuestionDiagram = {
+  kind: DiagramKind
+  params: Record<string, unknown>
+  /** Short caption / alt text. */
+  caption?: string
+}
+
+/** A stored, pre-authored multiple-choice question from the 500-question bank
+ * (5 units × 100, difficulty 1–5). */
 export type BankQuestion = {
   id: string
   unitId: SkillId
   conceptTag: string
-  difficulty: 1 | 2 | 3
+  difficulty: 1 | 2 | 3 | 4 | 5
   prompt: string
   choices: { id: string; label: string }[]
   correctChoiceId: string
   /** Optional numeric truth (set when the concept is computable). */
   correctValue?: number
   given?: Record<string, number>
+  /** AP-style "equation sheet" freebies surfaced with the question. */
+  formulas?: string[]
+  /** Optional programmatic diagram (motion graph, free-body, ramp, etc.). */
+  diagram?: QuestionDiagram
+  /**
+   * Verification relation key (authoring metadata, not shown to learners).
+   * Maps to a formula in scripts/verify-bank.mjs so the numeric answer can be
+   * recomputed from `given` and checked at author time.
+   */
+  check?: string
   explanation: string
 }
 

@@ -43,6 +43,8 @@ function buildPrompt(concepts: WeakConcept[], count: number): string {
     lines,
     ``,
     `Rules:`,
+    `- TEXT ONLY. Never reference, describe, or require a diagram, figure, graph, or image — state every quantity in words. (No "diagram" field; do not generate images.)`,
+    `- Match the requested difficulty EXACTLY for each concept (do not make it easier or harder).`,
     `- Single-step, algebra only. Use soccer framing (shots, passes, headers, tackles, saves).`,
     `- Use g = 10 m/s^2. Keep numbers clean.`,
     `- Exactly 4 options each; exactly one correct.`,

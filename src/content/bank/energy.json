@@ -1,0 +1,3605 @@
+[
+  {
+    "id": "ene-1",
+    "unitId": "energy",
+    "conceptTag": "units",
+    "difficulty": 1,
+    "prompt": "What is the SI unit of energy?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Newton (N)"
+      },
+      {
+        "id": "b",
+        "label": "m/s"
+      },
+      {
+        "id": "c",
+        "label": "Joule (J)"
+      },
+      {
+        "id": "d",
+        "label": "Watt (W)"
+      }
+    ],
+    "correctChoiceId": "c",
+    "explanation": "Energy and work are measured in joules (J = N·m)."
+  },
+  {
+    "id": "ene-2",
+    "unitId": "energy",
+    "conceptTag": "ke-formula",
+    "difficulty": 1,
+    "prompt": "Which is the formula for kinetic energy?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "KE = m v"
+      },
+      {
+        "id": "b",
+        "label": "KE = F d"
+      },
+      {
+        "id": "c",
+        "label": "KE = ½ m v²"
+      },
+      {
+        "id": "d",
+        "label": "KE = m g h"
+      }
+    ],
+    "correctChoiceId": "c",
+    "explanation": "Kinetic energy is ½mv²; mgh is gravitational potential energy."
+  },
+  {
+    "id": "ene-3",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 1,
+    "prompt": "A 2 kg ball is held 5 m above the pitch. What is its gravitational potential energy? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 J"
+      },
+      {
+        "id": "b",
+        "label": "17 J"
+      },
+      {
+        "id": "c",
+        "label": "100 J"
+      },
+      {
+        "id": "d",
+        "label": "20 J"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 100,
+    "given": {
+      "m": 2,
+      "h": 5,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 2×10×5 = 100 J."
+  },
+  {
+    "id": "ene-4",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 1,
+    "prompt": "A 1 kg ball is held 10 m above the pitch. What is its gravitational potential energy? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "100 J"
+      },
+      {
+        "id": "b",
+        "label": "10 J"
+      },
+      {
+        "id": "c",
+        "label": "120 J"
+      },
+      {
+        "id": "d",
+        "label": "21 J"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 100,
+    "given": {
+      "m": 1,
+      "h": 10,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 1×10×10 = 100 J."
+  },
+  {
+    "id": "ene-5",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 1,
+    "prompt": "A 5 kg ball is held 2 m above the pitch. What is its gravitational potential energy? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 J"
+      },
+      {
+        "id": "b",
+        "label": "50 J"
+      },
+      {
+        "id": "c",
+        "label": "17 J"
+      },
+      {
+        "id": "d",
+        "label": "100 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 100,
+    "given": {
+      "m": 5,
+      "h": 2,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 5×10×2 = 100 J."
+  },
+  {
+    "id": "ene-6",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 1,
+    "prompt": "A 3 kg ball is held 4 m above the pitch. What is its gravitational potential energy? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "12 J"
+      },
+      {
+        "id": "b",
+        "label": "120 J"
+      },
+      {
+        "id": "c",
+        "label": "30 J"
+      },
+      {
+        "id": "d",
+        "label": "17 J"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 120,
+    "given": {
+      "m": 3,
+      "h": 4,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 3×10×4 = 120 J."
+  },
+  {
+    "id": "ene-7",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 1,
+    "prompt": "A 10 kg ball is held 1 m above the pitch. What is its gravitational potential energy? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 J"
+      },
+      {
+        "id": "b",
+        "label": "21 J"
+      },
+      {
+        "id": "c",
+        "label": "120 J"
+      },
+      {
+        "id": "d",
+        "label": "100 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 100,
+    "given": {
+      "m": 10,
+      "h": 1,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 10×10×1 = 100 J."
+  },
+  {
+    "id": "ene-8",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 1,
+    "prompt": "A 4 kg ball is held 5 m above the pitch. What is its gravitational potential energy? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "40 J"
+      },
+      {
+        "id": "b",
+        "label": "19 J"
+      },
+      {
+        "id": "c",
+        "label": "20 J"
+      },
+      {
+        "id": "d",
+        "label": "200 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 200,
+    "given": {
+      "m": 4,
+      "h": 5,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 4×10×5 = 200 J."
+  },
+  {
+    "id": "ene-9",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 1,
+    "prompt": "A 6 kg ball is held 3 m above the pitch. What is its gravitational potential energy? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "19 J"
+      },
+      {
+        "id": "b",
+        "label": "60 J"
+      },
+      {
+        "id": "c",
+        "label": "180 J"
+      },
+      {
+        "id": "d",
+        "label": "18 J"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 180,
+    "given": {
+      "m": 6,
+      "h": 3,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 6×10×3 = 180 J."
+  },
+  {
+    "id": "ene-10",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 1,
+    "prompt": "A 2 kg ball is held 8 m above the pitch. What is its gravitational potential energy? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "160 J"
+      },
+      {
+        "id": "b",
+        "label": "192 J"
+      },
+      {
+        "id": "c",
+        "label": "20 J"
+      },
+      {
+        "id": "d",
+        "label": "16 J"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 160,
+    "given": {
+      "m": 2,
+      "h": 8,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 2×10×8 = 160 J."
+  },
+  {
+    "id": "ene-11",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 1,
+    "prompt": "A 8 kg ball is held 2 m above the pitch. What is its gravitational potential energy? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "160 J"
+      },
+      {
+        "id": "b",
+        "label": "20 J"
+      },
+      {
+        "id": "c",
+        "label": "80 J"
+      },
+      {
+        "id": "d",
+        "label": "16 J"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 160,
+    "given": {
+      "m": 8,
+      "h": 2,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 8×10×2 = 160 J."
+  },
+  {
+    "id": "ene-12",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 1,
+    "prompt": "A 5 kg ball is held 4 m above the pitch. What is its gravitational potential energy? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 J"
+      },
+      {
+        "id": "b",
+        "label": "50 J"
+      },
+      {
+        "id": "c",
+        "label": "19 J"
+      },
+      {
+        "id": "d",
+        "label": "200 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 200,
+    "given": {
+      "m": 5,
+      "h": 4,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 5×10×4 = 200 J."
+  },
+  {
+    "id": "ene-13",
+    "unitId": "energy",
+    "conceptTag": "work",
+    "difficulty": 1,
+    "prompt": "A player pushes a ball with a constant 20 N over 3 m (same direction). How much work is done?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6.67 J"
+      },
+      {
+        "id": "b",
+        "label": "60 J"
+      },
+      {
+        "id": "c",
+        "label": "120 J"
+      },
+      {
+        "id": "d",
+        "label": "23 J"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 60,
+    "given": {
+      "F": 20,
+      "d": 3
+    },
+    "formulas": [
+      "W = F d"
+    ],
+    "explanation": "W = Fd = 20×3 = 60 J."
+  },
+  {
+    "id": "ene-14",
+    "unitId": "energy",
+    "conceptTag": "work",
+    "difficulty": 1,
+    "prompt": "A player pushes a ball with a constant 50 N over 2 m (same direction). How much work is done?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "100 J"
+      },
+      {
+        "id": "b",
+        "label": "52 J"
+      },
+      {
+        "id": "c",
+        "label": "25 J"
+      },
+      {
+        "id": "d",
+        "label": "200 J"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 100,
+    "given": {
+      "F": 50,
+      "d": 2
+    },
+    "formulas": [
+      "W = F d"
+    ],
+    "explanation": "W = Fd = 50×2 = 100 J."
+  },
+  {
+    "id": "ene-15",
+    "unitId": "energy",
+    "conceptTag": "work",
+    "difficulty": 1,
+    "prompt": "A player pushes a ball with a constant 10 N over 5 m (same direction). How much work is done?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "15 J"
+      },
+      {
+        "id": "b",
+        "label": "100 J"
+      },
+      {
+        "id": "c",
+        "label": "50 J"
+      },
+      {
+        "id": "d",
+        "label": "2 J"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 50,
+    "given": {
+      "F": 10,
+      "d": 5
+    },
+    "formulas": [
+      "W = F d"
+    ],
+    "explanation": "W = Fd = 10×5 = 50 J."
+  },
+  {
+    "id": "ene-16",
+    "unitId": "energy",
+    "conceptTag": "work",
+    "difficulty": 1,
+    "prompt": "A player pushes a ball with a constant 30 N over 4 m (same direction). How much work is done?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "240 J"
+      },
+      {
+        "id": "b",
+        "label": "7.5 J"
+      },
+      {
+        "id": "c",
+        "label": "120 J"
+      },
+      {
+        "id": "d",
+        "label": "34 J"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 120,
+    "given": {
+      "F": 30,
+      "d": 4
+    },
+    "formulas": [
+      "W = F d"
+    ],
+    "explanation": "W = Fd = 30×4 = 120 J."
+  },
+  {
+    "id": "ene-17",
+    "unitId": "energy",
+    "conceptTag": "work",
+    "difficulty": 1,
+    "prompt": "A player pushes a ball with a constant 25 N over 4 m (same direction). How much work is done?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "29 J"
+      },
+      {
+        "id": "b",
+        "label": "200 J"
+      },
+      {
+        "id": "c",
+        "label": "100 J"
+      },
+      {
+        "id": "d",
+        "label": "6.25 J"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 100,
+    "given": {
+      "F": 25,
+      "d": 4
+    },
+    "formulas": [
+      "W = F d"
+    ],
+    "explanation": "W = Fd = 25×4 = 100 J."
+  },
+  {
+    "id": "ene-18",
+    "unitId": "energy",
+    "conceptTag": "work",
+    "difficulty": 1,
+    "prompt": "A player pushes a ball with a constant 40 N over 2 m (same direction). How much work is done?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "42 J"
+      },
+      {
+        "id": "b",
+        "label": "80 J"
+      },
+      {
+        "id": "c",
+        "label": "160 J"
+      },
+      {
+        "id": "d",
+        "label": "20 J"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 80,
+    "given": {
+      "F": 40,
+      "d": 2
+    },
+    "formulas": [
+      "W = F d"
+    ],
+    "explanation": "W = Fd = 40×2 = 80 J."
+  },
+  {
+    "id": "ene-19",
+    "unitId": "energy",
+    "conceptTag": "work",
+    "difficulty": 1,
+    "prompt": "A player pushes a ball with a constant 15 N over 4 m (same direction). How much work is done?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "120 J"
+      },
+      {
+        "id": "b",
+        "label": "3.75 J"
+      },
+      {
+        "id": "c",
+        "label": "19 J"
+      },
+      {
+        "id": "d",
+        "label": "60 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 60,
+    "given": {
+      "F": 15,
+      "d": 4
+    },
+    "formulas": [
+      "W = F d"
+    ],
+    "explanation": "W = Fd = 15×4 = 60 J."
+  },
+  {
+    "id": "ene-20",
+    "unitId": "energy",
+    "conceptTag": "work",
+    "difficulty": 1,
+    "prompt": "A player pushes a ball with a constant 60 N over 3 m (same direction). How much work is done?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 J"
+      },
+      {
+        "id": "b",
+        "label": "180 J"
+      },
+      {
+        "id": "c",
+        "label": "63 J"
+      },
+      {
+        "id": "d",
+        "label": "360 J"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 180,
+    "given": {
+      "F": 60,
+      "d": 3
+    },
+    "formulas": [
+      "W = F d"
+    ],
+    "explanation": "W = Fd = 60×3 = 180 J."
+  },
+  {
+    "id": "ene-21",
+    "unitId": "energy",
+    "conceptTag": "work",
+    "difficulty": 1,
+    "prompt": "A player pushes a ball with a constant 35 N over 2 m (same direction). How much work is done?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "37 J"
+      },
+      {
+        "id": "b",
+        "label": "70 J"
+      },
+      {
+        "id": "c",
+        "label": "140 J"
+      },
+      {
+        "id": "d",
+        "label": "17.5 J"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 70,
+    "given": {
+      "F": 35,
+      "d": 2
+    },
+    "formulas": [
+      "W = F d"
+    ],
+    "explanation": "W = Fd = 35×2 = 70 J."
+  },
+  {
+    "id": "ene-22",
+    "unitId": "energy",
+    "conceptTag": "work",
+    "difficulty": 1,
+    "prompt": "A player pushes a ball with a constant 45 N over 2 m (same direction). How much work is done?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "180 J"
+      },
+      {
+        "id": "b",
+        "label": "22.5 J"
+      },
+      {
+        "id": "c",
+        "label": "47 J"
+      },
+      {
+        "id": "d",
+        "label": "90 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 90,
+    "given": {
+      "F": 45,
+      "d": 2
+    },
+    "formulas": [
+      "W = F d"
+    ],
+    "explanation": "W = Fd = 45×2 = 90 J."
+  },
+  {
+    "id": "ene-23",
+    "unitId": "energy",
+    "conceptTag": "kinetic-energy",
+    "difficulty": 2,
+    "prompt": "A 2 kg ball moves at 10 m/s. What is its kinetic energy?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "200 J"
+      },
+      {
+        "id": "b",
+        "label": "10 J"
+      },
+      {
+        "id": "c",
+        "label": "20 J"
+      },
+      {
+        "id": "d",
+        "label": "100 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 100,
+    "given": {
+      "m": 2,
+      "v": 10
+    },
+    "formulas": [
+      "KE = ½ m v²"
+    ],
+    "explanation": "KE = ½mv² = 0.5×2×10² = 100 J."
+  },
+  {
+    "id": "ene-24",
+    "unitId": "energy",
+    "conceptTag": "kinetic-energy",
+    "difficulty": 2,
+    "prompt": "A 0.5 kg ball moves at 4 m/s. What is its kinetic energy?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "2 J"
+      },
+      {
+        "id": "b",
+        "label": "4 J"
+      },
+      {
+        "id": "c",
+        "label": "1 J"
+      },
+      {
+        "id": "d",
+        "label": "8 J"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 4,
+    "given": {
+      "m": 0.5,
+      "v": 4
+    },
+    "formulas": [
+      "KE = ½ m v²"
+    ],
+    "explanation": "KE = ½mv² = 0.5×0.5×4² = 4 J."
+  },
+  {
+    "id": "ene-25",
+    "unitId": "energy",
+    "conceptTag": "kinetic-energy",
+    "difficulty": 2,
+    "prompt": "A 1 kg ball moves at 6 m/s. What is its kinetic energy?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "36 J"
+      },
+      {
+        "id": "b",
+        "label": "3 J"
+      },
+      {
+        "id": "c",
+        "label": "6 J"
+      },
+      {
+        "id": "d",
+        "label": "18 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 18,
+    "given": {
+      "m": 1,
+      "v": 6
+    },
+    "formulas": [
+      "KE = ½ m v²"
+    ],
+    "explanation": "KE = ½mv² = 0.5×1×6² = 18 J."
+  },
+  {
+    "id": "ene-26",
+    "unitId": "energy",
+    "conceptTag": "kinetic-energy",
+    "difficulty": 2,
+    "prompt": "A 4 kg ball moves at 5 m/s. What is its kinetic energy?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 J"
+      },
+      {
+        "id": "b",
+        "label": "50 J"
+      },
+      {
+        "id": "c",
+        "label": "100 J"
+      },
+      {
+        "id": "d",
+        "label": "20 J"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 50,
+    "given": {
+      "m": 4,
+      "v": 5
+    },
+    "formulas": [
+      "KE = ½ m v²"
+    ],
+    "explanation": "KE = ½mv² = 0.5×4×5² = 50 J."
+  },
+  {
+    "id": "ene-27",
+    "unitId": "energy",
+    "conceptTag": "kinetic-energy",
+    "difficulty": 2,
+    "prompt": "A 2 kg ball moves at 6 m/s. What is its kinetic energy?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6 J"
+      },
+      {
+        "id": "b",
+        "label": "36 J"
+      },
+      {
+        "id": "c",
+        "label": "72 J"
+      },
+      {
+        "id": "d",
+        "label": "12 J"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 36,
+    "given": {
+      "m": 2,
+      "v": 6
+    },
+    "formulas": [
+      "KE = ½ m v²"
+    ],
+    "explanation": "KE = ½mv² = 0.5×2×6² = 36 J."
+  },
+  {
+    "id": "ene-28",
+    "unitId": "energy",
+    "conceptTag": "kinetic-energy",
+    "difficulty": 2,
+    "prompt": "A 5 kg ball moves at 2 m/s. What is its kinetic energy?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 J"
+      },
+      {
+        "id": "b",
+        "label": "12 J"
+      },
+      {
+        "id": "c",
+        "label": "5 J"
+      },
+      {
+        "id": "d",
+        "label": "20 J"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 10,
+    "given": {
+      "m": 5,
+      "v": 2
+    },
+    "formulas": [
+      "KE = ½ m v²"
+    ],
+    "explanation": "KE = ½mv² = 0.5×5×2² = 10 J."
+  },
+  {
+    "id": "ene-29",
+    "unitId": "energy",
+    "conceptTag": "kinetic-energy",
+    "difficulty": 2,
+    "prompt": "A 1 kg ball moves at 10 m/s. What is its kinetic energy?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "100 J"
+      },
+      {
+        "id": "b",
+        "label": "10 J"
+      },
+      {
+        "id": "c",
+        "label": "5 J"
+      },
+      {
+        "id": "d",
+        "label": "50 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 50,
+    "given": {
+      "m": 1,
+      "v": 10
+    },
+    "formulas": [
+      "KE = ½ m v²"
+    ],
+    "explanation": "KE = ½mv² = 0.5×1×10² = 50 J."
+  },
+  {
+    "id": "ene-30",
+    "unitId": "energy",
+    "conceptTag": "kinetic-energy",
+    "difficulty": 2,
+    "prompt": "A 3 kg ball moves at 4 m/s. What is its kinetic energy?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "24 J"
+      },
+      {
+        "id": "b",
+        "label": "6 J"
+      },
+      {
+        "id": "c",
+        "label": "12 J"
+      },
+      {
+        "id": "d",
+        "label": "48 J"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 24,
+    "given": {
+      "m": 3,
+      "v": 4
+    },
+    "formulas": [
+      "KE = ½ m v²"
+    ],
+    "explanation": "KE = ½mv² = 0.5×3×4² = 24 J."
+  },
+  {
+    "id": "ene-31",
+    "unitId": "energy",
+    "conceptTag": "kinetic-energy",
+    "difficulty": 2,
+    "prompt": "A 3 kg ball moves at 6 m/s. What is its kinetic energy?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "18 J"
+      },
+      {
+        "id": "b",
+        "label": "54 J"
+      },
+      {
+        "id": "c",
+        "label": "9 J"
+      },
+      {
+        "id": "d",
+        "label": "108 J"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 54,
+    "given": {
+      "m": 3,
+      "v": 6
+    },
+    "formulas": [
+      "KE = ½ m v²"
+    ],
+    "explanation": "KE = ½mv² = 0.5×3×6² = 54 J."
+  },
+  {
+    "id": "ene-32",
+    "unitId": "energy",
+    "conceptTag": "kinetic-energy",
+    "difficulty": 2,
+    "prompt": "A 0.5 kg ball moves at 10 m/s. What is its kinetic energy?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "50 J"
+      },
+      {
+        "id": "b",
+        "label": "25 J"
+      },
+      {
+        "id": "c",
+        "label": "2.5 J"
+      },
+      {
+        "id": "d",
+        "label": "5 J"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 25,
+    "given": {
+      "m": 0.5,
+      "v": 10
+    },
+    "formulas": [
+      "KE = ½ m v²"
+    ],
+    "explanation": "KE = ½mv² = 0.5×0.5×10² = 25 J."
+  },
+  {
+    "id": "ene-33",
+    "unitId": "energy",
+    "conceptTag": "kinetic-energy",
+    "difficulty": 2,
+    "prompt": "A 2 kg ball moves at 5 m/s. What is its kinetic energy?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 J"
+      },
+      {
+        "id": "b",
+        "label": "5 J"
+      },
+      {
+        "id": "c",
+        "label": "25 J"
+      },
+      {
+        "id": "d",
+        "label": "50 J"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 25,
+    "given": {
+      "m": 2,
+      "v": 5
+    },
+    "formulas": [
+      "KE = ½ m v²"
+    ],
+    "explanation": "KE = ½mv² = 0.5×2×5² = 25 J."
+  },
+  {
+    "id": "ene-34",
+    "unitId": "energy",
+    "conceptTag": "kinetic-energy",
+    "difficulty": 2,
+    "prompt": "A 4 kg ball moves at 4 m/s. What is its kinetic energy?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "32 J"
+      },
+      {
+        "id": "b",
+        "label": "8 J"
+      },
+      {
+        "id": "c",
+        "label": "64 J"
+      },
+      {
+        "id": "d",
+        "label": "16 J"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 32,
+    "given": {
+      "m": 4,
+      "v": 4
+    },
+    "formulas": [
+      "KE = ½ m v²"
+    ],
+    "explanation": "KE = ½mv² = 0.5×4×4² = 32 J."
+  },
+  {
+    "id": "ene-35",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 2,
+    "prompt": "A 2 kg ball is lifted to 8 m. What is its gravitational PE? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "80 J"
+      },
+      {
+        "id": "b",
+        "label": "16 J"
+      },
+      {
+        "id": "c",
+        "label": "160 J"
+      },
+      {
+        "id": "d",
+        "label": "10 J"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 160,
+    "given": {
+      "m": 2,
+      "h": 8,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 2×10×8 = 160 J."
+  },
+  {
+    "id": "ene-36",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 2,
+    "prompt": "A 5 kg ball is lifted to 6 m. What is its gravitational PE? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "11 J"
+      },
+      {
+        "id": "b",
+        "label": "300 J"
+      },
+      {
+        "id": "c",
+        "label": "30 J"
+      },
+      {
+        "id": "d",
+        "label": "150 J"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 300,
+    "given": {
+      "m": 5,
+      "h": 6,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 5×10×6 = 300 J."
+  },
+  {
+    "id": "ene-37",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 2,
+    "prompt": "A 3 kg ball is lifted to 10 m. What is its gravitational PE? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "13 J"
+      },
+      {
+        "id": "b",
+        "label": "150 J"
+      },
+      {
+        "id": "c",
+        "label": "30 J"
+      },
+      {
+        "id": "d",
+        "label": "300 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 300,
+    "given": {
+      "m": 3,
+      "h": 10,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 3×10×10 = 300 J."
+  },
+  {
+    "id": "ene-38",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 2,
+    "prompt": "A 10 kg ball is lifted to 4 m. What is its gravitational PE? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "40 J"
+      },
+      {
+        "id": "b",
+        "label": "14 J"
+      },
+      {
+        "id": "c",
+        "label": "400 J"
+      },
+      {
+        "id": "d",
+        "label": "200 J"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 400,
+    "given": {
+      "m": 10,
+      "h": 4,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 10×10×4 = 400 J."
+  },
+  {
+    "id": "ene-39",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 2,
+    "prompt": "A 4 kg ball is lifted to 7 m. What is its gravitational PE? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "11 J"
+      },
+      {
+        "id": "b",
+        "label": "140 J"
+      },
+      {
+        "id": "c",
+        "label": "280 J"
+      },
+      {
+        "id": "d",
+        "label": "28 J"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 280,
+    "given": {
+      "m": 4,
+      "h": 7,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 4×10×7 = 280 J."
+  },
+  {
+    "id": "ene-40",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 2,
+    "prompt": "A 6 kg ball is lifted to 5 m. What is its gravitational PE? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "30 J"
+      },
+      {
+        "id": "b",
+        "label": "150 J"
+      },
+      {
+        "id": "c",
+        "label": "11 J"
+      },
+      {
+        "id": "d",
+        "label": "300 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 300,
+    "given": {
+      "m": 6,
+      "h": 5,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 6×10×5 = 300 J."
+  },
+  {
+    "id": "ene-41",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 2,
+    "prompt": "A 2 kg ball is lifted to 12 m. What is its gravitational PE? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "14 J"
+      },
+      {
+        "id": "b",
+        "label": "120 J"
+      },
+      {
+        "id": "c",
+        "label": "24 J"
+      },
+      {
+        "id": "d",
+        "label": "240 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 240,
+    "given": {
+      "m": 2,
+      "h": 12,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 2×10×12 = 240 J."
+  },
+  {
+    "id": "ene-42",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 2,
+    "prompt": "A 5 kg ball is lifted to 8 m. What is its gravitational PE? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "40 J"
+      },
+      {
+        "id": "b",
+        "label": "200 J"
+      },
+      {
+        "id": "c",
+        "label": "13 J"
+      },
+      {
+        "id": "d",
+        "label": "400 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 400,
+    "given": {
+      "m": 5,
+      "h": 8,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 5×10×8 = 400 J."
+  },
+  {
+    "id": "ene-43",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 2,
+    "prompt": "A 8 kg ball is lifted to 5 m. What is its gravitational PE? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "13 J"
+      },
+      {
+        "id": "b",
+        "label": "400 J"
+      },
+      {
+        "id": "c",
+        "label": "40 J"
+      },
+      {
+        "id": "d",
+        "label": "200 J"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 400,
+    "given": {
+      "m": 8,
+      "h": 5,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 8×10×5 = 400 J."
+  },
+  {
+    "id": "ene-44",
+    "unitId": "energy",
+    "conceptTag": "gravitational-pe",
+    "difficulty": 2,
+    "prompt": "A 3 kg ball is lifted to 6 m. What is its gravitational PE? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "18 J"
+      },
+      {
+        "id": "b",
+        "label": "90 J"
+      },
+      {
+        "id": "c",
+        "label": "9 J"
+      },
+      {
+        "id": "d",
+        "label": "180 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 180,
+    "given": {
+      "m": 3,
+      "h": 6,
+      "g": 10
+    },
+    "formulas": [
+      "PE = m g h"
+    ],
+    "explanation": "PE = mgh = 3×10×6 = 180 J."
+  },
+  {
+    "id": "ene-45",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 3,
+    "prompt": "A ball is dropped from rest at 5 m. Using energy conservation, what is its speed just before it lands? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "100 m/s"
+      },
+      {
+        "id": "b",
+        "label": "7.07 m/s"
+      },
+      {
+        "id": "c",
+        "label": "10 m/s"
+      },
+      {
+        "id": "d",
+        "label": "50 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 10,
+    "given": {
+      "h": 5,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 40,
+        "blockLabel": "ball",
+        "showForces": false
+      },
+      "caption": "Ball on a 40° ramp"
+    },
+    "explanation": "v = √(2gh) = √(2×10×5) = √100 = 10 m/s."
+  },
+  {
+    "id": "ene-46",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 3,
+    "prompt": "A ball is dropped from rest at 20 m. Using energy conservation, what is its speed just before it lands? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "400 m/s"
+      },
+      {
+        "id": "b",
+        "label": "200 m/s"
+      },
+      {
+        "id": "c",
+        "label": "20 m/s"
+      },
+      {
+        "id": "d",
+        "label": "14.14 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 20,
+    "given": {
+      "h": 20,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 40,
+        "blockLabel": "ball",
+        "showForces": false
+      },
+      "caption": "Ball on a 40° ramp"
+    },
+    "explanation": "v = √(2gh) = √(2×10×20) = √400 = 20 m/s."
+  },
+  {
+    "id": "ene-47",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 3,
+    "prompt": "A ball is dropped from rest at 45 m. Using energy conservation, what is its speed just before it lands? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "450 m/s"
+      },
+      {
+        "id": "b",
+        "label": "30 m/s"
+      },
+      {
+        "id": "c",
+        "label": "21.21 m/s"
+      },
+      {
+        "id": "d",
+        "label": "900 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 30,
+    "given": {
+      "h": 45,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 40,
+        "blockLabel": "ball",
+        "showForces": false
+      },
+      "caption": "Ball on a 40° ramp"
+    },
+    "explanation": "v = √(2gh) = √(2×10×45) = √900 = 30 m/s."
+  },
+  {
+    "id": "ene-48",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 3,
+    "prompt": "A ball is dropped from rest at 0.8 m. Using energy conservation, what is its speed just before it lands? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "2.83 m/s"
+      },
+      {
+        "id": "b",
+        "label": "8 m/s"
+      },
+      {
+        "id": "c",
+        "label": "4 m/s"
+      },
+      {
+        "id": "d",
+        "label": "16 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 4,
+    "given": {
+      "h": 0.8,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 40,
+        "blockLabel": "ball",
+        "showForces": false
+      },
+      "caption": "Ball on a 40° ramp"
+    },
+    "explanation": "v = √(2gh) = √(2×10×0.8) = √16 = 4 m/s."
+  },
+  {
+    "id": "ene-49",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 3,
+    "prompt": "A ball is dropped from rest at 1.25 m. Using energy conservation, what is its speed just before it lands? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "25 m/s"
+      },
+      {
+        "id": "b",
+        "label": "12.5 m/s"
+      },
+      {
+        "id": "c",
+        "label": "5 m/s"
+      },
+      {
+        "id": "d",
+        "label": "3.54 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 5,
+    "given": {
+      "h": 1.25,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 40,
+        "blockLabel": "ball",
+        "showForces": false
+      },
+      "caption": "Ball on a 40° ramp"
+    },
+    "explanation": "v = √(2gh) = √(2×10×1.25) = √25 = 5 m/s."
+  },
+  {
+    "id": "ene-50",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 3,
+    "prompt": "A ball is dropped from rest at 3.2 m. Using energy conservation, what is its speed just before it lands? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5.66 m/s"
+      },
+      {
+        "id": "b",
+        "label": "64 m/s"
+      },
+      {
+        "id": "c",
+        "label": "8 m/s"
+      },
+      {
+        "id": "d",
+        "label": "32 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 8,
+    "given": {
+      "h": 3.2,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 40,
+        "blockLabel": "ball",
+        "showForces": false
+      },
+      "caption": "Ball on a 40° ramp"
+    },
+    "explanation": "v = √(2gh) = √(2×10×3.2) = √64 = 8 m/s."
+  },
+  {
+    "id": "ene-51",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 3,
+    "prompt": "A ball is dropped from rest at 7.2 m. Using energy conservation, what is its speed just before it lands? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "144 m/s"
+      },
+      {
+        "id": "b",
+        "label": "12 m/s"
+      },
+      {
+        "id": "c",
+        "label": "72 m/s"
+      },
+      {
+        "id": "d",
+        "label": "8.49 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 12,
+    "given": {
+      "h": 7.2,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 40,
+        "blockLabel": "ball",
+        "showForces": false
+      },
+      "caption": "Ball on a 40° ramp"
+    },
+    "explanation": "v = √(2gh) = √(2×10×7.2) = √144 = 12 m/s."
+  },
+  {
+    "id": "ene-52",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 3,
+    "prompt": "A ball is dropped from rest at 11.25 m. Using energy conservation, what is its speed just before it lands? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "112.5 m/s"
+      },
+      {
+        "id": "b",
+        "label": "225 m/s"
+      },
+      {
+        "id": "c",
+        "label": "15 m/s"
+      },
+      {
+        "id": "d",
+        "label": "10.61 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 15,
+    "given": {
+      "h": 11.25,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 40,
+        "blockLabel": "ball",
+        "showForces": false
+      },
+      "caption": "Ball on a 40° ramp"
+    },
+    "explanation": "v = √(2gh) = √(2×10×11.25) = √225 = 15 m/s."
+  },
+  {
+    "id": "ene-53",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 3,
+    "prompt": "A ball is launched straight up at 10 m/s. Using energy conservation, what height does it reach? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m"
+      },
+      {
+        "id": "b",
+        "label": "6 m"
+      },
+      {
+        "id": "c",
+        "label": "5 m"
+      },
+      {
+        "id": "d",
+        "label": "0.5 m"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 5,
+    "given": {
+      "v": 10,
+      "g": 10
+    },
+    "formulas": [
+      "½mv² = mgh",
+      "h = v² / (2g)"
+    ],
+    "explanation": "h = v²/(2g) = 10²/20 = 5 m."
+  },
+  {
+    "id": "ene-54",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 3,
+    "prompt": "A ball is launched straight up at 20 m/s. Using energy conservation, what height does it reach? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "1 m"
+      },
+      {
+        "id": "b",
+        "label": "24 m"
+      },
+      {
+        "id": "c",
+        "label": "20 m"
+      },
+      {
+        "id": "d",
+        "label": "40 m"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 20,
+    "given": {
+      "v": 20,
+      "g": 10
+    },
+    "formulas": [
+      "½mv² = mgh",
+      "h = v² / (2g)"
+    ],
+    "explanation": "h = v²/(2g) = 20²/20 = 20 m."
+  },
+  {
+    "id": "ene-55",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 3,
+    "prompt": "A ball is launched straight up at 30 m/s. Using energy conservation, what height does it reach? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "45 m"
+      },
+      {
+        "id": "b",
+        "label": "1.5 m"
+      },
+      {
+        "id": "c",
+        "label": "90 m"
+      },
+      {
+        "id": "d",
+        "label": "30 m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 45,
+    "given": {
+      "v": 30,
+      "g": 10
+    },
+    "formulas": [
+      "½mv² = mgh",
+      "h = v² / (2g)"
+    ],
+    "explanation": "h = v²/(2g) = 30²/20 = 45 m."
+  },
+  {
+    "id": "ene-56",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 3,
+    "prompt": "A ball is launched straight up at 5 m/s. Using energy conservation, what height does it reach? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "5 m"
+      },
+      {
+        "id": "b",
+        "label": "0.25 m"
+      },
+      {
+        "id": "c",
+        "label": "2.5 m"
+      },
+      {
+        "id": "d",
+        "label": "1.25 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 1.25,
+    "given": {
+      "v": 5,
+      "g": 10
+    },
+    "formulas": [
+      "½mv² = mgh",
+      "h = v² / (2g)"
+    ],
+    "explanation": "h = v²/(2g) = 5²/20 = 1.25 m."
+  },
+  {
+    "id": "ene-57",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 3,
+    "prompt": "A ball is launched straight up at 8 m/s. Using energy conservation, what height does it reach? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "3.2 m"
+      },
+      {
+        "id": "b",
+        "label": "0.4 m"
+      },
+      {
+        "id": "c",
+        "label": "6.4 m"
+      },
+      {
+        "id": "d",
+        "label": "8 m"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 3.2,
+    "given": {
+      "v": 8,
+      "g": 10
+    },
+    "formulas": [
+      "½mv² = mgh",
+      "h = v² / (2g)"
+    ],
+    "explanation": "h = v²/(2g) = 8²/20 = 3.2 m."
+  },
+  {
+    "id": "ene-58",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 3,
+    "prompt": "A ball is launched straight up at 15 m/s. Using energy conservation, what height does it reach? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "22.5 m"
+      },
+      {
+        "id": "b",
+        "label": "11.25 m"
+      },
+      {
+        "id": "c",
+        "label": "0.75 m"
+      },
+      {
+        "id": "d",
+        "label": "15 m"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 11.25,
+    "given": {
+      "v": 15,
+      "g": 10
+    },
+    "formulas": [
+      "½mv² = mgh",
+      "h = v² / (2g)"
+    ],
+    "explanation": "h = v²/(2g) = 15²/20 = 11.25 m."
+  },
+  {
+    "id": "ene-59",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 3,
+    "prompt": "A ball is launched straight up at 12 m/s. Using energy conservation, what height does it reach? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "14.4 m"
+      },
+      {
+        "id": "b",
+        "label": "0.6 m"
+      },
+      {
+        "id": "c",
+        "label": "12 m"
+      },
+      {
+        "id": "d",
+        "label": "7.2 m"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 7.2,
+    "given": {
+      "v": 12,
+      "g": 10
+    },
+    "formulas": [
+      "½mv² = mgh",
+      "h = v² / (2g)"
+    ],
+    "explanation": "h = v²/(2g) = 12²/20 = 7.2 m."
+  },
+  {
+    "id": "ene-60",
+    "unitId": "energy",
+    "conceptTag": "work",
+    "difficulty": 3,
+    "prompt": "A constant force of 60 N acts over 3 m in its own direction. How much work is done on the ball?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 J"
+      },
+      {
+        "id": "b",
+        "label": "180 J"
+      },
+      {
+        "id": "c",
+        "label": "90 J"
+      },
+      {
+        "id": "d",
+        "label": "63 J"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 180,
+    "given": {
+      "F": 60,
+      "d": 3
+    },
+    "formulas": [
+      "W = F d"
+    ],
+    "explanation": "W = Fd = 60×3 = 180 J."
+  },
+  {
+    "id": "ene-61",
+    "unitId": "energy",
+    "conceptTag": "work",
+    "difficulty": 3,
+    "prompt": "A constant force of 45 N acts over 4 m in its own direction. How much work is done on the ball?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "11.25 J"
+      },
+      {
+        "id": "b",
+        "label": "49 J"
+      },
+      {
+        "id": "c",
+        "label": "90 J"
+      },
+      {
+        "id": "d",
+        "label": "180 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 180,
+    "given": {
+      "F": 45,
+      "d": 4
+    },
+    "formulas": [
+      "W = F d"
+    ],
+    "explanation": "W = Fd = 45×4 = 180 J."
+  },
+  {
+    "id": "ene-62",
+    "unitId": "energy",
+    "conceptTag": "work",
+    "difficulty": 3,
+    "prompt": "A constant force of 100 N acts over 2 m in its own direction. How much work is done on the ball?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "100 J"
+      },
+      {
+        "id": "b",
+        "label": "50 J"
+      },
+      {
+        "id": "c",
+        "label": "102 J"
+      },
+      {
+        "id": "d",
+        "label": "200 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 200,
+    "given": {
+      "F": 100,
+      "d": 2
+    },
+    "formulas": [
+      "W = F d"
+    ],
+    "explanation": "W = Fd = 100×2 = 200 J."
+  },
+  {
+    "id": "ene-63",
+    "unitId": "energy",
+    "conceptTag": "work",
+    "difficulty": 3,
+    "prompt": "A constant force of 25 N acts over 6 m in its own direction. How much work is done on the ball?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "150 J"
+      },
+      {
+        "id": "b",
+        "label": "31 J"
+      },
+      {
+        "id": "c",
+        "label": "4.17 J"
+      },
+      {
+        "id": "d",
+        "label": "75 J"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 150,
+    "given": {
+      "F": 25,
+      "d": 6
+    },
+    "formulas": [
+      "W = F d"
+    ],
+    "explanation": "W = Fd = 25×6 = 150 J."
+  },
+  {
+    "id": "ene-64",
+    "unitId": "energy",
+    "conceptTag": "work",
+    "difficulty": 3,
+    "prompt": "A constant force of 80 N acts over 5 m in its own direction. How much work is done on the ball?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "400 J"
+      },
+      {
+        "id": "b",
+        "label": "85 J"
+      },
+      {
+        "id": "c",
+        "label": "16 J"
+      },
+      {
+        "id": "d",
+        "label": "200 J"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 400,
+    "given": {
+      "F": 80,
+      "d": 5
+    },
+    "formulas": [
+      "W = F d"
+    ],
+    "explanation": "W = Fd = 80×5 = 400 J."
+  },
+  {
+    "id": "ene-65",
+    "unitId": "energy",
+    "conceptTag": "power",
+    "difficulty": 4,
+    "prompt": "A player does 100 J of work in 5 s. What is the average power output?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.05 W"
+      },
+      {
+        "id": "b",
+        "label": "95 W"
+      },
+      {
+        "id": "c",
+        "label": "500 W"
+      },
+      {
+        "id": "d",
+        "label": "20 W"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 20,
+    "given": {
+      "W": 100,
+      "t": 5
+    },
+    "formulas": [
+      "P = W / t"
+    ],
+    "explanation": "P = W/t = 100/5 = 20 W."
+  },
+  {
+    "id": "ene-66",
+    "unitId": "energy",
+    "conceptTag": "power",
+    "difficulty": 4,
+    "prompt": "A player does 200 J of work in 4 s. What is the average power output?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.02 W"
+      },
+      {
+        "id": "b",
+        "label": "800 W"
+      },
+      {
+        "id": "c",
+        "label": "196 W"
+      },
+      {
+        "id": "d",
+        "label": "50 W"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 50,
+    "given": {
+      "W": 200,
+      "t": 4
+    },
+    "formulas": [
+      "P = W / t"
+    ],
+    "explanation": "P = W/t = 200/4 = 50 W."
+  },
+  {
+    "id": "ene-67",
+    "unitId": "energy",
+    "conceptTag": "power",
+    "difficulty": 4,
+    "prompt": "A player does 60 J of work in 3 s. What is the average power output?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 W"
+      },
+      {
+        "id": "b",
+        "label": "0.05 W"
+      },
+      {
+        "id": "c",
+        "label": "57 W"
+      },
+      {
+        "id": "d",
+        "label": "180 W"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 20,
+    "given": {
+      "W": 60,
+      "t": 3
+    },
+    "formulas": [
+      "P = W / t"
+    ],
+    "explanation": "P = W/t = 60/3 = 20 W."
+  },
+  {
+    "id": "ene-68",
+    "unitId": "energy",
+    "conceptTag": "power",
+    "difficulty": 4,
+    "prompt": "A player does 150 J of work in 5 s. What is the average power output?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "145 W"
+      },
+      {
+        "id": "b",
+        "label": "750 W"
+      },
+      {
+        "id": "c",
+        "label": "30 W"
+      },
+      {
+        "id": "d",
+        "label": "0.03 W"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 30,
+    "given": {
+      "W": 150,
+      "t": 5
+    },
+    "formulas": [
+      "P = W / t"
+    ],
+    "explanation": "P = W/t = 150/5 = 30 W."
+  },
+  {
+    "id": "ene-69",
+    "unitId": "energy",
+    "conceptTag": "power",
+    "difficulty": 4,
+    "prompt": "A player does 80 J of work in 2 s. What is the average power output?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "40 W"
+      },
+      {
+        "id": "b",
+        "label": "160 W"
+      },
+      {
+        "id": "c",
+        "label": "0.03 W"
+      },
+      {
+        "id": "d",
+        "label": "78 W"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 40,
+    "given": {
+      "W": 80,
+      "t": 2
+    },
+    "formulas": [
+      "P = W / t"
+    ],
+    "explanation": "P = W/t = 80/2 = 40 W."
+  },
+  {
+    "id": "ene-70",
+    "unitId": "energy",
+    "conceptTag": "power",
+    "difficulty": 4,
+    "prompt": "A player does 120 J of work in 6 s. What is the average power output?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "0.05 W"
+      },
+      {
+        "id": "b",
+        "label": "720 W"
+      },
+      {
+        "id": "c",
+        "label": "114 W"
+      },
+      {
+        "id": "d",
+        "label": "20 W"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 20,
+    "given": {
+      "W": 120,
+      "t": 6
+    },
+    "formulas": [
+      "P = W / t"
+    ],
+    "explanation": "P = W/t = 120/6 = 20 W."
+  },
+  {
+    "id": "ene-71",
+    "unitId": "energy",
+    "conceptTag": "power",
+    "difficulty": 4,
+    "prompt": "A player does 300 J of work in 5 s. What is the average power output?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "60 W"
+      },
+      {
+        "id": "b",
+        "label": "295 W"
+      },
+      {
+        "id": "c",
+        "label": "1500 W"
+      },
+      {
+        "id": "d",
+        "label": "0.02 W"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 60,
+    "given": {
+      "W": 300,
+      "t": 5
+    },
+    "formulas": [
+      "P = W / t"
+    ],
+    "explanation": "P = W/t = 300/5 = 60 W."
+  },
+  {
+    "id": "ene-72",
+    "unitId": "energy",
+    "conceptTag": "power",
+    "difficulty": 4,
+    "prompt": "A player does 90 J of work in 3 s. What is the average power output?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "87 W"
+      },
+      {
+        "id": "b",
+        "label": "30 W"
+      },
+      {
+        "id": "c",
+        "label": "270 W"
+      },
+      {
+        "id": "d",
+        "label": "0.03 W"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 30,
+    "given": {
+      "W": 90,
+      "t": 3
+    },
+    "formulas": [
+      "P = W / t"
+    ],
+    "explanation": "P = W/t = 90/3 = 30 W."
+  },
+  {
+    "id": "ene-73",
+    "unitId": "energy",
+    "conceptTag": "work-energy-theorem",
+    "difficulty": 4,
+    "prompt": "A 2 kg ball starts at rest. How much work must be done to bring it to 10 m/s?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "200 J"
+      },
+      {
+        "id": "b",
+        "label": "10 J"
+      },
+      {
+        "id": "c",
+        "label": "20 J"
+      },
+      {
+        "id": "d",
+        "label": "100 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 100,
+    "given": {
+      "m": 2,
+      "v": 10
+    },
+    "formulas": [
+      "W = ΔKE = ½ m v²"
+    ],
+    "explanation": "W = ΔKE = ½mv² = 0.5×2×10² = 100 J."
+  },
+  {
+    "id": "ene-74",
+    "unitId": "energy",
+    "conceptTag": "work-energy-theorem",
+    "difficulty": 4,
+    "prompt": "A 1 kg ball starts at rest. How much work must be done to bring it to 6 m/s?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "6 J"
+      },
+      {
+        "id": "b",
+        "label": "36 J"
+      },
+      {
+        "id": "c",
+        "label": "18 J"
+      },
+      {
+        "id": "d",
+        "label": "3 J"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 18,
+    "given": {
+      "m": 1,
+      "v": 6
+    },
+    "formulas": [
+      "W = ΔKE = ½ m v²"
+    ],
+    "explanation": "W = ΔKE = ½mv² = 0.5×1×6² = 18 J."
+  },
+  {
+    "id": "ene-75",
+    "unitId": "energy",
+    "conceptTag": "work-energy-theorem",
+    "difficulty": 4,
+    "prompt": "A 4 kg ball starts at rest. How much work must be done to bring it to 5 m/s?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "50 J"
+      },
+      {
+        "id": "b",
+        "label": "10 J"
+      },
+      {
+        "id": "c",
+        "label": "20 J"
+      },
+      {
+        "id": "d",
+        "label": "100 J"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 50,
+    "given": {
+      "m": 4,
+      "v": 5
+    },
+    "formulas": [
+      "W = ΔKE = ½ m v²"
+    ],
+    "explanation": "W = ΔKE = ½mv² = 0.5×4×5² = 50 J."
+  },
+  {
+    "id": "ene-76",
+    "unitId": "energy",
+    "conceptTag": "work-energy-theorem",
+    "difficulty": 4,
+    "prompt": "A 0.5 kg ball starts at rest. How much work must be done to bring it to 8 m/s?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "4 J"
+      },
+      {
+        "id": "b",
+        "label": "32 J"
+      },
+      {
+        "id": "c",
+        "label": "16 J"
+      },
+      {
+        "id": "d",
+        "label": "2 J"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 16,
+    "given": {
+      "m": 0.5,
+      "v": 8
+    },
+    "formulas": [
+      "W = ΔKE = ½ m v²"
+    ],
+    "explanation": "W = ΔKE = ½mv² = 0.5×0.5×8² = 16 J."
+  },
+  {
+    "id": "ene-77",
+    "unitId": "energy",
+    "conceptTag": "work-energy-theorem",
+    "difficulty": 4,
+    "prompt": "A 5 kg ball starts at rest. How much work must be done to bring it to 4 m/s?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "40 J"
+      },
+      {
+        "id": "b",
+        "label": "80 J"
+      },
+      {
+        "id": "c",
+        "label": "20 J"
+      },
+      {
+        "id": "d",
+        "label": "10 J"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 40,
+    "given": {
+      "m": 5,
+      "v": 4
+    },
+    "formulas": [
+      "W = ΔKE = ½ m v²"
+    ],
+    "explanation": "W = ΔKE = ½mv² = 0.5×5×4² = 40 J."
+  },
+  {
+    "id": "ene-78",
+    "unitId": "energy",
+    "conceptTag": "work-energy-theorem",
+    "difficulty": 4,
+    "prompt": "A 2 kg ball starts at rest. How much work must be done to bring it to 8 m/s?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "8 J"
+      },
+      {
+        "id": "b",
+        "label": "128 J"
+      },
+      {
+        "id": "c",
+        "label": "64 J"
+      },
+      {
+        "id": "d",
+        "label": "16 J"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 64,
+    "given": {
+      "m": 2,
+      "v": 8
+    },
+    "formulas": [
+      "W = ΔKE = ½ m v²"
+    ],
+    "explanation": "W = ΔKE = ½mv² = 0.5×2×8² = 64 J."
+  },
+  {
+    "id": "ene-79",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 4,
+    "prompt": "A 2 kg ball falls from rest through 5 m. What is its kinetic energy just before landing? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "50 J"
+      },
+      {
+        "id": "b",
+        "label": "20 J"
+      },
+      {
+        "id": "c",
+        "label": "100 J"
+      },
+      {
+        "id": "d",
+        "label": "10 J"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 100,
+    "given": {
+      "m": 2,
+      "h": 5,
+      "g": 10
+    },
+    "formulas": [
+      "KE = PE_lost = m g h"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 50,
+        "blockLabel": "ball",
+        "showForces": false
+      },
+      "caption": "Ball on a 50° ramp"
+    },
+    "explanation": "All PE converts to KE: KE = mgh = 2×10×5 = 100 J."
+  },
+  {
+    "id": "ene-80",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 4,
+    "prompt": "A 1 kg ball falls from rest through 20 m. What is its kinetic energy just before landing? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 J"
+      },
+      {
+        "id": "b",
+        "label": "100 J"
+      },
+      {
+        "id": "c",
+        "label": "20 J"
+      },
+      {
+        "id": "d",
+        "label": "200 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 200,
+    "given": {
+      "m": 1,
+      "h": 20,
+      "g": 10
+    },
+    "formulas": [
+      "KE = PE_lost = m g h"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 50,
+        "blockLabel": "ball",
+        "showForces": false
+      },
+      "caption": "Ball on a 50° ramp"
+    },
+    "explanation": "All PE converts to KE: KE = mgh = 1×10×20 = 200 J."
+  },
+  {
+    "id": "ene-81",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 4,
+    "prompt": "A 4 kg ball falls from rest through 5 m. What is its kinetic energy just before landing? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "100 J"
+      },
+      {
+        "id": "b",
+        "label": "20 J"
+      },
+      {
+        "id": "c",
+        "label": "200 J"
+      },
+      {
+        "id": "d",
+        "label": "40 J"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 200,
+    "given": {
+      "m": 4,
+      "h": 5,
+      "g": 10
+    },
+    "formulas": [
+      "KE = PE_lost = m g h"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 50,
+        "blockLabel": "ball",
+        "showForces": false
+      },
+      "caption": "Ball on a 50° ramp"
+    },
+    "explanation": "All PE converts to KE: KE = mgh = 4×10×5 = 200 J."
+  },
+  {
+    "id": "ene-82",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 4,
+    "prompt": "A 0.5 kg ball falls from rest through 45 m. What is its kinetic energy just before landing? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "22.5 J"
+      },
+      {
+        "id": "b",
+        "label": "112.5 J"
+      },
+      {
+        "id": "c",
+        "label": "5 J"
+      },
+      {
+        "id": "d",
+        "label": "225 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 225,
+    "given": {
+      "m": 0.5,
+      "h": 45,
+      "g": 10
+    },
+    "formulas": [
+      "KE = PE_lost = m g h"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 50,
+        "blockLabel": "ball",
+        "showForces": false
+      },
+      "caption": "Ball on a 50° ramp"
+    },
+    "explanation": "All PE converts to KE: KE = mgh = 0.5×10×45 = 225 J."
+  },
+  {
+    "id": "ene-83",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 4,
+    "prompt": "A 2 kg ball falls from rest through 20 m. What is its kinetic energy just before landing? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "20 J"
+      },
+      {
+        "id": "b",
+        "label": "40 J"
+      },
+      {
+        "id": "c",
+        "label": "200 J"
+      },
+      {
+        "id": "d",
+        "label": "400 J"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 400,
+    "given": {
+      "m": 2,
+      "h": 20,
+      "g": 10
+    },
+    "formulas": [
+      "KE = PE_lost = m g h"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 50,
+        "blockLabel": "ball",
+        "showForces": false
+      },
+      "caption": "Ball on a 50° ramp"
+    },
+    "explanation": "All PE converts to KE: KE = mgh = 2×10×20 = 400 J."
+  },
+  {
+    "id": "ene-84",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 4,
+    "prompt": "A 5 kg ball falls from rest through 5 m. What is its kinetic energy just before landing? (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "50 J"
+      },
+      {
+        "id": "b",
+        "label": "25 J"
+      },
+      {
+        "id": "c",
+        "label": "250 J"
+      },
+      {
+        "id": "d",
+        "label": "125 J"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 250,
+    "given": {
+      "m": 5,
+      "h": 5,
+      "g": 10
+    },
+    "formulas": [
+      "KE = PE_lost = m g h"
+    ],
+    "diagram": {
+      "kind": "ramp",
+      "params": {
+        "angleDeg": 50,
+        "blockLabel": "ball",
+        "showForces": false
+      },
+      "caption": "Ball on a 50° ramp"
+    },
+    "explanation": "All PE converts to KE: KE = mgh = 5×10×5 = 250 J."
+  },
+  {
+    "id": "ene-85",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 5,
+    "prompt": "A ball is dropped from a height. Where is its kinetic energy the greatest?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "At the moment of release"
+      },
+      {
+        "id": "b",
+        "label": "It is constant throughout"
+      },
+      {
+        "id": "c",
+        "label": "Halfway down"
+      },
+      {
+        "id": "d",
+        "label": "Just before it hits the ground"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "PE converts to KE as it falls, so KE is maximum (and PE minimum) right before impact."
+  },
+  {
+    "id": "ene-86",
+    "unitId": "energy",
+    "conceptTag": "ke-speed-squared",
+    "difficulty": 5,
+    "prompt": "If a ball’s speed doubles, its kinetic energy:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Quadruples"
+      },
+      {
+        "id": "b",
+        "label": "Stays the same"
+      },
+      {
+        "id": "c",
+        "label": "Halves"
+      },
+      {
+        "id": "d",
+        "label": "Doubles"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "KE ∝ v², so doubling the speed gives 2² = 4× the kinetic energy."
+  },
+  {
+    "id": "ene-87",
+    "unitId": "energy",
+    "conceptTag": "pe-max-location",
+    "difficulty": 5,
+    "prompt": "For a ball tossed straight up, where is its gravitational PE greatest?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Just before landing"
+      },
+      {
+        "id": "b",
+        "label": "Halfway up"
+      },
+      {
+        "id": "c",
+        "label": "At the highest point"
+      },
+      {
+        "id": "d",
+        "label": "At launch"
+      }
+    ],
+    "correctChoiceId": "c",
+    "explanation": "PE = mgh is largest where h is largest — the top of the flight."
+  },
+  {
+    "id": "ene-88",
+    "unitId": "energy",
+    "conceptTag": "mass-independence",
+    "difficulty": 5,
+    "prompt": "A heavy ball and a light ball are dropped from the same height (no air resistance). Which is faster at the bottom?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "The heavy ball"
+      },
+      {
+        "id": "b",
+        "label": "Cannot tell"
+      },
+      {
+        "id": "c",
+        "label": "The light ball"
+      },
+      {
+        "id": "d",
+        "label": "They have the same speed"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "v = √(2gh) is independent of mass, so both reach the same landing speed."
+  },
+  {
+    "id": "ene-89",
+    "unitId": "energy",
+    "conceptTag": "work-energy-theorem",
+    "difficulty": 5,
+    "prompt": "The work-energy theorem states that the net work done on an object equals its:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Momentum"
+      },
+      {
+        "id": "b",
+        "label": "Total potential energy"
+      },
+      {
+        "id": "c",
+        "label": "Weight"
+      },
+      {
+        "id": "d",
+        "label": "Change in kinetic energy"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "W_net = ΔKE — net work changes the kinetic energy."
+  },
+  {
+    "id": "ene-90",
+    "unitId": "energy",
+    "conceptTag": "energy-transformation",
+    "difficulty": 5,
+    "prompt": "As a ball rolls down a frictionless ramp, the energy transformation is:",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Potential energy → kinetic energy"
+      },
+      {
+        "id": "b",
+        "label": "Heat → potential"
+      },
+      {
+        "id": "c",
+        "label": "Energy is destroyed"
+      },
+      {
+        "id": "d",
+        "label": "Kinetic → potential"
+      }
+    ],
+    "correctChoiceId": "a",
+    "explanation": "Height (PE) is lost and speed (KE) is gained; total mechanical energy is conserved."
+  },
+  {
+    "id": "ene-91",
+    "unitId": "energy",
+    "conceptTag": "zero-work",
+    "difficulty": 5,
+    "prompt": "You carry a ball horizontally at constant height and speed. How much work does your lifting force do against gravity?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "Negative"
+      },
+      {
+        "id": "b",
+        "label": "Equal to the ball’s KE"
+      },
+      {
+        "id": "c",
+        "label": "mgh"
+      },
+      {
+        "id": "d",
+        "label": "Zero (no vertical displacement)"
+      }
+    ],
+    "correctChoiceId": "d",
+    "explanation": "Work against gravity needs vertical displacement; moving horizontally does none."
+  },
+  {
+    "id": "ene-92",
+    "unitId": "energy",
+    "conceptTag": "energy-units",
+    "difficulty": 5,
+    "prompt": "Which combination of units also equals a joule?",
+    "choices": [
+      {
+        "id": "a",
+        "label": "N/s"
+      },
+      {
+        "id": "b",
+        "label": "kg·m/s"
+      },
+      {
+        "id": "c",
+        "label": "kg·m²/s²"
+      },
+      {
+        "id": "d",
+        "label": "kg·m/s²"
+      }
+    ],
+    "correctChoiceId": "c",
+    "explanation": "J = N·m = (kg·m/s²)·m = kg·m²/s²."
+  },
+  {
+    "id": "ene-93",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 5,
+    "prompt": "A 2 kg ball is released from 5 m. Using energy conservation, find its landing speed. (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "12 m/s"
+      },
+      {
+        "id": "b",
+        "label": "10 m/s"
+      },
+      {
+        "id": "c",
+        "label": "100 m/s"
+      },
+      {
+        "id": "d",
+        "label": "7.07 m/s"
+      }
+    ],
+    "correctChoiceId": "b",
+    "correctValue": 10,
+    "given": {
+      "m": 2,
+      "h": 5,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "explanation": "Mass cancels: v = √(2gh) = √(100) = 10 m/s."
+  },
+  {
+    "id": "ene-94",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 5,
+    "prompt": "A 1 kg ball is released from 20 m. Using energy conservation, find its landing speed. (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "400 m/s"
+      },
+      {
+        "id": "b",
+        "label": "24 m/s"
+      },
+      {
+        "id": "c",
+        "label": "14.14 m/s"
+      },
+      {
+        "id": "d",
+        "label": "20 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 20,
+    "given": {
+      "m": 1,
+      "h": 20,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "explanation": "Mass cancels: v = √(2gh) = √(400) = 20 m/s."
+  },
+  {
+    "id": "ene-95",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 5,
+    "prompt": "A 4 kg ball is released from 5 m. Using energy conservation, find its landing speed. (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "10 m/s"
+      },
+      {
+        "id": "b",
+        "label": "20 m/s"
+      },
+      {
+        "id": "c",
+        "label": "7.07 m/s"
+      },
+      {
+        "id": "d",
+        "label": "100 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 10,
+    "given": {
+      "m": 4,
+      "h": 5,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "explanation": "Mass cancels: v = √(2gh) = √(100) = 10 m/s."
+  },
+  {
+    "id": "ene-96",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 5,
+    "prompt": "A 0.5 kg ball is released from 80 m. Using energy conservation, find its landing speed. (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "48 m/s"
+      },
+      {
+        "id": "b",
+        "label": "28.28 m/s"
+      },
+      {
+        "id": "c",
+        "label": "40 m/s"
+      },
+      {
+        "id": "d",
+        "label": "1600 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 40,
+    "given": {
+      "m": 0.5,
+      "h": 80,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "explanation": "Mass cancels: v = √(2gh) = √(1600) = 40 m/s."
+  },
+  {
+    "id": "ene-97",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 5,
+    "prompt": "A 2 kg ball is released from 45 m. Using energy conservation, find its landing speed. (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "900 m/s"
+      },
+      {
+        "id": "b",
+        "label": "90 m/s"
+      },
+      {
+        "id": "c",
+        "label": "21.21 m/s"
+      },
+      {
+        "id": "d",
+        "label": "30 m/s"
+      }
+    ],
+    "correctChoiceId": "d",
+    "correctValue": 30,
+    "given": {
+      "m": 2,
+      "h": 45,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "explanation": "Mass cancels: v = √(2gh) = √(900) = 30 m/s."
+  },
+  {
+    "id": "ene-98",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 5,
+    "prompt": "A 3 kg ball is released from 20 m. Using energy conservation, find its landing speed. (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "400 m/s"
+      },
+      {
+        "id": "b",
+        "label": "60 m/s"
+      },
+      {
+        "id": "c",
+        "label": "20 m/s"
+      },
+      {
+        "id": "d",
+        "label": "14.14 m/s"
+      }
+    ],
+    "correctChoiceId": "c",
+    "correctValue": 20,
+    "given": {
+      "m": 3,
+      "h": 20,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "explanation": "Mass cancels: v = √(2gh) = √(400) = 20 m/s."
+  },
+  {
+    "id": "ene-99",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 5,
+    "prompt": "A 1 kg ball is released from 7.2 m. Using energy conservation, find its landing speed. (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "12 m/s"
+      },
+      {
+        "id": "b",
+        "label": "144 m/s"
+      },
+      {
+        "id": "c",
+        "label": "8.49 m/s"
+      },
+      {
+        "id": "d",
+        "label": "7.2 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 12,
+    "given": {
+      "m": 1,
+      "h": 7.2,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "explanation": "Mass cancels: v = √(2gh) = √(144) = 12 m/s."
+  },
+  {
+    "id": "ene-100",
+    "unitId": "energy",
+    "conceptTag": "energy-conservation",
+    "difficulty": 5,
+    "prompt": "A 5 kg ball is released from 11.25 m. Using energy conservation, find its landing speed. (g = 10)",
+    "choices": [
+      {
+        "id": "a",
+        "label": "15 m/s"
+      },
+      {
+        "id": "b",
+        "label": "56.25 m/s"
+      },
+      {
+        "id": "c",
+        "label": "10.61 m/s"
+      },
+      {
+        "id": "d",
+        "label": "225 m/s"
+      }
+    ],
+    "correctChoiceId": "a",
+    "correctValue": 15,
+    "given": {
+      "m": 5,
+      "h": 11.25,
+      "g": 10
+    },
+    "formulas": [
+      "mgh = ½mv²",
+      "v = √(2gh)"
+    ],
+    "explanation": "Mass cancels: v = √(2gh) = √(225) = 15 m/s."
+  }
+]
