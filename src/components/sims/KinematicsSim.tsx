@@ -5,6 +5,7 @@ import type { JerseyPattern } from '../../types'
 import { Calculator } from './Calculator'
 import { fetchKinematicsHighScore, saveKinematicsHighScore } from '../../lib/scores'
 import { usePlayerKit, shade } from '../../lib/playerKit'
+import { useOpponentClashGuard, DRILL_COLORS } from '../../lib/teams'
 import { bodyMetrics, drawPlayerLegs, drawPlayerShorts, drawPlayerArms, idleHands } from '../../lib/playerCanvas'
 
 // ---- World (meters) ----
@@ -282,6 +283,9 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
   // a ref each render so the rAF draw loop (drawKicker) reads the current kit without
   // re-subscribing. The keeper (GK_KIT) stays a distinct, hardcoded amber-kit person.
   const kickerKit = usePlayerKit(KICKER_KIT)
+  // Opponent keeper: distinct club colour in the lessons, red in the Training Ground —
+  // and never the same kit as YOUR equipped jersey.
+  useOpponentClashGuard(GK_KIT, DRILL_COLORS.kinematics, kickerKit.jersey)
   const kitRef = useRef<KickerKit>(KICKER_KIT)
   kitRef.current = kickerKit
 
@@ -376,7 +380,11 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
         goalSignaledRef.current = true
         onGoalRef.current()
       }
-    } else if (soundRef.current) sfx.current.save()
+    } else {
+      // A save/miss breaks the streak (matches the other drills' streak/best scoring).
+      setGoals(0)
+      if (soundRef.current) sfx.current.save()
+    }
     setMessage(res); setPhase('result')
     // Goals auto-advance after the celebration; saves/misses wait for a click.
     if (res.kind === 'goal') scheduleReset(2400)
@@ -765,13 +773,13 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
 
     // ---- HUD ----
     ctx.textAlign = 'left'
-    // Record (top-left) + session goals (top-right) only appear in the unlimited
-    // practice runs. The first-run challenge shows just the "Goals 0/1" pill.
+    // Streak (top-left) + best (top-right) only appear in the unlimited practice runs,
+    // matching the other drills. The first-run challenge shows just the "Goals 0/1" pill.
     const unlimited = !sceneRef.current.showGoal
     if (unlimited) {
-      ctx.fillStyle = 'rgba(8,12,28,0.8)'; roundRect(ctx, 12, 12, 174, 40, 12); ctx.fill()
+      ctx.fillStyle = 'rgba(8,12,28,0.8)'; roundRect(ctx, 12, 12, 150, 40, 12); ctx.fill()
       ctx.fillStyle = '#ffd166'; ctx.font = '800 14px Plus Jakarta Sans, sans-serif'
-      ctx.fillText(`🏆 Record: ${recordRef.current}`, 24, 38)
+      ctx.fillText(`🔥 Streak: ${goalsRef.current}`, 24, 38)
     }
     if (g.phase === 'aim') {
       const left = Math.max(0, 5 - (now - g.aimStart) / 1000)
@@ -791,11 +799,11 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
       const label = (g.solveFor === 'v' ? 'Solve for force v: SPACE to strike' : 'Solve for angle θ: SPACE to strike') + calcLabel
       drawTimer(ctx, left, total, warning ? `Hurry! ${Math.ceil(left)}s left` : label, warning ? '#ff3b5f' : '#7ec8ff', warning)
     }
-    // session goals (top-right) — unlimited practice only
+    // best streak (top-right) — unlimited practice only
     if (unlimited) {
       ctx.fillStyle = 'rgba(8,12,28,0.8)'; roundRect(ctx, W - 150, 12, 138, 40, 12); ctx.fill()
-      ctx.fillStyle = '#fff'; ctx.font = '700 16px Plus Jakarta Sans, sans-serif'; ctx.textAlign = 'left'
-      ctx.fillText(`⚽ Goals: ${goalsRef.current}`, W - 138, 38)
+      ctx.fillStyle = '#fff'; ctx.font = '700 15px Plus Jakarta Sans, sans-serif'; ctx.textAlign = 'left'
+      ctx.fillText(`🏆 Best: ${recordRef.current}`, W - 138, 38)
     }
 
     ctx.restore()
@@ -1977,7 +1985,7 @@ function drawKickLeg(
   footX: number, footY: number,
   legLen: number, legW: number,
   sock: string, boot: string, bootDark: string,
-  detail: boolean, kicking: boolean,
+  detail: boolean, kicking: boolean, skin: string = KICK_SKIN,
 ) {
   const thigh = legLen * 0.5
   const shin = legLen * 0.5
@@ -2000,7 +2008,7 @@ function drawKickLeg(
   const ky = hipY + uy * a + py * hgt
 
   ctx.lineCap = 'round'
-  ctx.strokeStyle = KICK_SKIN; ctx.lineWidth = legW * 1.06          // thigh (skin)
+  ctx.strokeStyle = skin; ctx.lineWidth = legW * 1.06          // thigh (skin)
   ctx.beginPath(); ctx.moveTo(hipX, hipY); ctx.lineTo(kx, ky); ctx.stroke()
   ctx.strokeStyle = sock; ctx.lineWidth = legW * 0.92               // shin (sock = jersey)
   ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(fx, fy); ctx.stroke()
@@ -2141,6 +2149,10 @@ function drawKicker(ctx: CanvasRenderingContext2D, rel: RelFn, mode: KickerMode,
     sock: kit.sock,
     boot: kit.boot,
     bootDark: (kit as { bootDark?: string }).bootDark ?? kit.boot,
+    skin: kit.skin,
+    // The free-kick taker is YOUR PLAYER — shorts follow the equipped (locker) kit.
+    shorts: kit.shorts,
+    shortsDark: (kit as { shortsDark?: string }).shortsDark,
     detail,
   }
   // legs + boots (drawn BEFORE the torso so the swinging leg can pass in front on a kick)
@@ -2154,8 +2166,8 @@ function drawKicker(ctx: CanvasRenderingContext2D, rel: RelFn, mode: KickerMode,
     const half = lw * 1.15
     const legLen = footY - hipY
     const bootDark = pose.bootDark
-    drawKickLeg(ctx, hipX - half, hipY, pose.lFootX, pose.lFootY, legLen, lw, kit.sock, kit.boot, bootDark, detail, false)
-    drawKickLeg(ctx, hipX + half, hipY, pose.rFootX, pose.rFootY, legLen, lw, kit.sock, kit.boot, bootDark, detail, true)
+    drawKickLeg(ctx, hipX - half, hipY, pose.lFootX, pose.lFootY, legLen, lw, kit.sock, kit.boot, bootDark, detail, false, kit.skin)
+    drawKickLeg(ctx, hipX + half, hipY, pose.rFootX, pose.rFootY, legLen, lw, kit.sock, kit.boot, bootDark, detail, true, kit.skin)
   } else {
     drawPlayerLegs(ctx, pose)
   }
@@ -2213,7 +2225,7 @@ function drawKicker(ctx: CanvasRenderingContext2D, rel: RelFn, mode: KickerMode,
   drawPlayerArms(ctx, {
     cx: bodyX, shoulderY: m.shoulderY, shoulderW: m.shoulderW, armW: m.armW,
     lHandX: hands.lHandX, lHandY: hands.lHandY, rHandX: hands.rHandX, rHandY: hands.rHandY,
-    sleeve: kit.jersey, sleeveDark: kit.jerseyDark,
+    sleeve: kit.jersey, sleeveDark: kit.jerseyDark, skin: kit.skin,
   })
 
   // ---- Head (back of the head: hair cap + neck crease, NO face) ----

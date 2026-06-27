@@ -1,6 +1,8 @@
 import { supabase, isSupabaseConfigured } from './supabase'
 import { overallRating } from './skills'
 import type {
+  Appearance,
+  ClubIdentity,
   PlayerProfile,
   PlayerSkills,
   ProficiencyMap,
@@ -50,25 +52,30 @@ export type CloudPlayerData = {
   skillPoints: number | null
   equippedJersey: string | null
   equippedCleats: string | null
+  appearance: Appearance | null
+  club: ClubIdentity | null
   skills: PlayerSkills | null
   inventory: string[] | null
   proficiency: ProficiencyMap | null
   testHistory: TestAttempt[] | null
 }
 
-const PLAYER_COLUMNS =
-  'coins, skill_points, equipped_jersey, equipped_cleats, skills, inventory, proficiency, test_history'
-
 /** Load the player slice (skills, economy, cosmetics, learning data) for a user. */
 export async function loadCloudPlayer(username: string): Promise<CloudResult<CloudPlayerData>> {
   if (!isSupabaseConfigured) return { status: 'unavailable' }
   try {
+    // Select * (not an explicit column list) so a not-yet-applied migration for a
+    // NEWER optional column (e.g. appearance / club_identity) can't fail the whole
+    // read — missing columns simply come back undefined and fall back to defaults.
     const { data, error } = await supabase
       .from('profiles')
-      .select(PLAYER_COLUMNS)
+      .select('*')
       .eq('username', username)
       .maybeSingle()
-    if (error) return { status: 'unavailable' }
+    if (error) {
+      console.warn('[cloudSync] loadCloudPlayer failed:', error.message)
+      return { status: 'unavailable' }
+    }
     if (!data) return { status: 'empty' }
     const d = data as unknown as Record<string, unknown>
     return {
@@ -78,6 +85,8 @@ export async function loadCloudPlayer(username: string): Promise<CloudResult<Clo
         skillPoints: (d.skill_points as number | null) ?? null,
         equippedJersey: (d.equipped_jersey as string | null) ?? null,
         equippedCleats: (d.equipped_cleats as string | null) ?? null,
+        appearance: (d.appearance as Appearance | null) ?? null,
+        club: (d.club_identity as ClubIdentity | null) ?? null,
         skills: (d.skills as PlayerSkills | null) ?? null,
         inventory: (d.inventory as string[] | null) ?? null,
         proficiency: (d.proficiency as ProficiencyMap | null) ?? null,
@@ -97,8 +106,13 @@ export async function saveCloudPlayer(
   testHistory: TestAttempt[],
 ): Promise<void> {
   if (!isSupabaseConfigured) return
+  const stamp = new Date().toISOString()
+
+  // CORE columns — guaranteed by the base schema (20260623 / 20260626 migrations).
+  // These MUST always persist, so they go in their own upsert that can't be blocked
+  // by a newer optional column whose migration may not be applied yet.
   try {
-    await supabase.from('profiles').upsert(
+    const { error } = await supabase.from('profiles').upsert(
       {
         username,
         coins: profile.coins,
@@ -110,12 +124,38 @@ export async function saveCloudPlayer(
         inventory: profile.inventory,
         proficiency,
         test_history: testHistory,
-        updated_at: new Date().toISOString(),
+        updated_at: stamp,
       },
       { onConflict: 'username' },
     )
-  } catch {
-    // offline — localStorage cache remains
+    if (error) console.warn('[cloudSync] saveCloudPlayer (core) failed:', error.message)
+  } catch (e) {
+    console.warn('[cloudSync] saveCloudPlayer (core) threw:', e)
+  }
+
+  // NEWER optional columns (appearance: 20260627_appearance, club_identity:
+  // 20260627_club_identity). Saved best-effort in a SEPARATE upsert so that if those
+  // migrations haven't been run against this database, the failure is isolated here
+  // and the core save above (jersey/cleats/coins/etc.) still succeeds.
+  try {
+    const { error } = await supabase.from('profiles').upsert(
+      {
+        username,
+        appearance: profile.appearance,
+        club_identity: profile.club,
+        updated_at: stamp,
+      },
+      { onConflict: 'username' },
+    )
+    if (error) {
+      console.warn(
+        '[cloudSync] appearance/club_identity not saved — run the 20260627_appearance.sql ' +
+          'and 20260627_club_identity.sql migrations in Supabase:',
+        error.message,
+      )
+    }
+  } catch (e) {
+    console.warn('[cloudSync] saveCloudPlayer (appearance/club) threw:', e)
   }
 }
 
@@ -128,7 +168,10 @@ export async function loadCloudProgress(username: string): Promise<CloudResult<U
       .select('progress')
       .eq('username', username)
       .maybeSingle()
-    if (error) return { status: 'unavailable' }
+    if (error) {
+      console.warn('[cloudSync] loadCloudProgress failed:', error.message)
+      return { status: 'unavailable' }
+    }
     if (!data) return { status: 'empty' }
     const progress = (data as unknown as Record<string, unknown>).progress as UserProgress | null
     if (!progress) return { status: 'empty' }
@@ -142,11 +185,12 @@ export async function loadCloudProgress(username: string): Promise<CloudResult<U
 export async function saveCloudProgress(username: string, progress: UserProgress): Promise<void> {
   if (!isSupabaseConfigured) return
   try {
-    await supabase.from('profiles').upsert(
+    const { error } = await supabase.from('profiles').upsert(
       { username, progress, updated_at: new Date().toISOString() },
       { onConflict: 'username' },
     )
-  } catch {
-    // offline — localStorage cache remains
+    if (error) console.warn('[cloudSync] saveCloudProgress failed:', error.message)
+  } catch (e) {
+    console.warn('[cloudSync] saveCloudProgress threw:', e)
   }
 }

@@ -90,12 +90,22 @@ export type LegPose = {
   /** boot colours — pass the equipped cleat colour. */
   boot: string
   bootDark: string
+  /** YOUR PLAYER's skin tone (kit.skin from the loadout). Falls back to the shared tone. */
+  skin?: string
+  /**
+   * Shorts colour (+ shade). Pass the equipped kit.shorts/kit.shortsDark for YOUR PLAYER so
+   * the shorts match the locker/card; omit (or leave undefined) for teammates/opponents to
+   * keep the standard white football shorts.
+   */
+  shorts?: string
+  shortsDark?: string
   detail: boolean
 }
 
 /** Legs (skin thigh → jersey-coloured sock shin) + sock cuffs + boots. Call BEFORE the torso. */
 export function drawPlayerLegs(ctx: CanvasRenderingContext2D, p: LegPose): void {
   const { hipX, hipY, lFootX, lFootY, rFootX, rFootY, legW, sock, boot, bootDark, detail } = p
+  const skin = p.skin ?? SKIN
   const half = HIP_HALF(legW)
   const hipLx = hipX - half
   const hipRx = hipX + half
@@ -110,7 +120,7 @@ export function drawPlayerLegs(ctx: CanvasRenderingContext2D, p: LegPose): void 
     let kx = mx + nx * bow, ky = my + ny * bow
     if ((kx - mx) * side < 0) { kx = mx - nx * bow; ky = my - ny * bow } // knee bows forward
     ctx.lineCap = 'round'
-    ctx.strokeStyle = SKIN; ctx.lineWidth = legW * 1.06                 // thigh (skin)
+    ctx.strokeStyle = skin; ctx.lineWidth = legW * 1.06                 // thigh (skin)
     ctx.beginPath(); ctx.moveTo(hx, hipY); ctx.lineTo(kx, ky); ctx.stroke()
     ctx.strokeStyle = sock; ctx.lineWidth = legW * 0.92                 // shin (sock = jersey colour)
     ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(fx, fy); ctx.stroke()
@@ -143,12 +153,15 @@ export function drawPlayerLegs(ctx: CanvasRenderingContext2D, p: LegPose): void 
 }
 
 /**
- * White football shorts seen from behind: a SHORT waistband across the hips that splits
- * into two NARROW thigh covers (top third of each thigh only) with a real inseam gap, so
- * the sock legs always show below. Always white — never loadout-driven. Call AFTER the torso.
+ * Football shorts seen from behind: a SHORT waistband across the hips that splits into two
+ * NARROW thigh covers (top third of each thigh only) with a real inseam gap, so the sock
+ * legs always show below. Defaults to white, but honours p.shorts/p.shortsDark so YOUR
+ * PLAYER's shorts match the equipped (locker) kit. Call AFTER the torso.
  */
 export function drawPlayerShorts(ctx: CanvasRenderingContext2D, p: LegPose): void {
   const { hipX, hipY, lFootX, lFootY, rFootX, rFootY, legW, detail } = p
+  const shorts = p.shorts ?? SHORTS
+  const shortsDark = p.shortsDark ?? SHORTS_DARK
   const half = HIP_HALF(legW)
   const hipLx = hipX - half
   const hipRx = hipX + half
@@ -165,7 +178,7 @@ export function drawPlayerShorts(ctx: CanvasRenderingContext2D, p: LegPose): voi
   const apexY = hipY + shortsH * 0.16
 
   ctx.lineJoin = 'round'
-  ctx.fillStyle = SHORTS
+  ctx.fillStyle = shorts
   ctx.beginPath()
   ctx.moveTo(wlx, waistTopY)                 // waistband, left
   ctx.lineTo(wrx, waistTopY)                 // waistband, right
@@ -177,7 +190,7 @@ export function drawPlayerShorts(ctx: CanvasRenderingContext2D, p: LegPose): voi
   ctx.closePath()
   ctx.fill()
   if (detail) {
-    ctx.strokeStyle = SHORTS_DARK; ctx.lineCap = 'round'
+    ctx.strokeStyle = shortsDark; ctx.lineCap = 'round'
     ctx.lineWidth = Math.max(1.5, coverW * 0.22)                       // hem cuffs
     ctx.beginPath(); ctx.moveTo(sLx - ch, sLy); ctx.lineTo(sLx + ch, sLy); ctx.stroke()
     ctx.beginPath(); ctx.moveTo(sRx - ch, sRy); ctx.lineTo(sRx + ch, sRy); ctx.stroke()
@@ -201,6 +214,8 @@ export type ArmPose = {
   /** jersey sleeve colour + its shade (upper arm), and the fixed skin tone for the forearm. */
   sleeve: string
   sleeveDark: string
+  /** YOUR PLAYER's skin tone (kit.skin). Falls back to the shared tone. */
+  skin?: string
 }
 
 /**
@@ -224,6 +239,7 @@ function drawOneArm(
   armW: number,
   sleeve: string,
   sleeveDark: string,
+  skin: string,
 ): void {
   const dx = hx - sx
   const dy = hy - sy
@@ -237,7 +253,7 @@ function drawOneArm(
 
   ctx.lineCap = 'round'
   // skin arm (the forearm shows below the sleeve)
-  ctx.strokeStyle = SKIN
+  ctx.strokeStyle = skin
   ctx.lineWidth = Math.max(1.6, armW)
   ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(ex, ey, hx, hy); ctx.stroke()
   // jersey sleeve over the upper arm (shoulder → ~elbow)
@@ -252,7 +268,7 @@ function drawOneArm(
   ctx.lineWidth = Math.max(2, armW * 1.5)
   ctx.beginPath(); ctx.moveTo(mx - ux * armW * 0.3, my - uy * armW * 0.3); ctx.lineTo(mx, my); ctx.stroke()
   // hand
-  ctx.fillStyle = SKIN
+  ctx.fillStyle = skin
   ctx.beginPath(); ctx.arc(hx, hy, Math.max(1.4, armW * 0.6), 0, Math.PI * 2); ctx.fill()
   ctx.lineCap = 'butt'
 }
@@ -266,6 +282,7 @@ export function drawPlayerArms(ctx: CanvasRenderingContext2D, p: ArmPose): void 
   const shY = p.shoulderY + p.armW * 0.4
   const lShX = p.cx - p.shoulderW / 2
   const rShX = p.cx + p.shoulderW / 2
-  drawOneArm(ctx, lShX, shY, p.lHandX, p.lHandY, p.armW, p.sleeve, p.sleeveDark)
-  drawOneArm(ctx, rShX, shY, p.rHandX, p.rHandY, p.armW, p.sleeve, p.sleeveDark)
+  const skin = p.skin ?? SKIN
+  drawOneArm(ctx, lShX, shY, p.lHandX, p.lHandY, p.armW, p.sleeve, p.sleeveDark, skin)
+  drawOneArm(ctx, rShX, shY, p.rHandX, p.rHandY, p.armW, p.sleeve, p.sleeveDark, skin)
 }

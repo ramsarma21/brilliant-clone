@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { SimProps } from './types'
 import { Calculator } from './Calculator'
-import { usePlayerKit } from '../../lib/playerKit'
+import { usePlayerKit, useTeammateKit } from '../../lib/playerKit'
+import { useOpponentClashGuard, DRILL_COLORS } from '../../lib/teams'
 import { drawPlayerLegs, drawPlayerShorts, bodyMetrics, drawPlayerArms, idleHands } from '../../lib/playerCanvas'
 import { fetchHighScore, saveHighScore } from '../../lib/scores'
 import type { JerseyPattern } from '../../types'
@@ -451,8 +452,16 @@ export function MotionSim({ state, onChange, showGoal, onGoal }: SimProps) {
   // structural bits intact, so equipping a different loadout visibly re-skins your
   // passer's shirt, shorts, socks and boots while skin/hair stay put.
   const selfKit = usePlayerKit(SELF_KIT)
+  // Opponent defender: distinct club colour in the lessons, red in the Training Ground —
+  // and never the same kit as YOUR equipped jersey.
+  useOpponentClashGuard(FOE_KIT, DRILL_COLORS.motion, selfKit.jersey)
   const selfKitRef = useRef<Kit>(selfKit)
   selfKitRef.current = selfKit
+  // The runner you feed is a TEAMMATE: he wears YOUR team's jersey colour (global) but
+  // his own face + standard black cleats, so only your boots track the equipped cleats.
+  const mateKit = useTeammateKit(TEAM_KIT)
+  const mateKitRef = useRef<Kit>(mateKit)
+  mateKitRef.current = mateKit
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [phase, setPhase] = useState<Phase>('aim')
@@ -863,7 +872,7 @@ export function MotionSim({ state, onChange, showGoal, onGoal }: SimProps) {
       rFeet = runAt(p, 0, 0, 0); rHead = runAt(p, 0, 1.84, 0)
       runnerRunning = false
     }
-    drawPlayer(ctx, rFeet, rHead, TEAM_KIT, now, runnerRunning, false, 'normal', runnerAct)
+    drawPlayer(ctx, rFeet, rHead, mateKitRef.current, now, runnerRunning, false, 'normal', runnerAct)
 
     // ---- aim reticle (pulsing selector that follows the pointer) ----
     if (g.phase === 'aim') {
@@ -1810,7 +1819,11 @@ function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit,
   const selfPose = {
     hipX: bx, hipY,
     lFootX: footLx, lFootY: footLy, rFootX: footRx, rFootY: footRy,
-    legW, sock: kit.sock, boot: kit.boot, bootDark, detail: bodyDetail,
+    legW, sock: kit.sock, boot: kit.boot, bootDark, skin: kit.skin, detail: bodyDetail,
+    // YOUR PLAYER's shorts follow the equipped kit (match the locker); the defender that
+    // reuses this pose stays white (undefined → standard white shorts).
+    shorts: isSelf ? kit.shorts : undefined,
+    shortsDark: isSelf ? kit.shortsDark : undefined,
   }
   if (shared) {
     drawPlayerLegs(ctx, selfPose)
@@ -1952,7 +1965,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit,
     }
     drawPlayerArms(ctx, {
       cx: bx, shoulderY: m!.shoulderY, shoulderW: m!.shoulderW, armW: m!.armW,
-      ...hands, sleeve: kit.jersey, sleeveDark: kit.jerseyDark,
+      ...hands, sleeve: kit.jersey, sleeveDark: kit.jerseyDark, skin: kit.skin,
     })
   } else if (pose === 'cheer') {
     // Both arms thrown up in celebration.

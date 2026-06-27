@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import type { SimProps } from './types'
 import { Calculator } from './Calculator'
 import { usePlayerKit } from '../../lib/playerKit'
+import { useOpponentClashGuard, DRILL_COLORS } from '../../lib/teams'
 import { drawPlayerLegs, drawPlayerShorts, bodyMetrics, drawPlayerArms, idleHands } from '../../lib/playerCanvas'
 import { fetchHighScore, saveHighScore } from '../../lib/scores'
 import type { JerseyPattern } from '../../types'
@@ -465,6 +466,9 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const teamKit = usePlayerKit(TEAM_KIT)
   const youKitRef = useRef<Kit>(teamKit)
   youKitRef.current = teamKit
+  // Opponent defender: distinct club colour in the lessons, red in the Training Ground —
+  // and never the same kit as YOUR equipped jersey.
+  useOpponentClashGuard(FOE_KIT, DRILL_COLORS.forces, teamKit.jersey)
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [phase, setPhase] = useState<Phase>('menu')
@@ -1494,6 +1498,11 @@ function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit,
     sock: kit.sock,
     boot: kit.boot,
     bootDark: (kit as { bootDark?: string }).bootDark ?? kit.boot,
+    skin: kit.skin,
+    // YOUR PLAYER's shorts follow the equipped (locker) kit; the front defender that shares
+    // this renderer stays white (undefined → standard white shorts).
+    shorts: back ? kit.shorts : undefined,
+    shortsDark: back ? (kit as { shortsDark?: string }).shortsDark : undefined,
     detail,
   }
   drawPlayerLegs(ctx, pose)
@@ -1557,6 +1566,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit,
     rHandY: hands.rHandY,
     sleeve: kit.jersey,
     sleeveDark: kit.jerseyDark,
+    skin: kit.skin,
   })
 
   ctx.fillStyle = kit.collar; ctx.fillRect(cxU - wBody * 0.2, shoulderY, wBody * 0.4, Math.max(1.5, torsoH * 0.1))

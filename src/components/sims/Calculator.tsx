@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+const CALC_WIDTH = 232
 
 // A tiny, friendly scientific calculator. Trig works in DEGREES (angles here
 // are in degrees), so students can plug θ straight in.
@@ -101,9 +103,50 @@ const KEYS: { label: string; ins?: string; kind?: string }[] = [
   { label: '0', ins: '0' }, { label: '.', ins: '.' }, { label: '⌫', kind: 'del' }, { label: '+', ins: '+', kind: 'op' },
 ]
 
-export function Calculator({ onClose }: { onClose: () => void }) {
+export function Calculator({ onClose, floating = false }: { onClose: () => void; floating?: boolean }) {
   const [expr, setExpr] = useState('')
   const [result, setResult] = useState('')
+  // When `floating`, the calc is a fixed, draggable panel that opens to the right of the
+  // screen (beside the testing HUD). `pos` is its top-left in viewport px once placed.
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(() =>
+    floating && typeof window !== 'undefined'
+      ? { x: Math.max(12, window.innerWidth - CALC_WIDTH - 24), y: 96 }
+      : null,
+  )
+  const dragRef = useRef<{ dx: number; dy: number } | null>(null)
+
+  const startDrag = useCallback((e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest('.calc__close')) return
+    const card = (e.currentTarget as HTMLElement).closest('.calc') as HTMLElement | null
+    const rect = card?.getBoundingClientRect()
+    const baseX = pos?.x ?? rect?.left ?? 0
+    const baseY = pos?.y ?? rect?.top ?? 0
+    dragRef.current = { dx: e.clientX - baseX, dy: e.clientY - baseY }
+    const move = (ev: PointerEvent) => {
+      if (!dragRef.current) return
+      const x = Math.min(window.innerWidth - 60, Math.max(0, ev.clientX - dragRef.current.dx))
+      const y = Math.min(window.innerHeight - 40, Math.max(0, ev.clientY - dragRef.current.dy))
+      setPos({ x, y })
+    }
+    const up = () => {
+      dragRef.current = null
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+  }, [pos])
+
+  // Keep the floating panel on-screen if the window is resized smaller.
+  useEffect(() => {
+    if (!floating) return
+    const onResize = () => setPos((p) => (p ? {
+      x: Math.min(p.x, window.innerWidth - 60),
+      y: Math.min(p.y, window.innerHeight - 40),
+    } : p))
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [floating])
   // After "=", the result becomes the running expression so the next op chains
   // from it (e.g. cos(15) = 0.966, then × 20 → 0.966 × 20, not cos(15) × 20).
   const [justEval, setJustEval] = useState(false)
@@ -173,9 +216,13 @@ export function Calculator({ onClose }: { onClose: () => void }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [insert, equals, del, clear, onClose])
 
+  const draggable = floating
   return (
-    <div className="calc">
-      <div className="calc__bar">
+    <div
+      className={`calc${draggable ? ' calc--floating' : ''}`}
+      style={pos ? { position: 'fixed', left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' } : undefined}
+    >
+      <div className="calc__bar" onPointerDown={draggable ? startDrag : undefined}>
         <span className="calc__title">🧮 Helper Calc</span>
         <span className="calc__deg">deg</span>
         <button type="button" className="calc__close" onClick={onClose} aria-label="Close calculator">✕</button>

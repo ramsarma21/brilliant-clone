@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react'
 import type {
+  LeagueStanding,
   LessonProgress,
   SimState,
   StepAnswer,
@@ -18,6 +19,7 @@ import type {
 } from '../types'
 import { LESSONS, UNITS } from '../content/lessons'
 import {
+  clearTestSession,
   DEMO_PROFILE,
   loadAuthProfile,
   loadProgress,
@@ -30,6 +32,8 @@ import {
 import { saveProfileMastery } from '../lib/profileMastery'
 import { resetAllHighScores } from '../lib/scores'
 import { ensureCloudProfile, loadCloudProgress, saveCloudProgress } from '../lib/cloudSync'
+import { SEASON_GAMES, newLeagueSeed } from '../lib/leagueSeed'
+import { initPointsWheel, spinPointsWheel } from '../lib/pointsWheel'
 import { signInUser, signUpUser, type AuthProfile } from '../lib/auth'
 
 /** Fired when gameplay state should reset (e.g. a brand-new account signs up). */
@@ -79,7 +83,14 @@ function createInitialProgress(): UserProgress {
     mastery: {},
     lessonState,
     quantumMatchesPlayed: 0,
+    leagueSeed: newLeagueSeed(),
   }
+}
+
+/** Ensure a league seed exists (older caches / cloud rows may predate it). */
+function withLeagueSeed(p: UserProgress): UserProgress {
+  if (p.leagueSeed != null) return p
+  return { ...p, leagueSeed: newLeagueSeed() }
 }
 
 /**
@@ -221,6 +232,8 @@ type AppContextValue = {
   visitedToday: boolean
   /** Whether this session was the account's first visit of the day. */
   firstVisitToday: boolean
+  /** Whether the daily wheel hasn't been spun yet today. */
+  wheelAvailable: boolean
   login: (username: string, password: string) => Promise<AuthOutcome>
   signup: (username: string, password: string) => Promise<AuthOutcome>
   logout: () => void
@@ -234,6 +247,18 @@ type AppContextValue = {
   skipAllLessons: () => void
   /** Record a played Quantum League match (advances the league ladder by one). */
   playQuantumMatch: () => void
+  /** Persist a simulated final league table (or null to clear it). */
+  setLeagueTable: (table: LeagueStanding[] | null) => void
+  /** Mark the daily wheel as spun + collected for today (hides it until tomorrow). */
+  claimDailyWheel: () => void
+  /** Testing only: force the daily wheel back even if it was already spun today. */
+  resetDailyWheel: () => void
+  /** True when today's once-a-day practice coin bonus hasn't been claimed yet. */
+  practiceBonusAvailable: boolean
+  /** Mark today's practice coin bonus as claimed (hides it until tomorrow). */
+  claimPracticeBonus: () => void
+  /** Resolve one 90+ skill-point gamble spin (1–10), advancing the rigged tracker. */
+  rollPointsWheel: () => number
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
@@ -267,6 +292,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // session (a daily-rollover signal; not a streak). Recomputed on each hydrate.
   const [firstVisitToday, setFirstVisitToday] = useState(false)
 
+  // Always-current snapshot of progress for actions that must read-then-write synchronously
+  // (e.g. the points wheel needs to return the drawn value to its caller right away).
+  const progressRef = useRef(progress)
+  useEffect(() => {
+    progressRef.current = progress
+  }, [progress])
+
   // Persist progress to the per-device cache whenever it changes.
   const firstRender = useRef(true)
   useEffect(() => {
@@ -295,7 +327,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const res = await loadCloudProgress(user)
       if (!alive) return
       if (res.status === 'ok') {
-        const { next, firstToday } = markDailyVisit(res.data)
+        const { next, firstToday } = markDailyVisit(withLeagueSeed(res.data))
         next.unitStatus = recomputeStatuses(next)
         setFirstVisitToday(firstToday)
         setProgress(next)
@@ -307,7 +339,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setProgress(fresh)
       } else {
         setProgress((prev) => {
-          const { next, firstToday } = markDailyVisit(prev)
+          const { next, firstToday } = markDailyVisit(withLeagueSeed(prev))
           next.unitStatus = recomputeStatuses(next)
           setFirstVisitToday(firstToday)
           return next
@@ -520,6 +552,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fresh.userId = profile.id
     fresh.unitStatus = recomputeStatuses(fresh)
     setProgress(fresh)
+    // Drop any in-progress/finished test session so a reset is a clean slate — otherwise a
+    // stale snapshot (e.g. a half-finished quiz, or a committed 'done' screen) could resume
+    // and reopen the old assessment after everything else was wiped.
+    clearTestSession(profile.username)
     // Push the cleared career state to the cloud IMMEDIATELY rather than waiting
     // on the debounced sync effect — otherwise the profiles row's *_mastered
     // flags (and progress jsonb) could keep stale "mastered" values. Also zero
@@ -552,7 +588,47 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const playQuantumMatch = useCallback(() => {
-    update((p) => ({ ...p, quantumMatchesPlayed: (p.quantumMatchesPlayed ?? 0) + 1 }))
+    // Single 50-game season — the match counter is capped at SEASON_GAMES.
+    update((p) => ({
+      ...p,
+      quantumMatchesPlayed: Math.min(SEASON_GAMES, (p.quantumMatchesPlayed ?? 0) + 1),
+    }))
+  }, [update])
+
+  // Store a freshly-simulated final league table (the sim itself runs in the Dashboard,
+  // which can safely import lib/league; AppState only persists the result). A simmed season
+  // also marks all 50 matches as played; passing null clears both. Saved to the cloud with
+  // the rest of `progress`.
+  const setLeagueTable = useCallback((table: LeagueStanding[] | null) => {
+    update((p) => ({
+      ...p,
+      leagueTable: table,
+      quantumMatchesPlayed: table && table.length > 0 ? SEASON_GAMES : 0,
+    }))
+  }, [update])
+
+  const claimDailyWheel = useCallback(() => {
+    update((p) => ({ ...p, lastWheelSpinDate: todayKey() }))
+  }, [update])
+
+  // Testing hook: stamp the wheel as "spun yesterday" so it reappears immediately.
+  const resetDailyWheel = useCallback(() => {
+    update((p) => ({ ...p, lastWheelSpinDate: '' }))
+  }, [update])
+
+  // Same once-a-day pattern as the daily wheel: stamp today's date when the practice coin
+  // bonus is collected so it can't be claimed again until tomorrow.
+  const claimPracticeBonus = useCallback(() => {
+    update((p) => ({ ...p, lastPracticeBonusDate: todayKey() }))
+  }, [update])
+
+  // Resolve one 90+ skill-point gamble spin: advances the rigged tracker (persisted to the
+  // cloud) and returns the drawn 1–10 value synchronously so the wheel can animate to it.
+  const rollPointsWheel = useCallback((): number => {
+    const current = progressRef.current.pointsWheel ?? initPointsWheel()
+    const { value, next } = spinPointsWheel(current)
+    update((p) => ({ ...p, pointsWheel: next }))
+    return value
   }, [update])
 
   const masteredCheck = useCallback(
@@ -570,6 +646,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       lastVisitDate: progress.lastActiveDate,
       visitedToday: progress.lastActiveDate === todayKey(),
       firstVisitToday,
+      wheelAvailable: (progress.lastWheelSpinDate ?? '') !== todayKey(),
+      practiceBonusAvailable: (progress.lastPracticeBonusDate ?? '') !== todayKey(),
       login,
       signup,
       logout,
@@ -582,6 +660,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       resetProgress,
       skipAllLessons,
       playQuantumMatch,
+      setLeagueTable,
+      claimDailyWheel,
+      resetDailyWheel,
+      claimPracticeBonus,
+      rollPointsWheel,
     }),
     [
       isLoggedIn,
@@ -602,6 +685,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
       resetProgress,
       skipAllLessons,
       playQuantumMatch,
+      setLeagueTable,
+      claimDailyWheel,
+      resetDailyWheel,
+      claimPracticeBonus,
+      rollPointsWheel,
     ],
   )
 

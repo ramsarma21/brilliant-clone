@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { SimProps } from './types'
 import { Calculator } from './Calculator'
-import { usePlayerKit } from '../../lib/playerKit'
+import { usePlayerKit, useTeammateKit } from '../../lib/playerKit'
+import { useOpponentClashGuard, DRILL_COLORS } from '../../lib/teams'
 import { bodyMetrics, drawPlayerLegs, drawPlayerShorts, drawPlayerArms, idleHands } from '../../lib/playerCanvas'
 import type { LegPose } from '../../lib/playerCanvas'
 import { fetchHighScore, saveHighScore } from '../../lib/scores'
@@ -685,8 +686,17 @@ export function EnergySim({ state, onChange, showGoal, onGoal }: SimProps) {
   // the keeper (GK_KIT) keep their own distinct colours. The draw loop reads
   // youKitRef each frame.
   const teamKit = usePlayerKit(TEAM_KIT)
+  // Teammates share YOUR jersey colour (global) but wear standard black cleats — only
+  // YOUR boots track the equipped cleats, so they feel personal.
+  const mateKit = useTeammateKit(TEAM_KIT)
+  // Opponent defenders + keeper: distinct club colours in the lessons, red in the Training
+  // Ground — and never the same kit as YOUR equipped jersey.
+  useOpponentClashGuard(FOE_KIT, DRILL_COLORS.energy, teamKit.jersey)
+  useOpponentClashGuard(GK_KIT, DRILL_COLORS.energyKeeper, teamKit.jersey)
   const youKitRef = useRef<Kit>(teamKit)
   youKitRef.current = teamKit
+  const mateKitRef = useRef<Kit>(mateKit)
+  mateKitRef.current = mateKit
   const answerRef = useRef(answerStr); answerRef.current = answerStr
   const streakRef = useRef(streak); streakRef.current = streak
   const bestRef = useRef(best); bestRef.current = best
@@ -922,14 +932,17 @@ export function EnergySim({ state, onChange, showGoal, onGoal }: SimProps) {
       drawGoalFrame(ctx, project)
       drawCornerFlag(ctx, project, 1)
       drawCornerFlag(ctx, project, -1)
-      // corner taker (deepest, out at the flag), then keeper, then the crowd
-      drawWorldPlayer(kicker.x, kicker.z, youKitRef.current, kicker.running, false, 0, kicker.footTarget ? footAction(kicker.footTarget, kicker.lean) : undefined)
+      // corner taker (deepest, out at the flag), then keeper, then the crowd. The
+      // taker is a TEAMMATE — your jersey colour, but standard black cleats.
+      drawWorldPlayer(kicker.x, kicker.z, mateKitRef.current, kicker.running, false, 0, kicker.footTarget ? footAction(kicker.footTarget, kicker.lean) : undefined)
       if (keeperDive) drawDivingKeeper(ctx, project, KEEPER_Z, keeperDive)
       else drawWorldPlayer(keeper.x, keeper.z, GK_KIT, keeper.running, false, keeper.y)
       // contesting bodies, far -> near, each leaping for the dropping ball
       const sorted = [...crowd].sort((a, b) => b.z - a.z)
       for (const a of sorted) {
-        const kit = a.team === 'foe' ? FOE_KIT : youKitRef.current
+        // foes keep the red kit; your supporting attackers are TEAMMATES (your jersey,
+        // black cleats). Only YOU (drawn separately) wear your equipped boots.
+        const kit = a.team === 'foe' ? FOE_KIT : mateKitRef.current
         const jY = contestU > 0 ? jumpArc(contestU, a.peak) : 0
         drawWorldPlayer(a.x, a.z, kit, contestU > 0 && contestU < U_TAKEOFF, false, jY)
       }
@@ -1754,6 +1767,11 @@ function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit,
     sock: kit.sock,
     boot: kit.boot,
     bootDark: (kit as { bootDark?: string }).bootDark ?? kit.boot,
+    skin: kit.skin,
+    // YOUR PLAYER's shorts follow the equipped (locker) kit; the red defenders that share
+    // this renderer stay white (undefined → standard white shorts).
+    shorts: backView && !isFoe ? kit.shorts : undefined,
+    shortsDark: backView && !isFoe ? (kit as { shortsDark?: string }).shortsDark : undefined,
     detail,
   }
 
@@ -1883,7 +1901,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit,
     drawPlayerArms(ctx, {
       cx: cxU, shoulderY: m.shoulderY, shoulderW: m.shoulderW, armW: m.armW,
       lHandX, lHandY, rHandX, rHandY,
-      sleeve: kit.jersey, sleeveDark: kit.jerseyDark,
+      sleeve: kit.jersey, sleeveDark: kit.jerseyDark, skin: kit.skin,
     })
   } else {
     // the keeper: unchanged upper-arm (sleeve) +

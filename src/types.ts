@@ -168,9 +168,69 @@ export type UserProgress = {
   lessonState: Record<string, LessonProgress>
   /**
    * Quantum League matches played after promotion. Each match is gated behind a
-   * completed top-flight assessment (matches & assessments advance 1:1).
+   * completed top-flight assessment (matches & assessments advance 1:1). Single
+   * 50-game season, so this is capped at 50.
    */
   quantumMatchesPlayed?: number
+  /**
+   * Per-account random seed for the league simulation (legacy; the season is now
+   * simulated with fresh randomness each time and the result is stored below).
+   */
+  leagueSeed?: number
+  /**
+   * Last calendar day (YYYY-MM-DD) the daily wheel was spun + collected. The wheel is
+   * available whenever this isn't today. Persisted in the cloud and cleared on reset.
+   */
+  lastWheelSpinDate?: string
+  /**
+   * Last calendar day (YYYY-MM-DD) the +coins "practice this concept" bonus was claimed. Like
+   * the daily wheel, the bonus is offered once per day on a missed question in the test-history
+   * review; claiming it stamps today's date. Persisted in the cloud and cleared on reset.
+   */
+  lastPracticeBonusDate?: string
+  /**
+   * Career-long tracking for the 90+ "gamble your skill points" wheel (see lib/pointsWheel).
+   * Persisted so the rigged odds (one guaranteed 10 early, a hard cap on 8+ results) hold
+   * across sessions. Cleared on reset.
+   */
+  pointsWheel?: PointsWheelState
+  /**
+   * The STORED final league table once you sim the season. Null/absent = not simmed
+   * yet. Re-simming overwrites this with fresh random results; a career reset clears
+   * it (and it is NOT restored by skipping lessons). Persisted in the cloud via the
+   * `progress` jsonb so it's the same on every device until you reset.
+   */
+  leagueTable?: LeagueStanding[] | null
+}
+
+/** Career tracking for the 90+ skill-point gamble wheel. */
+export type PointsWheelState = {
+  /** Total spins taken so far. */
+  spins: number
+  /** How many 8+ results have been drawn (hard-capped). */
+  highs: number
+  /** The pre-chosen spin index (6–8) on which the one-and-only guaranteed 10 lands. */
+  tenSpin: number
+  /** Whether the guaranteed 10 has already been awarded. */
+  tenDone: boolean
+  /** Running surplus vs the safe baseline (points won minus 5 per spin). Drives the self-balancing odds. */
+  net: number
+  /** Consecutive cold spins (≤5). Drives a quiet pity nudge so a long cold run can't bleed them out. */
+  lowStreak: number
+}
+
+/** One club's row in the league table (serializable; stored on UserProgress). */
+export type LeagueStanding = {
+  name: string
+  index: number
+  isPlayer: boolean
+  pl: number
+  w: number
+  d: number
+  l: number
+  gf: number
+  ga: number
+  pts: number
 }
 
 // ===========================================================================
@@ -220,14 +280,47 @@ export type Cosmetic = {
   shorts?: string
 }
 
+/** YOUR PLAYER's physical look. Palette ids resolved in lib/appearance.ts. Flows
+ *  globally (card, locker model, every drill) just like the equipped loadout does. */
+export type Appearance = { skin: string; hair: string }
+
+/** Badge silhouette + physics motif used by the procedural club emblem. */
+export type EmblemShape = 'shield' | 'classic' | 'hex' | 'roundel'
+export type EmblemMotif =
+  | 'atom' | 'bolt' | 'ball' | 'wave' | 'orbit' | 'star'
+  | 'flame' | 'arrow' | 'mountain' | 'pendulum' | 'torque' | 'spiral' | 'sun'
+
+/**
+ * A customizable club crest. `primary/secondary/accent` are optional overrides —
+ * when omitted the emblem follows the player's equipped jersey colours so the badge
+ * always matches the kit.
+ */
+export type EmblemConfig = {
+  shape: EmblemShape
+  motif: EmblemMotif
+  primary?: string
+  secondary?: string
+  accent?: string
+}
+
+/** YOUR club's identity (FC name + crest). Editable and stored per user. */
+export type ClubIdentity = {
+  name: string
+  emblem: EmblemConfig
+}
+
 export type PlayerProfile = {
   skills: PlayerSkills
   coins: number
   /** Unspent skill points earned from passing the test. */
   skillPoints: number
   equipped: { jersey: string; cleats: string }
+  /** Physical look (skin tone + hair colour) — applied everywhere the player is drawn. */
+  appearance: Appearance
   /** Owned cosmetic ids (includes starter items). */
   inventory: string[]
+  /** Customizable club name + crest (defaults to "Physics FC"). */
+  club: ClubIdentity
 }
 
 /** Fine-grained, per-concept competence + spaced-repetition state. */

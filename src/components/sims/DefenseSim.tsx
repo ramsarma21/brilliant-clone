@@ -4,6 +4,7 @@ import type { SimProps } from './types'
 import type { JerseyPattern } from '../../types'
 import { Calculator } from './Calculator'
 import { usePlayerKit } from '../../lib/playerKit'
+import { useOpponentClashGuard, DRILL_COLORS } from '../../lib/teams'
 import { drawPlayerLegs, drawPlayerShorts, bodyMetrics, drawPlayerArms, idleHands } from '../../lib/playerCanvas'
 import { fetchHighScore, saveHighScore } from '../../lib/scores'
 
@@ -421,6 +422,9 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
   // Held in a ref so the rAF draw loop reads the latest without re-subscribing;
   // the opponent attacker keeps his own distinct FOE_KIT.
   const teamKit = usePlayerKit(TEAM_KIT)
+  // Opponent attacker: distinct club colour in the lessons, red in the Training Ground —
+  // and never the same kit as YOUR equipped jersey.
+  useOpponentClashGuard(FOE_KIT, DRILL_COLORS.defense, teamKit.jersey)
   const kitRef = useRef<Kit>(teamKit)
   kitRef.current = teamKit
 
@@ -1417,6 +1421,10 @@ function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit,
     sock: kit.sock,
     boot: kit.boot,
     bootDark: (kit as { bootDark?: string }).bootDark ?? kit.boot,
+    skin: kit.skin,
+    // YOUR PLAYER's shorts follow the equipped (locker) kit; the attacker stays white.
+    shorts: isSelf ? kit.shorts : undefined,
+    shortsDark: isSelf ? (kit as { shortsDark?: string }).shortsDark : undefined,
     detail,
   }
   // skin thigh → jersey-coloured sock shin + sock cuffs + boots, BEFORE the torso
@@ -1477,6 +1485,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit,
     rHandY: hands.rHandY,
     sleeve: kit.jersey,
     sleeveDark: kit.jerseyDark,
+    skin: kit.skin,
   })
 
   ctx.fillStyle = kit.collar; ctx.fillRect(cxU - wBody * 0.2, shoulderY, wBody * 0.4, Math.max(1.5, torsoH * 0.1))
@@ -1549,6 +1558,10 @@ function drawSlidePlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit:
     sock: kit.sock,
     boot: kit.boot,
     bootDark: (kit as { bootDark?: string }).bootDark ?? kit.boot,
+    skin: kit.skin,
+    // The slide tackle is always YOUR PLAYER — shorts follow the equipped (locker) kit.
+    shorts: kit.shorts,
+    shortsDark: (kit as { shortsDark?: string }).shortsDark,
     detail,
   }
   drawPlayerLegs(ctx, slidePose)

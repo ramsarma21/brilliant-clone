@@ -1,5 +1,6 @@
-import type { BankQuestion, QuestionDiagram, SkillId, UnitProficiency } from '../types'
+import type { BankQuestion, ConceptProficiency, ProficiencyMap, QuestionDiagram, SkillId } from '../types'
 import { SKILL_IDS } from './skills'
+import { conceptAbility, retrievability, targetDifficulty, weakestConcepts } from './proficiency'
 import { supabase, isSupabaseConfigured } from './supabase'
 import { generateReviewQuestions } from './ai/reviewClient'
 import kinematics from '../content/bank/kinematics.json'
@@ -67,17 +68,6 @@ export async function fetchBank(): Promise<BankQuestion[]> {
   }
 }
 
-// Map a unit proficiency (0..100) to how many of the 4 questions come from each
-// of the 5 difficulty levels [L1..L5]. Weak units lean easy (scaffolding),
-// strong units lean hard (desirable difficulty). Each row sums to PER_UNIT (4).
-function difficultyMix(proficiency: number): [number, number, number, number, number] {
-  if (proficiency < 30) return [2, 2, 0, 0, 0]
-  if (proficiency < 50) return [1, 2, 1, 0, 0]
-  if (proficiency < 70) return [0, 1, 2, 1, 0]
-  if (proficiency < 85) return [0, 0, 1, 2, 1]
-  return [0, 0, 0, 2, 2]
-}
-
 function shuffle<T>(items: T[], rng: () => number): T[] {
   const out = [...items]
   for (let i = out.length - 1; i > 0; i--) {
@@ -115,6 +105,13 @@ export function seededRng(seed: string): () => number {
 }
 
 const PER_UNIT = 4
+// Of the 4 questions per unit, up to this many are reserved for spaced RETRIEVAL
+// of the learner's weakest/most-faded concepts in that unit; the rest are
+// on-level, desirable-difficulty coverage of (preferably newer) concepts.
+const MAX_REVIEW_SLOTS = 2
+// A concept counts as "needs retrieval" once its memory has faded past this
+// retrievability, or if it has any active miss streak.
+const REVIEW_RETRIEVABILITY = 0.7
 
 type SelectOpts = {
   /** Deterministic RNG (seed it per-account for a unique-but-stable test). */
@@ -124,58 +121,140 @@ type SelectOpts = {
    * a brand-new account) instead of being weighted by proficiency.
    */
   starter?: boolean
+  /** Injected clock so the forgetting-curve math is testable/deterministic. */
+  now?: Date
 }
 
 /**
- * Build the gating test: 4 questions per OFFERED unit (5 units → 20 questions).
- * Normally difficulty-weighted by the learner's proficiency in each unit; for the
- * `starter` test every question is difficulty 1. Selection + final order are
- * driven entirely by the supplied `rng`, so seeding it from the account makes the
- * test unique to that account with nothing hardcoded. The old impulse/goalie
- * questions are folded into the single `momentum` unit.
+ * Pick the unseen question whose difficulty is closest to `targetDiff`. STABLE:
+ * ties (same difficulty gap) keep the caller's order, so callers pre-shuffle for
+ * randomness or pre-sort to express a preference (e.g. least-practised concept).
+ */
+function pickNearestDifficulty(
+  candidates: BankQuestion[],
+  targetDiff: number,
+  taken: Set<string>,
+): BankQuestion | null {
+  const pool = candidates.filter((q) => !taken.has(q.id))
+  if (pool.length === 0) return null
+  const minGap = Math.min(...pool.map((q) => Math.abs(q.difficulty - targetDiff)))
+  return pool.find((q) => Math.abs(q.difficulty - targetDiff) === minGap) ?? null
+}
+
+/**
+ * Build the gating test: 4 questions per OFFERED unit (5 units → 20 questions),
+ * personalized by the learner model (see lib/proficiency):
+ *
+ *   • DESIRABLE DIFFICULTY — each question's level targets the learner's shrunk
+ *     ability so expected success sits in the ~80% effortful-but-winnable zone;
+ *     ability rises → questions get harder, automatically and progressively.
+ *   • SPACED RETRIEVAL — up to {@link MAX_REVIEW_SLOTS} slots per unit go to the
+ *     weakest / most-faded concepts (forgetting curve + miss streaks), scaffolded
+ *     a touch easier so the learner can actually rebuild them.
+ *   • COVERAGE / INTERLEAVING — remaining slots favour less-practised concepts and
+ *     the whole 20 are shuffled so units (and difficulties) interleave.
+ *
+ * The `starter` test (brand-new account, no evidence) is all difficulty 1.
+ * Everything is driven by the supplied `rng`, so a per-account seed makes the
+ * test unique-but-stable with nothing hardcoded.
  */
 export function selectTestQuestions(
   bank: BankQuestion[],
-  unitProf: Record<SkillId, UnitProficiency>,
+  proficiency: ProficiencyMap,
   opts: SelectOpts = {},
 ): BankQuestion[] {
   const rng = opts.rng ?? Math.random
+  const now = opts.now ?? new Date()
   const out: BankQuestion[] = []
+
   for (const unitId of SKILL_IDS) {
     const pool = bank.filter((q) => q.unitId === unitId)
     if (pool.length === 0) continue
-    const byDiff: Record<number, BankQuestion[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] }
-    for (const q of pool) byDiff[q.difficulty]?.push(q)
-    const mix: number[] = opts.starter
-      ? [PER_UNIT, 0, 0, 0, 0]
-      : difficultyMix(unitProf[unitId]?.proficiency ?? 0)
 
+    const taken = new Set<string>()
     const chosen: BankQuestion[] = []
-    mix.forEach((count, idx) => {
-      const diff = idx + 1
-      const available = shuffle(byDiff[diff] ?? [], rng)
-      chosen.push(...available.slice(0, count))
-    })
-    // Top up from anything left in the unit if a difficulty bucket was short.
-    if (chosen.length < PER_UNIT) {
-      const remaining = shuffle(
-        pool.filter((q) => !chosen.includes(q)),
-        rng,
+
+    // Starter test: a flat, gentle difficulty-1 sheet across every unit.
+    if (opts.starter) {
+      const easy = shuffle(pool.filter((q) => q.difficulty === 1), rng)
+      chosen.push(...easy.slice(0, PER_UNIT))
+    } else {
+      // Learner state for this unit's concepts.
+      const unitConcepts = Object.values(proficiency).filter((c) => c.unitId === unitId)
+      const unitAbility =
+        unitConcepts.length > 0
+          ? unitConcepts.reduce((s, c) => s + conceptAbility(c), 0) / unitConcepts.length
+          : conceptAbility(undefined)
+      const unitTarget = targetDifficulty(unitAbility)
+
+      // 1) SPACED RETRIEVAL — weakest/faded concepts first, scaffolded easier.
+      const needsReview = weakestConcepts(
+        Object.fromEntries(unitConcepts.map((c) => [c.conceptTag, c])) as ProficiencyMap,
+        MAX_REVIEW_SLOTS,
+        now,
+      ).filter(
+        (c: ConceptProficiency) => retrievability(c, now) < REVIEW_RETRIEVABILITY || c.missStreak > 0,
       )
-      chosen.push(...remaining.slice(0, PER_UNIT - chosen.length))
+      for (const c of needsReview) {
+        if (chosen.length >= PER_UNIT) break
+        const scaffold = c.missStreak > 0 ? 1 : 0 // ease off after a miss
+        const diff = Math.round(targetDifficulty(conceptAbility(c))) - scaffold
+        // Pre-shuffle so the chosen question within the target tier varies per seed.
+        const conceptPool = shuffle(pool.filter((q) => q.conceptTag === c.conceptTag), rng)
+        const q = pickNearestDifficulty(conceptPool, diff, taken)
+        if (q) {
+          chosen.push(q)
+          taken.add(q.id)
+        }
+      }
+
+      // 2) ON-LEVEL COVERAGE — fill the rest at the unit's desirable difficulty,
+      //    preferring concepts NOT already used and those with the least practice.
+      const slots = PER_UNIT - chosen.length
+      if (slots > 0) {
+        const usedConcepts = new Set(chosen.map((q) => q.conceptTag))
+        const attemptsByConcept = new Map(unitConcepts.map((c) => [c.conceptTag, c.attempts]))
+        // Slight difficulty spread around the target for interleaving variety.
+        const spread = [0, 1, -1, 2].slice(0, slots)
+        // Rank remaining questions: fresh concepts (fewest attempts) first, then
+        // a deterministic shuffle within ties.
+        const remaining = shuffle(pool.filter((q) => !taken.has(q.id)), rng).sort(
+          (a, b) =>
+            (usedConcepts.has(a.conceptTag) ? 1 : 0) - (usedConcepts.has(b.conceptTag) ? 1 : 0) ||
+            (attemptsByConcept.get(a.conceptTag) ?? 0) - (attemptsByConcept.get(b.conceptTag) ?? 0),
+        )
+        for (let i = 0; i < slots; i++) {
+          const diff = Math.round(unitTarget + (spread[i] ?? 0))
+          const q = pickNearestDifficulty(remaining, diff, taken)
+          if (q) {
+            chosen.push(q)
+            taken.add(q.id)
+          }
+        }
+      }
+    }
+
+    // Top up from anything left in the unit if a bucket came up short.
+    if (chosen.length < PER_UNIT) {
+      const fill = shuffle(pool.filter((q) => !taken.has(q.id)), rng)
+      for (const q of fill) {
+        if (chosen.length >= PER_UNIT) break
+        chosen.push(q)
+        taken.add(q.id)
+      }
     }
     out.push(...chosen.slice(0, PER_UNIT))
   }
-  // Interleave the units into a per-account order (also satisfies interleaving:
-  // mixed problem types rather than four-in-a-row of one unit).
+
+  // Interleave units into a per-account order (mixed problem types, not four in a row).
   return shuffle(out, rng)
 }
 
 export const TEST_TOTAL = SKILL_IDS.length * PER_UNIT
 export const TEST_PASS_70 = 0.7
 export const TEST_PASS_90 = 0.9
-export const POINTS_FOR_70 = 5
-export const POINTS_FOR_90 = 10
+export const POINTS_FOR_70 = 3
+export const POINTS_FOR_90 = 5
 
 /** Skill points awarded for a given correct-count out of the total. */
 export function pointsForScore(score: number, total: number): number {

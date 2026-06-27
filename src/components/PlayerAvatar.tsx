@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import type { JerseyPattern, SkillId } from '../types'
 import { COSMETICS_BY_ID } from '../content/cosmetics'
+import { faceColors, type FaceColors } from '../lib/appearance'
 
 // FIFA-style attribute abbreviation + a position per signature skill.
 export const ATTR_ABBR: Record<SkillId, string> = {
@@ -29,10 +30,10 @@ export type AvatarKit = {
 }
 export type AvatarCleats = { primary: string; secondary: string; accent: string }
 
-// Skin + hair tones mirror the in-drill penalty taker (KICKER_KIT).
-const SKIN = '#edbb90'
-const SKIN_SHADE = '#cf9869'
-const HAIR = '#3a2616'
+// Default face = the historical "fair / brown" look. The card + locker pass the player's
+// real Appearance via the `face` prop so customising skin/hair updates the model
+// everywhere. The sims read the same colours through usePlayerKit.
+const DEFAULT_FACE: FaceColors = faceColors()
 
 // Default kit = the BLUE Home kit the in-drill character wears.
 const DEFAULT_KIT: AvatarKit = {
@@ -129,10 +130,12 @@ function JerseyArt({
 export function CardPlayer({
   jersey = DEFAULT_KIT,
   cleats = DEFAULT_CLEATS,
+  face = DEFAULT_FACE,
   className = 'fut__player',
 }: {
   jersey?: AvatarKit
   cleats?: AvatarCleats
+  face?: FaceColors
   className?: string
 }) {
   const uid = useId()
@@ -142,6 +145,7 @@ export function CardPlayer({
   const shorts = jersey.shorts ?? '#f2f5fb'
   const shortsDark = '#cdd6e6'
   const torsoFill = pattern === 'galaxy' ? `url(#${gradId})` : jersey.primary
+  const { skin: SKIN, skinShade: SKIN_SHADE, skinHi: SKIN_HI, hair: HAIR, hairHi: HAIR_HI } = face
 
   // Athletic build: small head, broad shoulders → lean waist, LONG legs (hips at
   // mid-height). Leg centres + knee/sock/boot lines mirror the canonical sim proportions.
@@ -228,33 +232,157 @@ export function CardPlayer({
         10
       </text>
 
-      {/* neck (short stub) */}
+      {/* neck (short stub) with a touch of jaw shadow */}
       <rect x={CXC - 5} y="30" width="10" height="11" rx="3.5" fill={SKIN} />
       <rect x={CXC - 5} y="30" width="10" height="3.5" rx="1.8" fill={SKIN_SHADE} opacity="0.5" />
 
       {/* ears */}
       <circle cx={CXC - 9.4} cy="25" r="2.4" fill={SKIN} />
       <circle cx={CXC + 9.4} cy="25" r="2.4" fill={SKIN} />
+      <circle cx={CXC - 9.2} cy="25.4" r="1" fill={SKIN_SHADE} opacity="0.5" />
+      <circle cx={CXC + 9.2} cy="25.4" r="1" fill={SKIN_SHADE} opacity="0.5" />
 
-      {/* head */}
-      <circle cx={CXC} cy="24" r="10" fill={SKIN} />
+      {/* head — defined jaw tapering to a strong chin (the same face as CardFace) */}
+      <path
+        d={`M${CXC - 10} 22.5 C${CXC - 10} 16 ${CXC - 5.5} 13 ${CXC} 13
+            C${CXC + 5.5} 13 ${CXC + 10} 16 ${CXC + 10} 22.5
+            C${CXC + 10} 28 ${CXC + 7.5} 31.5 ${CXC + 3} 33.4
+            C${CXC + 1.4} 34 ${CXC - 1.4} 34 ${CXC - 3} 33.4
+            C${CXC - 7.5} 31.5 ${CXC - 10} 28 ${CXC - 10} 22.5 Z`}
+        fill={SKIN}
+      />
+      {/* cheekbone highlights + forehead light */}
+      <ellipse cx={CXC - 5} cy="24.5" rx="2.4" ry="1.6" fill={SKIN_HI} opacity="0.5" />
+      <ellipse cx={CXC + 5} cy="24.5" rx="2.4" ry="1.6" fill={SKIN_HI} opacity="0.5" />
+      <ellipse cx={CXC} cy="17.5" rx="6.5" ry="3" fill={SKIN_HI} opacity="0.32" />
 
-      {/* hair */}
-      <path d={`M${CXC - 10} 24 a10 10 0 0 1 20 0 c-1 -7 -8.2 -9.8 -10 -9.8 c-1.8 0 -9 2.8 -10 9.8 Z`} fill={HAIR} />
+      {/* hair — modern textured quiff with temple fades + a side sweep highlight */}
+      <path
+        d={`M${CXC - 10} 23 C${CXC - 11.5} 14 ${CXC - 5.5} 9 ${CXC} 9
+            C${CXC + 5.5} 9 ${CXC + 11.5} 14 ${CXC + 10} 23
+            C${CXC + 10} 18.5 ${CXC + 8} 17 ${CXC + 6} 17.5
+            C${CXC + 7} 14.5 ${CXC + 4.5} 13.5 ${CXC + 2.5} 14.5
+            C${CXC + 1.5} 12.5 ${CXC - 1.5} 12.5 ${CXC - 2.5} 14.5
+            C${CXC - 4.5} 13.5 ${CXC - 7} 14.5 ${CXC - 6} 17.5
+            C${CXC - 8} 17 ${CXC - 10} 18.5 ${CXC - 10} 23 Z`}
+        fill={HAIR}
+      />
+      <path d={`M${CXC - 5.5} 11.5 C${CXC - 3} 10 ${CXC + 3} 10 ${CXC + 5.5} 11.5 C${CXC + 2} 10.5 ${CXC - 2} 10.5 ${CXC - 5.5} 13 Z`} fill={HAIR_HI} opacity="0.7" />
 
-      {/* eyebrows */}
-      <rect x={CXC - 6.6} y="20.8" width="4.8" height="1.4" rx="0.7" fill={HAIR} />
-      <rect x={CXC + 1.8} y="20.8" width="4.8" height="1.4" rx="0.7" fill={HAIR} />
+      {/* eyebrows — angled, fuller at the inner edge */}
+      <path d={`M${CXC - 6.6} 20.4 C${CXC - 4.6} 19 ${CXC - 2.4} 19.1 ${CXC - 1.2} 20.1 L${CXC - 1.4} 21.1 C${CXC - 2.6} 20.3 ${CXC - 4.6} 20.3 ${CXC - 6.2} 21.5 Z`} fill={HAIR} />
+      <path d={`M${CXC + 6.6} 20.4 C${CXC + 4.6} 19 ${CXC + 2.4} 19.1 ${CXC + 1.2} 20.1 L${CXC + 1.4} 21.1 C${CXC + 2.6} 20.3 ${CXC + 4.6} 20.3 ${CXC + 6.2} 21.5 Z`} fill={HAIR} />
 
-      {/* eyes */}
-      <ellipse cx={CXC - 3.7} cy="24.4" rx="1.8" ry="2.1" fill="#fff" />
-      <ellipse cx={CXC + 3.7} cy="24.4" rx="1.8" ry="2.1" fill="#fff" />
-      <circle cx={CXC - 3.4} cy="24.7" r="1" fill="#20242e" />
-      <circle cx={CXC + 4} cy="24.7" r="1" fill="#20242e" />
+      {/* eyes — almond shaped, dark iris + catchlight */}
+      {[CXC - 3.7, CXC + 3.7].map((ex) => (
+        <g key={ex}>
+          <path d={`M${ex - 2} 23.7 Q${ex} 21.9 ${ex + 2} 23.7 Q${ex} 25 ${ex - 2} 23.7 Z`} fill="#fff" />
+          <circle cx={ex} cy="23.8" r="1.15" fill="#3b2a20" />
+          <circle cx={ex} cy="23.8" r="0.55" fill="#15110d" />
+          <circle cx={ex + 0.4} cy="23.3" r="0.35" fill="#fff" />
+        </g>
+      ))}
 
-      {/* nose + mouth */}
-      <path d={`M${CXC} 25 l-1.4 4 q1.4 1 2.8 0 Z`} fill={SKIN_SHADE} opacity="0.55" />
-      <path d={`M${CXC - 3} 31 q3 2.6 6 0`} stroke="#9c5a44" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+      {/* nose — slim bridge highlight + soft tip shadow */}
+      <rect x={CXC - 0.4} y="22" width="0.9" height="5.4" rx="0.45" fill={SKIN_HI} opacity="0.5" />
+      <path d={`M${CXC} 27.4 C${CXC - 1.6} 27.4 ${CXC - 2.3} 28.3 ${CXC - 1.7} 29 C${CXC - 0.8} 29.6 ${CXC + 0.8} 29.6 ${CXC + 1.7} 29 C${CXC + 2.3} 28.3 ${CXC + 1.6} 27.4 ${CXC} 27.4 Z`} fill={SKIN_SHADE} opacity="0.5" />
+
+      {/* mouth — confident, lightly smiling */}
+      <path d={`M${CXC - 3.2} 31 Q${CXC} 30.2 ${CXC + 3.2} 31 Q${CXC} 32.8 ${CXC - 3.2} 31 Z`} fill="#b56a52" />
+      <path d={`M${CXC - 3.2} 31 Q${CXC} 31.7 ${CXC + 3.2} 31`} stroke="#7e4233" strokeWidth="0.7" fill="none" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+/**
+ * FIFA-style head-and-shoulders portrait — the same face as {@link CardPlayer},
+ * but framed as a bust for the player card. Only the jersey colours show (on the
+ * shoulders + collar); the full body model lives in CardPlayer / the sims.
+ */
+export function CardFace({
+  jersey = DEFAULT_KIT,
+  face = DEFAULT_FACE,
+  className = 'fut__player',
+}: {
+  jersey?: AvatarKit
+  face?: FaceColors
+  className?: string
+}) {
+  const FX = 52 // face centre x
+  const accent = jersey.accent
+  const { skin: SKIN, skinShade: SKIN_SHADE, skinHi: SKIN_HI, hair: HAIR, hairHi: HAIR_HI } = face
+
+  // Defined face silhouette: broad forehead/cheekbones tapering to a strong,
+  // slightly squared chin (egg-shaped, not a circle).
+  const facePath =
+    `M31 40 C31 25 40 18 52 18 C64 18 73 25 73 40 ` +
+    `C73 50 69 57 61 62 C57 64.5 54.5 66 52 66 ` +
+    `C49.5 66 47 64.5 43 62 C35 57 31 50 31 40 Z`
+
+  return (
+    <svg viewBox="0 0 104 104" className={className} aria-hidden>
+      {/* shoulders / kit bust */}
+      <path d={`M8 104 C8 82 28 73 52 73 C76 73 96 82 96 104 Z`} fill={jersey.primary} />
+      <path d={`M8 104 C8 82 28 73 52 73 C52 73 52 104 52 104 Z`} fill="#000" opacity="0.08" />
+      <path d={`M52 73 C76 73 96 82 96 104 L82 104 C80 86 68 78 52 77 Z`} fill={jersey.secondary} opacity="0.55" />
+      {/* collar V (accent) */}
+      <path d={`M${FX - 10} 74 L${FX} 88 L${FX + 10} 74 Z`} fill={accent} opacity="0.95" />
+
+      {/* neck (with a touch of shadow under the jaw) */}
+      <rect x={FX - 7} y="58" width="14" height="22" rx="5" fill={SKIN} />
+      <path d="M40 62 Q52 70 64 62 L64 66 Q52 73 40 66 Z" fill={SKIN_SHADE} opacity="0.45" />
+
+      {/* ears */}
+      <path d="M30 41 q-5 -1 -4.5 4 q0.6 5 5 4.2 Z" fill={SKIN} />
+      <path d="M74 41 q5 -1 4.5 4 q-0.6 5 -5 4.2 Z" fill={SKIN} />
+      <circle cx="29" cy="44" r="1.4" fill={SKIN_SHADE} opacity="0.5" />
+      <circle cx="75" cy="44" r="1.4" fill={SKIN_SHADE} opacity="0.5" />
+
+      {/* face */}
+      <path d={facePath} fill={SKIN} />
+
+      {/* structure: cheekbone highlights + a jaw/stubble shadow for definition */}
+      <path d="M33 42 C36 55 44 62 52 62 C60 62 68 55 71 42 C67 50 60 55 52 55 C44 55 37 50 33 42 Z" fill={SKIN_SHADE} opacity="0.16" />
+      <ellipse cx="40" cy="44" rx="5" ry="3.2" fill={SKIN_HI} opacity="0.5" />
+      <ellipse cx="64" cy="44" rx="5" ry="3.2" fill={SKIN_HI} opacity="0.5" />
+      {/* forehead light */}
+      <ellipse cx="52" cy="28" rx="13" ry="6" fill={SKIN_HI} opacity="0.35" />
+
+      {/* hair — modern textured quiff with temple fades + a side sweep */}
+      <path
+        d="M30 43 C27 24 39 13 52 13 C65 13 77 24 74 43
+           C74 34 70 31 66 32 C68 27 63 25 59 27
+           C57 23 52 24 52 27 C52 24 47 23 45 27
+           C41 25 36 27 38 32 C34 31 30 35 30 43 Z"
+        fill={HAIR}
+      />
+      <path d="M40 18 C45 14 56 14 62 18 C56 16 46 16 40 22 Z" fill={HAIR_HI} opacity="0.7" />
+
+      {/* eyebrows — angled, fuller at the inner edge (striking, masculine) */}
+      <path d="M38 34.5 C42 31.6 47 31.8 49.6 33.8 L49.2 36 C46.6 34.4 42 34.4 38.8 36.8 Z" fill={HAIR} />
+      <path d="M66 34.5 C62 31.6 57 31.8 54.4 33.8 L54.8 36 C57.4 34.4 62 34.4 65.2 36.8 Z" fill={HAIR} />
+
+      {/* eyes — almond shaped with defined lid, dark iris + catchlight */}
+      {[44, 60].map((ex) => (
+        <g key={ex}>
+          <path d={`M${ex - 4} 41.4 Q${ex} 37.8 ${ex + 4} 41.4 Q${ex} 44 ${ex - 4} 41.4 Z`} fill="#fff" />
+          <circle cx={ex} cy="41.4" r="2.3" fill="#3b2a20" />
+          <circle cx={ex} cy="41.4" r="1.1" fill="#15110d" />
+          <circle cx={ex + 0.8} cy="40.5" r="0.7" fill="#fff" />
+          <path d={`M${ex - 4} 41.2 Q${ex} 37.6 ${ex + 4} 41.2`} stroke="#5b3d2b" strokeWidth="0.9" fill="none" strokeLinecap="round" />
+        </g>
+      ))}
+
+      {/* nose — slim bridge highlight, soft tip shadow + nostrils */}
+      <rect x={FX - 0.8} y="38" width="1.6" height="11" rx="0.8" fill={SKIN_HI} opacity="0.5" />
+      <path d="M52 49 C49 49 47.5 50.5 48.5 52 C50 53 54 53 55.5 52 C56.5 50.5 55 49 52 49 Z" fill={SKIN_SHADE} opacity="0.45" />
+      <circle cx="49.3" cy="51.4" r="0.8" fill={SKIN_SHADE} opacity="0.7" />
+      <circle cx="54.7" cy="51.4" r="0.8" fill={SKIN_SHADE} opacity="0.7" />
+
+      {/* mouth — confident, lightly smiling, with a fuller lower lip */}
+      <path d="M45.5 56.4 Q48.5 55 52 55.6 Q55.5 55 58.5 56.4 Q55 58.2 52 58.2 Q49 58.2 45.5 56.4 Z" fill="#b56a52" />
+      <path d="M45.5 56.4 Q52 57.4 58.5 56.4 Q52 60 45.5 56.4 Z" fill="#9c5340" />
+      <path d="M45.5 56.2 Q52 57.2 58.5 56.2" stroke="#7e4233" strokeWidth="0.8" fill="none" strokeLinecap="round" />
     </svg>
   )
 }

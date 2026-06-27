@@ -1,12 +1,18 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useApp } from '../state/AppState'
 import { usePlayer } from '../state/PlayerState'
 import { LESSONS, UNITS, UNIT_THEME } from '../content/lessons'
 import { SKILLS } from '../lib/skills'
 import type { SkillId, UnitStatus, UserProgress, TestAttempt } from '../types'
-import { CardPlayer, ATTR_ABBR, POSITION, kitFor, cleatsFor } from './PlayerAvatar'
+import { CardFace, ATTR_ABBR, kitFor } from './PlayerAvatar'
+import { faceColors } from '../lib/appearance'
+import { SEASON_GAMES, simulateSeason, standingsAfter, ordinal, yourFixture, yourResult } from '../lib/league'
 import { PlayerLocker } from './PlayerLocker'
+import { DailyWheel } from './DailyWheel'
 import { AttemptReview } from './TestScreen'
+import { LeagueStandings } from './LeagueStandings'
+import { LeagueSchedule } from './LeagueSchedule'
+import { ClubEmblem } from './ClubEmblem'
 
 const STATUS_LABEL: Record<UnitStatus, string> = {
   locked: 'Locked',
@@ -18,22 +24,13 @@ const STATUS_LABEL: Record<UnitStatus, string> = {
 // Win the season to earn promotion to the top flight.
 const TOP_FLIGHT = 'The Quantum League'
 
-// Quantum League opponents — 50 physics-flavoured clubs (none reuse the five
-// lesson units). The match ladder cycles through these in order.
-const LEAGUE_TEAMS = [
-  'Atlético Entropy', 'Real Relativity', 'Inertia City', 'Quantum Rovers', 'Photon FC',
-  'Electron United', 'Sporting Gravitas', 'Dynamo Tesla', 'Inter Friction', 'Vector Wanderers',
-  'Newton North End', 'Joule Town', 'Watt Albion', 'Plasma Rangers', 'Fusion Athletic',
-  'Neutron County', 'Graviton FC', 'Boson Hotspur', 'Quark City', 'Terminal Velocity FC',
-  'Torque United', 'Amplitude Athletic', 'Resonance Rovers', 'Pendulum FC', 'Vortex City',
-  'Magnetar United', 'Ohm Town', 'Ampère Athletic', 'Hertz Hotspur', 'Kelvin Rangers',
-  'Thermo Dynamo', 'Enthalpy FC', 'Spectrum Wanderers', 'Wavelength Albion', 'Frequency County',
-  'Oscillator United', 'Isotope City', 'Nucleus FC', 'Orbital Rovers', 'Lepton Town',
-  'Fermion Athletic', 'Neutrino Rangers', 'Gamma United', 'Ion City', 'Voltage FC',
-  'Circuit Wanderers', 'Density Albion', 'Viscosity Town', 'Turbulence FC', 'Singularity United',
-] as const
-
-const MATCH_REWARD_COINS = 100
+// Quantum League opponents — the physics-flavoured clubs live in lib/teams.ts, where each
+// is also assigned a jersey colour (and a clash-guard vs your kit).
+const MATCH_REWARD_COINS = 10
+// End-of-season placement bonus, indexed by 1-based finishing position (1st/2nd/3rd).
+const PLACEMENT_REWARD: Record<number, number> = { 1: 300, 2: 200, 3: 100 }
+// TEMP (testing): force YOUR club to finish 1st on the next sim. Flip to false to ship.
+const HARDCODE_PLAYER_FIRST = true
 
 function fmtAttemptDate(iso: string): string {
   const d = new Date(iso)
@@ -80,8 +77,19 @@ export function Dashboard({
   onOpenLesson: (lessonId: string) => void
   onOpenTest: () => void
 }) {
-  const { profile, progress, logout, resetProgress, skipAllLessons, playQuantumMatch } = useApp()
-  const { overall, profile: player, testHistory, addCoins } = usePlayer()
+  const {
+    profile,
+    progress,
+    logout,
+    resetProgress,
+    skipAllLessons,
+    playQuantumMatch,
+    setLeagueTable,
+    wheelAvailable,
+    claimDailyWheel,
+    resetDailyWheel,
+  } = useApp()
+  const { overall, profile: player, testHistory, addCoins, simSeasonStats } = usePlayer()
 
   const masteredCount = UNITS.filter((u) => progress.unitStatus[u.id] === 'mastered').length
   const pct = Math.round((masteredCount / UNITS.length) * 100)
@@ -90,41 +98,93 @@ export function Dashboard({
   // Quantum League ladder: each assessment completed (a top-flight test) unlocks
   // exactly one more match. The test is only reachable once promoted, so the
   // number of test attempts == assessments completed.
-  // Only attempts whose guided Skills review is finished count toward the league
-  // ladder. (Legacy attempts without the flag are treated as complete.)
-  const assessmentsCompleted = testHistory.filter((a) => a.reviewComplete !== false).length
+  // Only PASSED attempts (≥70%) whose guided Skills review is finished count toward the
+  // league ladder — a failed exam never unlocks a matchday. (Legacy attempts lacking the
+  // review flag are treated as complete.)
+  const assessmentsCompleted = testHistory.filter((a) => a.passed70 && a.reviewComplete !== false).length
   const matchesPlayed = progress.quantumMatchesPlayed ?? 0
+  const leagueSeed = progress.leagueSeed ?? 0
+  // `nextMatchNo` is the match index the 1:1 assessment gate keys off. Single 50-game season.
   const nextMatchNo = matchesPlayed + 1
-  const nextOpponent = LEAGUE_TEAMS[(nextMatchNo - 1) % LEAGUE_TEAMS.length]
+  const nextMatchday = Math.min(SEASON_GAMES, matchesPlayed + 1)
+  const nextFixture = yourFixture(nextMatchday, leagueSeed)
+  const nextOpponent = nextFixture.opponent
+  const clubName = player.club.name
+  const clubColors = kitFor(player.equipped.jersey)
   const matchUnlocked = assessmentsCompleted >= nextMatchNo
   const firstAssessmentDone = assessmentsCompleted >= 1
+  // Whole season done: all 50 assessments passed (the gate to unlock all 50 matchdays).
+  const allAssessmentsDone = assessmentsCompleted >= SEASON_GAMES
+  // Standings are derived from the seed + matchdays played, so they fill in live as you play.
+  // A full sim stores a (forced-first, for testing) snapshot, which we prefer once present.
+  const storedTable = progress.leagueTable ?? null
+  const liveTable = useMemo(() => standingsAfter(leagueSeed, matchesPlayed), [leagueSeed, matchesPlayed])
+  const displayTable = storedTable && storedTable.length > 0 ? storedTable : liveTable
+  const seasonComplete = matchesPlayed >= SEASON_GAMES
+  const playerPlace = seasonComplete ? displayTable.findIndex((r) => r.isPlayer) + 1 : 0
+  const placeBonus = PLACEMENT_REWARD[playerPlace] ?? 0
   const [hubOpen, setHubOpen] = useState(false)
   const [assessOpen, setAssessOpen] = useState(false)
+  const [assessPage, setAssessPage] = useState(0)
   const [viewAttempt, setViewAttempt] = useState<TestAttempt | null>(null)
+  const [standingsOpen, setStandingsOpen] = useState(false)
+  const [scheduleOpen, setScheduleOpen] = useState(false)
+  const [wheelOpen, setWheelOpen] = useState(false)
 
+  // "Promotion won!" banner can be dismissed; it disappears for good once the first
+  // assessment is attempted anyway, so a local flag (no DB round-trip) is plenty.
+  const legendKey = `legendDismissed:${profile.username}`
+  const [legendDismissed, setLegendDismissed] = useState(() => {
+    try { return localStorage.getItem(legendKey) === '1' } catch { return false }
+  })
+  const dismissLegend = () => {
+    setLegendDismissed(true)
+    try { localStorage.setItem(legendKey, '1') } catch { /* ignore */ }
+  }
+
+  // Playing an unlocked matchday sims THAT week for you and the whole league: your match counter
+  // ticks up (which advances the seed-derived standings for every club) and persists to the
+  // cloud. A win pays the match reward. We pop the standings so the update is visible.
   const handlePlayMatch = () => {
-    if (!matchUnlocked) return
+    if (!matchUnlocked || seasonComplete) return
+    const result = yourResult(nextMatchday, leagueSeed)
     playQuantumMatch()
-    addCoins(MATCH_REWARD_COINS)
+    if (result.gf > result.ga) addCoins(MATCH_REWARD_COINS)
+    setStandingsOpen(true)
+  }
+
+  // Sim the whole 50-game season at once. Fresh randomness every time (so a re-sim after a
+  // reset gives different results). Stores the final table + marks 50 matches played, and
+  // fabricates a full season's player metadata (50 assessments, random skills/proficiency) —
+  // all persisted to the cloud and wiped on reset. Coins = wins × 10 + placement bonus.
+  const handleSimSeason = () => {
+    const table = simulateSeason(leagueSeed, HARDCODE_PLAYER_FIRST)
+    setLeagueTable(table)
+    simSeasonStats(SEASON_GAMES)
+    const me = table.find((r) => r.isPlayer)
+    const place = table.findIndex((r) => r.isPlayer) + 1
+    const wins = me?.w ?? 0
+    const bonus = PLACEMENT_REWARD[place] ?? 0
+    addCoins(wins * MATCH_REWARD_COINS + bonus)
+    setStandingsOpen(true)
   }
 
   const nextIndex = UNITS.findIndex((u) => progress.unitStatus[u.id] !== 'mastered')
   const nextUnit = nextIndex >= 0 ? UNITS[nextIndex] : UNITS[0]
   const nextTheme = UNIT_THEME[nextUnit.id]
 
-  // Signature position = the unit/skill the player rates highest in.
-  const bestSkill = SKILLS.reduce((best, s) =>
-    (player.skills[s.id] ?? 0) > (player.skills[best.id] ?? 0) ? s : best,
-  )
-  const position = POSITION[bestSkill.id]
+  // You're always a striker in this game — position never changes.
+  const position = 'ST'
   const firstName = profile.displayName.split(' ')[0]
   const [lockerOpen, setLockerOpen] = useState(false)
 
   return (
     <div className="dashboard career">
       <header className="hud">
+        {/* Game wordmark — STATIC (the name of the game), not the player's club. */}
         <span className="brand">
-          <span className="brand__mark">⚽</span> PHYSICS&nbsp;FC
+          <img className="brand__logo" src="/physics-fc-trophy.png" alt="" aria-hidden />
+          PHYSICS FC
         </span>
         <div className="hud__right">
           <span className="hud__chip hud__chip--coin" title="Coins">
@@ -148,13 +208,22 @@ export function Dashboard({
               <span>OVR</span>
             </div>
             <div className="fut__posbadge">{position}</div>
-            <div className="fut__crest" aria-hidden>⚽</div>
+            <div className="fut__crest" aria-hidden>
+              <ClubEmblem
+                name={clubName}
+                primary={clubColors.primary}
+                secondary={clubColors.secondary}
+                accent={clubColors.accent}
+                config={player.club.emblem}
+                size={30}
+              />
+            </div>
           </div>
 
-          <CardPlayer jersey={kitFor(player.equipped.jersey)} cleats={cleatsFor(player.equipped.cleats)} />
+          <CardFace jersey={kitFor(player.equipped.jersey)} face={faceColors(player.appearance)} />
 
           <div className="fut__name">{profile.displayName.toUpperCase()}</div>
-          <div className="fut__club">PHYSICS FC</div>
+          <div className="fut__club">{clubName.toUpperCase()}</div>
 
           <div className="fut__attrs">
             {SKILLS.map((s) => (
@@ -171,12 +240,28 @@ export function Dashboard({
         <section className="career__main">
           <div className="career__season">
             <div className="career__season-head">
+              <div className="career__welcome">
               <h1>Welcome back, {firstName}.</h1>
               <p>{!courseComplete
                 ? `Win all ${UNITS.length} fixtures to earn promotion to ${TOP_FLIGHT}.`
                 : firstAssessmentDone
                   ? `You're in ${TOP_FLIGHT}. Pass assessments to unlock your next league match and earn skill points.`
-                  : `Every fixture won — Physics FC is promoted to ${TOP_FLIGHT}. Take your skills assessment to claim skill points.`}</p>
+                  : `Every fixture won — ${clubName} is promoted to ${TOP_FLIGHT}. Take your skills assessment to claim skill points.`}</p>
+              </div>
+              {courseComplete && wheelAvailable && (
+                <button
+                  type="button"
+                  className="wheel-cta"
+                  onClick={() => setWheelOpen(true)}
+                  title="Spin today's daily wheel"
+                >
+                  <span className="wheel-cta__icon" aria-hidden>🎡</span>
+                  <span className="wheel-cta__label">
+                    <small>Daily reward · ready</small>
+                    <strong>Spin the wheel</strong>
+                  </span>
+                </button>
+              )}
             </div>
             {!courseComplete && (
               <div className="career__progress">
@@ -201,49 +286,74 @@ export function Dashboard({
               <span className="fixture__badge">{nextTheme.icon}</span>
               <span className="fixture__body">
                 <span className="eyebrow">Next fixture · MW{(nextIndex < 0 ? 0 : nextIndex) + 1}</span>
-                <strong>Physics FC <span className="fixture__vs">vs</span> {CLUB_NAME[nextUnit.id as SkillId]}</strong>
+                <strong>{clubName} <span className="fixture__vs">vs</span> {CLUB_NAME[nextUnit.id as SkillId]}</strong>
               </span>
               <span className="fixture__cta">
                 {progress.unitStatus[nextUnit.id] === 'in_progress' ? 'Resume' : 'Kick off'} →
               </span>
             </button>
-          ) : !firstAssessmentDone ? (
+          ) : !firstAssessmentDone && !legendDismissed ? (
             <div className="career__legend">
               <span className="career__legend-burst">🏆</span>
               <div>
                 <strong>Promotion won!</strong>
-                <span>All {UNITS.length} fixtures won — up to {TOP_FLIGHT}.</span>
+                <span>All {UNITS.length} fixtures won, onto {TOP_FLIGHT}!</span>
               </div>
+              <button
+                type="button"
+                className="career__legend-close"
+                onClick={dismissLegend}
+                aria-label="Dismiss"
+              >
+                ✕
+              </button>
             </div>
           ) : null}
 
           {courseComplete ? (
             <button
-              className={`combine-card${matchUnlocked ? ' combine-card--complete' : ''}`}
-              onClick={matchUnlocked ? () => setAssessOpen((o) => !o) : onOpenTest}
-              aria-expanded={matchUnlocked ? assessOpen : undefined}
+              className={`combine-card${matchUnlocked || allAssessmentsDone ? ' combine-card--complete' : ''}`}
+              onClick={
+                matchUnlocked || allAssessmentsDone
+                  ? () => setAssessOpen((o) => { if (!o) { setHubOpen(false); setAssessPage(0) } return !o })
+                  : onOpenTest
+              }
+              aria-expanded={matchUnlocked || allAssessmentsDone ? assessOpen : undefined}
             >
               <span className="combine-card__icon">🏆</span>
               <span className="combine-card__body">
                 <span className="eyebrow">
-                  {matchUnlocked ? 'Assessment complete' : firstAssessmentDone ? TOP_FLIGHT : `${TOP_FLIGHT} · unlocked`}
+                  {allAssessmentsDone
+                    ? `${TOP_FLIGHT} · Champion`
+                    : matchUnlocked
+                      ? 'Assessment complete'
+                      : firstAssessmentDone
+                        ? TOP_FLIGHT
+                        : `${TOP_FLIGHT} · unlocked`}
                 </span>
-                <strong>{matchUnlocked ? 'Skills assessment complete' : 'Skills assessment'}</strong>
+                <strong>
+                  {allAssessmentsDone
+                    ? 'All skills assessments passed!'
+                    : matchUnlocked
+                      ? 'Skills assessment complete'
+                      : 'Skills assessment'}
+                </strong>
                 <span className="muted">
-                  {matchUnlocked
-                    ? `Matchday ${nextMatchNo} unlocked — play ${nextOpponent} below`
-                    : `Pass to unlock Matchday ${nextMatchNo} vs ${nextOpponent}`}
+                  {allAssessmentsDone
+                    ? `Every one of the ${SEASON_GAMES} assessments cleared — you've conquered ${TOP_FLIGHT}.`
+                    : matchUnlocked
+                      ? `Matchday ${nextMatchday} unlocked — play ${nextOpponent} below`
+                      : `Pass to unlock Matchday ${nextMatchday} vs ${nextOpponent}`}
                 </span>
               </span>
               <span className="combine-card__stats">
-                {matchUnlocked ? (
+                {matchUnlocked || allAssessmentsDone ? (
                   <span className="combine-card__done">
                     View <span className={`combine-card__chev${assessOpen ? ' open' : ''}`} aria-hidden>▾</span>
                   </span>
                 ) : (
                   <span><b>{overall}</b> OVR</span>
                 )}
-                {player.skillPoints > 0 && <span className="combine-card__pts">{player.skillPoints} pts</span>}
               </span>
             </button>
           ) : (
@@ -260,45 +370,69 @@ export function Dashboard({
             </div>
           )}
 
-          {courseComplete && matchUnlocked && assessOpen && (
+          {courseComplete && (matchUnlocked || allAssessmentsDone) && assessOpen && (
             <div className="qhub qhub--open assess-hist">
               {testHistory.length === 0 ? (
                 <p className="assess-empty">No assessments recorded yet.</p>
-              ) : (
-                <ol className="qhub__list">
-                  {testHistory.map((a, i) => {
-                    const pctScore = a.total > 0 ? Math.round((a.score / a.total) * 100) : 0
-                    return (
-                      <li key={a.id} className="qdrill">
-                        <button className="qdrill__btn assess-row" onClick={() => setViewAttempt(a)}>
-                          <span className="assess-row__no">#{testHistory.length - i}</span>
-                          <span className="qdrill__main">
-                            <strong>{pctScore}% · {a.score}/{a.total}</strong>
-                            <span className="assess-row__date">{fmtAttemptDate(a.takenAt)}</span>
-                          </span>
-                          <span className="qdrill__cta">View →</span>
-                        </button>
-                      </li>
-                    )
-                  })}
-                </ol>
-              )}
+              ) : (() => {
+                const PER_PAGE = 5
+                const totalPages = Math.ceil(testHistory.length / PER_PAGE)
+                const page = Math.min(assessPage, totalPages - 1)
+                const start = page * PER_PAGE
+                const rows = testHistory.slice(start, start + PER_PAGE)
+                return (
+                  <>
+                    <ol className="qhub__list">
+                      {rows.map((a, i) => {
+                        const idx = start + i
+                        const pctScore = a.total > 0 ? Math.round((a.score / a.total) * 100) : 0
+                        const bought = a.id.startsWith('autopass-')
+                        return (
+                          <li key={a.id} className="qdrill">
+                            <button className="qdrill__btn assess-row" onClick={() => setViewAttempt(a)}>
+                              <span className="assess-row__no">#{testHistory.length - idx}</span>
+                              <span className="qdrill__main">
+                                <strong>{pctScore}% · {a.score}/{a.total}</strong>
+                                <span className="assess-row__date">{fmtAttemptDate(a.takenAt)}</span>
+                              </span>
+                              {bought && (
+                                <span className="assess-row__bought" title="Auto-passed — bought for 200 coins">
+                                  −200<span className="coin-icon" aria-hidden />
+                                </span>
+                              )}
+                              <span className="qdrill__cta">View →</span>
+                            </button>
+                          </li>
+                        )
+                      })}
+                    </ol>
+                    {totalPages > 1 && (
+                      <div className="assess-pager">
+                        <button className="assess-pager__btn" type="button" onClick={() => setAssessPage(0)} disabled={page === 0} aria-label="First page">«</button>
+                        <button className="assess-pager__btn" type="button" onClick={() => setAssessPage(page - 1)} disabled={page === 0} aria-label="Previous page">‹</button>
+                        <span className="assess-pager__label">Page {page + 1} of {totalPages}</span>
+                        <button className="assess-pager__btn" type="button" onClick={() => setAssessPage(page + 1)} disabled={page >= totalPages - 1} aria-label="Next page">›</button>
+                        <button className="assess-pager__btn" type="button" onClick={() => setAssessPage(totalPages - 1)} disabled={page >= totalPages - 1} aria-label="Last page">»</button>
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
             </div>
           )}
 
           {courseComplete && (
-            <div className={`qhub${hubOpen ? ' qhub--open' : ''}`}>
+            <div className={`qhub qhub--training${hubOpen ? ' qhub--open' : ''}`}>
               <button
                 type="button"
                 className="qhub__head"
-                onClick={() => setHubOpen((o) => !o)}
+                onClick={() => setHubOpen((o) => { if (!o) setAssessOpen(false); return !o })}
                 aria-expanded={hubOpen}
               >
                 <span className="qhub__title">
                   <span className="eyebrow">Training ground</span>
                   <strong>Practice your skills</strong>
                 </span>
-                <span className="qhub__meta">{UNITS.length} drills · replay any lesson</span>
                 <span className="qhub__chev" aria-hidden>▾</span>
               </button>
               {hubOpen && (
@@ -327,19 +461,6 @@ export function Dashboard({
             </div>
           )}
 
-          {/* Daily wheel spin — placeholder tab, no behaviour wired up yet. */}
-          {courseComplete && (
-            <div className="qhub qhub--wheel">
-              <button type="button" className="qhub__head">
-                <span className="qhub__title">
-                  <span className="eyebrow">Daily reward</span>
-                  <strong>Daily wheel spin</strong>
-                </span>
-                <span className="qhub__meta">Spin once a day for coins &amp; boosts</span>
-                <span className="qhub__chev qhub__wheel" aria-hidden>🎡</span>
-              </button>
-            </div>
-          )}
         </section>
       </div>
 
@@ -347,39 +468,69 @@ export function Dashboard({
         <section className="schedule qleague">
           <header className="schedule__head">
             <div className="schedule__title">
-              <span className="eyebrow">{TOP_FLIGHT} · Season</span>
+              <span className="eyebrow">{TOP_FLIGHT}</span>
               <h3>League Fixtures</h3>
             </div>
-            <div className="schedule__record">
-              <span className="schedule__record-main">Played<b>{matchesPlayed}</b></span>
-              <span className="schedule__record-sub">{assessmentsCompleted} assessments</span>
+            <div className="schedule__actions">
+              <button
+                type="button"
+                className="sched-toggle"
+                onClick={() => setScheduleOpen(true)}
+                title="See the full season schedule"
+              >
+                Show schedule
+              </button>
+              <button
+                type="button"
+                className="sched-toggle"
+                onClick={() => setStandingsOpen(true)}
+                title="View the full league table"
+              >
+                League Standings
+              </button>
             </div>
           </header>
 
           <div className="qleague__body">
-            {matchUnlocked ? (
+            {seasonComplete ? (
+              <button
+                className={`fixture qmatch qmatch--done qmatch--${
+                  playerPlace === 1 ? 'gold' : playerPlace === 2 ? 'silver' : playerPlace === 3 ? 'bronze' : 'none'
+                }`}
+                onClick={() => setStandingsOpen(true)}
+                title="View the final league table"
+              >
+                <span className="fixture__week">🏆</span>
+                <span className="fixture__body">
+                  <span className="eyebrow">Season complete · final table</span>
+                  <strong>
+                    {clubName} finished {ordinal(playerPlace)}
+                    {placeBonus > 0 && <> · +{placeBonus} bonus</>}
+                  </strong>
+                </span>
+                <span className="fixture__cta">View standings →</span>
+              </button>
+            ) : matchUnlocked ? (
               <button
                 className="fixture fixture--next qmatch"
                 onClick={handlePlayMatch}
-                title={`Play Matchday ${nextMatchNo}`}
+                title={`Play Matchday ${nextMatchday}`}
               >
-                <span className="fixture__week">MD{nextMatchNo}</span>
+                <span className="fixture__week">MD{nextMatchday}</span>
                 <span className="fixture__badge">⚔️</span>
                 <span className="fixture__body">
-                  <span className="eyebrow">Matchday {nextMatchNo} · ready</span>
-                  <strong>Physics FC <span className="fixture__vs">vs</span> {nextOpponent}</strong>
+                  <span className="eyebrow">Matchday {nextMatchday} · {nextFixture.home ? 'home' : 'away'}</span>
+                  <strong>{clubName} <span className="fixture__vs">vs</span> {nextOpponent}</strong>
                 </span>
-                <span className="fixture__cta">
-                  Play · +{MATCH_REWARD_COINS} <span className="coin-icon qmatch__coin" aria-hidden />
-                </span>
+                <span className="fixture__cta">Play →</span>
               </button>
             ) : (
               <div className="fixture qmatch qmatch--locked" aria-disabled="true">
-                <span className="fixture__week">MD{nextMatchNo}</span>
+                <span className="fixture__week">MD{nextMatchday}</span>
                 <span className="fixture__badge">🔒</span>
                 <span className="fixture__body">
-                  <span className="eyebrow">Matchday {nextMatchNo} · locked</span>
-                  <strong>Physics FC <span className="fixture__vs">vs</span> {nextOpponent}</strong>
+                  <span className="eyebrow">Matchday {nextMatchday} · locked</span>
+                  <strong>{clubName} <span className="fixture__vs">vs</span> {nextOpponent}</strong>
                   <span className="qmatch__hint">
                     Pass assessment #{nextMatchNo} to unlock this match — tap the {TOP_FLIGHT} assessment above.
                   </span>
@@ -388,13 +539,47 @@ export function Dashboard({
               </div>
             )}
 
+            <div className="qleague__stats">
+              <div className="qstat">
+                <b>{matchesPlayed}</b>
+                <span>Matches played</span>
+              </div>
+              <div className="qstat">
+                <b>{assessmentsCompleted}</b>
+                <span>Assessments passed</span>
+              </div>
+              {seasonComplete ? (
+                <div className="qstat qstat--reward">
+                  <b>+{placeBonus}<span className="coin-icon qstat__coin" aria-hidden /></b>
+                  <span>Placement bonus</span>
+                </div>
+              ) : (
+                <div className="qstat qstat--reward">
+                  <b>+{MATCH_REWARD_COINS}<span className="coin-icon qstat__coin" aria-hidden /></b>
+                  <span>Win reward</span>
+                </div>
+              )}
+            </div>
+
+            {!seasonComplete && (
+              <div className="qleague__sim">
+                <button type="button" className="qleague__sim-btn" onClick={handleSimSeason}>
+                  <span className="qleague__sim-badge" aria-hidden>⚡</span>
+                  <span className="qleague__sim-body">
+                    <strong>Sim to end of season</strong>
+                    <small>Roll all 50 games · +10<span className="coin-icon" aria-hidden /> per win + placement bonus (1st 300 · 2nd 200 · 3rd 100)</small>
+                  </span>
+                  <span className="fixture__cta">Sim →</span>
+                </button>
+              </div>
+            )}
           </div>
         </section>
       ) : (
         <section className="schedule">
           <header className="schedule__head">
             <div className="schedule__title">
-              <span className="eyebrow">Season 1 · Fixtures</span>
+              <span className="eyebrow">Fixtures</span>
               <h3>Match Schedule</h3>
             </div>
           </header>
@@ -427,7 +612,7 @@ export function Dashboard({
                   <span className="sfix__badge">{mastered ? '✓' : locked ? '🔒' : theme.icon}</span>
                   <span className="sfix__main">
                     <strong>{CLUB_NAME[unit.id as SkillId]}</strong>
-                    <span className="muted"><span className="sfix__vs">vs</span> Physics FC</span>
+                    <span className="muted"><span className="sfix__vs">vs</span> {clubName}</span>
                   </span>
                   <span className="sfix__prog">
                     {mastered ? (
@@ -460,10 +645,36 @@ export function Dashboard({
         <button className="btn btn--ghost btn--sm reset-link" onClick={skipAllLessons} disabled={courseComplete}>
           Skip all lessons (master &amp; unlock {TOP_FLIGHT})
         </button>
+        <button
+          className="btn btn--ghost btn--sm reset-link"
+          onClick={resetDailyWheel}
+          disabled={wheelAvailable}
+          title="Testing only — make the daily wheel available again"
+        >
+          Bring back daily wheel (testing)
+        </button>
       </div>
 
       {lockerOpen && (
         <PlayerLocker displayName={profile.displayName} onClose={() => setLockerOpen(false)} />
+      )}
+
+      {standingsOpen && (
+        <LeagueStandings
+          table={displayTable}
+          matchesPlayed={matchesPlayed}
+          club={player.club}
+          playerColors={clubColors}
+          onClose={() => setStandingsOpen(false)}
+        />
+      )}
+
+      {scheduleOpen && (
+        <LeagueSchedule
+          seed={progress.leagueSeed ?? 0}
+          matchesPlayed={matchesPlayed}
+          onClose={() => setScheduleOpen(false)}
+        />
       )}
 
       {viewAttempt && (
@@ -476,6 +687,17 @@ export function Dashboard({
           <AttemptReview attempt={viewAttempt} onExit={() => setViewAttempt(null)} />
         </div>
       )}
+
+      {wheelOpen && (
+        <DailyWheel
+          onCollect={(amount) => {
+            if (amount > 0) addCoins(amount)
+            claimDailyWheel()
+          }}
+          onClose={() => setWheelOpen(false)}
+        />
+      )}
+
     </div>
   )
 }
