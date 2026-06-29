@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useApp } from '../state/AppState'
+import { useToast } from './ui/Toast'
+import { sfxCash } from '../game/sfx'
 import { LESSONS, UNITS, UNIT_THEME } from '../content/lessons'
 import { Sim } from './sims/Sim'
 import { Calculator } from './sims/Calculator'
@@ -387,7 +389,7 @@ function ChallengeView(props: StepViewProps & { step: ChallengeStep }) {
   const { step } = props
   const [fb, setFb] = useState<{ kind: FeedbackKind; message: string } | null>(null)
   const [solved, setSolved] = useState(props.masteryDone)
-  const isSoccerChallenge = props.simKey === 'soccer' || props.simKey === 'passing' || props.simKey === 'forces' || props.simKey === 'energy' || props.simKey === 'defense' || props.simKey === 'goalie'
+  const isSoccerChallenge = props.simKey === 'freekick' || props.simKey === 'soccer' || props.simKey === 'passing' || props.simKey === 'forces' || props.simKey === 'energy' || props.simKey === 'defense' || props.simKey === 'goalie'
 
   function recordChallenge(correct: boolean, message: string) {
     if (correct) setSolved(true)
@@ -440,9 +442,23 @@ function ChallengeView(props: StepViewProps & { step: ChallengeStep }) {
 }
 
 function SummaryView(props: StepViewProps & { body: string; prompt: string }) {
-  const { progress, isUnitMastered, visitedToday } = useApp()
+  const { progress, isUnitMastered, visitedToday, claimLessonReward, unlockMatch } = useApp()
+  const { toast } = useToast()
   const lesson = LESSONS[props.lessonId]
   const mastered = isUnitMastered(props.lessonId)
+
+  // Mastering a unit UNLOCKS A MATCH (coins are retired) — the game is the reward
+  // for learning. Granted exactly once per unit via the persisted reward flag.
+  const [awarded, setAwarded] = useState(false)
+  useEffect(() => {
+    if (!mastered || awarded) return
+    if (claimLessonReward(props.lessonId)) {
+      unlockMatch()
+      sfxCash()
+      toast({ text: 'Unit mastered · match unlocked', icon: '⚽', tone: 'go' })
+    }
+    setAwarded(true)
+  }, [mastered, awarded, claimLessonReward, unlockMatch, toast, props.lessonId])
 
   const concepts = useMemo(() => {
     const tags = new Set<string>()

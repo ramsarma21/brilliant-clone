@@ -2,7 +2,7 @@ import type {
   AttemptInput,
   ConceptProficiency,
   ProficiencyMap,
-  SkillId,
+  UnitId,
   UnitProficiency,
 } from '../types'
 import { SKILL_IDS } from './skills'
@@ -53,9 +53,11 @@ const PRIOR_ABILITY = 35
 // --- Desirable difficulty ----------------------------------------------------
 // A logistic links ability A to the chance of answering a tier-d question:
 //   p = 1 / (1 + exp(-(A - req_d) / SCALE))
-// req_d is the ability at which tier d is a coin-flip. We aim for TARGET_SUCCESS
-// (~80%), the effortful-but-successful sweet spot.
-const TARGET_SUCCESS = 0.8
+// req_d is the ability at which tier d is a coin-flip. We aim for TARGET_SUCCESS,
+// the effortful-but-successful sweet spot: ~85%, the optimal training accuracy
+// derived by Wilson, Shenhav, Straccia & Cohen, "The Eighty Five Percent Rule for
+// optimal learning", Nature Communications (2019).
+const TARGET_SUCCESS = 0.85
 const ABILITY_SCALE = 15
 // Ability at which each difficulty tier (1..5) is ~50/50. Linear, 20 pts apart.
 const TIER_ABILITY = [10, 30, 50, 70, 90]
@@ -123,7 +125,7 @@ export function targetDifficulty(ability: number): number {
   return clamp(tier, 1, 5)
 }
 
-function blankConcept(conceptTag: string, unitId: SkillId): ConceptProficiency {
+function blankConcept(conceptTag: string, unitId: UnitId): ConceptProficiency {
   return {
     conceptTag,
     unitId,
@@ -170,8 +172,8 @@ export function recordAttempt(map: ProficiencyMap, input: AttemptInput): Profici
  * `proficiency` uses the confidence-shrunk ability (so thin or noisy evidence
  * reads conservatively), which is exactly what drives the test's difficulty.
  */
-export function unitProficiencies(map: ProficiencyMap): Record<SkillId, UnitProficiency> {
-  const out = {} as Record<SkillId, UnitProficiency>
+export function unitProficiencies(map: ProficiencyMap): Record<UnitId, UnitProficiency> {
+  const out = {} as Record<UnitId, UnitProficiency>
   for (const unitId of SKILL_IDS) {
     out[unitId] = { unitId, proficiency: 0, accuracy: 0, attempts: 0 }
   }

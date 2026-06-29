@@ -11,7 +11,7 @@ import {
   TEST_PASS_90,
 } from '../lib/questionBank'
 import { clearTestSession, loadTestSession, saveTestSession } from '../lib/storage'
-import { SKILLS, SKILLS_BY_ID, MAX_RATING } from '../lib/skills'
+import { SKILLS, SKILLS_BY_ID } from '../lib/skills'
 import { UNITS } from '../content/lessons'
 import { QuestionDiagram } from './QuestionDiagram'
 import { Calculator } from './sims/Calculator'
@@ -19,7 +19,7 @@ import { explainWrongAnswer } from '../lib/ai/explainClient'
 import { PointsWheel } from './PointsWheel'
 import { POINTS_WHEEL_SAFE } from '../lib/pointsWheel'
 import { AUTO_PASS_COST } from '../state/PlayerState'
-import type { BankQuestion, SkillId, TestAttempt } from '../types'
+import type { BankQuestion, UnitId, TestAttempt } from '../types'
 
 const LETTERS = ['A', 'B', 'C', 'D', 'E']
 
@@ -29,7 +29,7 @@ const PRACTICE_BONUS_COINS = 5
 // The real physics unit name for a unit id (Kinematics, Motion Graphs, …) — shown
 // in the test breakdown instead of the soccer-skill alias (Shooting, Passing, …).
 const UNIT_NAME: Record<string, string> = Object.fromEntries(UNITS.map((u) => [u.id, u.name]))
-const unitLabel = (id: string): string => UNIT_NAME[id] ?? SKILLS_BY_ID[id as SkillId]?.name ?? id
+const unitLabel = (id: string): string => UNIT_NAME[id] ?? SKILLS_BY_ID[id as UnitId]?.name ?? id
 
 type Phase = 'loading' | 'intro' | 'quiz' | 'results' | 'review' | 'done'
 
@@ -53,7 +53,6 @@ export function TestScreen({ onExit }: { onExit: () => void }) {
     testHistory,
     recordAttempt,
     recordTestResult,
-    spendPoint,
     adjustSkillPoints,
     autoPassAssessment,
   } = usePlayer()
@@ -384,7 +383,6 @@ export function TestScreen({ onExit }: { onExit: () => void }) {
       <DoneScreen
         result={result}
         profile={profile}
-        spendPoint={spendPoint}
         adjustSkillPoints={adjustSkillPoints}
         rollPointsWheel={rollPointsWheel}
         onRetake={retake}
@@ -576,7 +574,6 @@ function Results({
 function DoneScreen({
   result,
   profile,
-  spendPoint,
   adjustSkillPoints,
   rollPointsWheel,
   onRetake,
@@ -585,7 +582,6 @@ function DoneScreen({
 }: {
   result: TestResult
   profile: ReturnType<typeof usePlayer>['profile']
-  spendPoint: ReturnType<typeof usePlayer>['spendPoint']
   adjustSkillPoints: ReturnType<typeof usePlayer>['adjustSkillPoints']
   rollPointsWheel: ReturnType<typeof useApp>['rollPointsWheel']
   onRetake: () => void
@@ -683,27 +679,11 @@ function DoneScreen({
 
         {choice !== 'offer' && profile.skillPoints > 0 && (
           <>
-            <h3 className="qtest__sub">Spend skill points <span className="chip qtest__pts">{profile.skillPoints} left</span></h3>
-            <p className="qtest__note">Higher ratings mean fewer questions interrupt you in the match (99 = free play).</p>
-            <div className="qtest__alloc">
-              {SKILLS.map((s) => {
-                const rating = profile.skills[s.id]
-                const maxed = rating >= MAX_RATING
-                return (
-                  <div key={s.id} className="qtest__alloc-row">
-                    <span className="qtest__alloc-name">{s.name}</span>
-                    <span className="qtest__alloc-val">{rating}{maxed ? ' (max)' : ''}</span>
-                    <button
-                      className="btn btn--primary btn--sm"
-                      disabled={maxed || profile.skillPoints <= 0}
-                      onClick={() => spendPoint(s.id as SkillId, 1)}
-                    >
-                      +1
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
+            <h3 className="qtest__sub">Skill points earned <span className="chip qtest__pts">{profile.skillPoints} to spend</span></h3>
+            <p className="qtest__note">
+              Open <strong>Manage squad</strong> on your club card to spend these on any of your 8 players —
+              build the team however you want. Higher ratings mean fewer questions interrupt that player in a match.
+            </p>
           </>
         )}
 
@@ -1031,7 +1011,7 @@ function ConceptPractice({
   bonusCoins = 0,
   solvedLabel = 'Continue →',
 }: {
-  base: { unitId: SkillId; conceptTag: string; difficulty: 1 | 2 | 3 | 4 | 5 }
+  base: { unitId: UnitId; conceptTag: string; difficulty: 1 | 2 | 3 | 4 | 5 }
   seedExclude: string[]
   mode: 'gate' | 'endless'
   onSolved?: () => void

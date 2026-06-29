@@ -114,6 +114,7 @@ export type Unit = {
 
 export type SimKey =
   | 'projectile'
+  | 'freekick'
   | 'soccer'
   | 'passing'
   | 'forces'
@@ -178,13 +179,8 @@ export type UserProgress = {
    */
   leagueSeed?: number
   /**
-   * Last calendar day (YYYY-MM-DD) the daily wheel was spun + collected. The wheel is
-   * available whenever this isn't today. Persisted in the cloud and cleared on reset.
-   */
-  lastWheelSpinDate?: string
-  /**
-   * Last calendar day (YYYY-MM-DD) the +coins "practice this concept" bonus was claimed. Like
-   * the daily wheel, the bonus is offered once per day on a missed question in the test-history
+   * Last calendar day (YYYY-MM-DD) the +coins "practice this concept" bonus was claimed. The
+   * bonus is offered once per day on a missed question in the test-history
    * review; claiming it stamps today's date. Persisted in the cloud and cleared on reset.
    */
   lastPracticeBonusDate?: string
@@ -195,12 +191,50 @@ export type UserProgress = {
    */
   pointsWheel?: PointsWheelState
   /**
-   * The STORED final league table once you sim the season. Null/absent = not simmed
-   * yet. Re-simming overwrites this with fresh random results; a career reset clears
-   * it (and it is NOT restored by skipping lessons). Persisted in the cloud via the
-   * `progress` jsonb so it's the same on every device until you reset.
+   * Results of matchdays the player has actually PLAYED in the interactive match game,
+   * keyed by 1-based matchday. These are the ONLY results that count toward your record:
+   * the live standings use them for your fixture (and your opponent's game vs you), while
+   * every other fixture is rolled randomly off the seed. Cleared on a career reset.
    */
-  leagueTable?: LeagueStanding[] | null
+  matchResults?: Record<number, { gf: number; ga: number; challengeId?: string; challengeDone?: boolean }>
+  // ---- Coin-farm economy (persisted in the progress jsonb) ----
+  /** True once the free opening matchday has been consumed (the onboarding carrot). */
+  firstMatchUsed?: boolean
+  /** True once the rigged guaranteed first Coin Farm run has been completed. */
+  firstFarmDone?: boolean
+  /** True once the opening story + guaranteed first match (the underdog intro) is done. */
+  introDone?: boolean
+  /** True once the one-time dashboard economy tutorial overlay has been dismissed. */
+  tutorialSeen?: boolean
+  /** Running count of consecutively MASTERED learning sessions (the mastery streak). */
+  perfectStreak?: number
+  /** Coins paid out by the most recent PERFECT farm run (legacy; coins are retired). */
+  lastFarmPayout?: number
+  /**
+   * True when the player has EARNED a match by mastering a learning session/lesson but
+   * hasn't played it yet. The match is the reward for learning (coins are retired):
+   * mastering learning sets this, playing the match consumes it. Cleared on reset.
+   */
+  matchUnlocked?: boolean
+  /**
+   * Training-ground drills the player has fully cleared (solved every scenario in the
+   * mastery set) at least once, keyed by unit id. Drives "first clear" payouts and the
+   * "Mastered" badge on the training cards. Persisted in the cloud, cleared on reset.
+   */
+  drillsMastered?: Record<string, boolean>
+  /**
+   * Lesson ids whose one-off mastery coin grant has been paid out, so a unit's
+   * reward is claimed exactly once (revisiting a mastered lesson pays nothing).
+   * Persisted in the cloud, cleared on reset.
+   */
+  lessonRewarded?: Record<string, boolean>
+  /**
+   * (unitId:difficulty) pairs the learner has answered correctly at least once in a
+   * training session, e.g. "kinematics:2". Drives spaced-repetition REVIEW injection
+   * (occasionally re-serve a mastered unit+difficulty with fresh questions) and the
+   * harsher review-fail rule (miss a mastered one → no match this session). Cleared on reset.
+   */
+  masteredUnitDiff?: Record<string, boolean>
 }
 
 /** Career tracking for the 90+ skill-point gamble wheel. */
@@ -239,8 +273,13 @@ export type LeagueStanding = {
 // the lesson/mastery model above.
 // ===========================================================================
 
-/** The six trainable skills map 1:1 to the six physics units. */
-export type SkillId =
+/**
+ * The six physics LEARNING UNITS. These power the lessons, the mini soccer
+ * games (sims), the question bank, proficiency and the assessment — i.e. the
+ * "learn in a soccer-related way" side of the app. They are intentionally
+ * DECOUPLED from the 3D match attributes below (`SkillId`).
+ */
+export type UnitId =
   | 'kinematics'
   | 'motion-graphs'
   | 'forces'
@@ -248,18 +287,69 @@ export type SkillId =
   | 'momentum'
   | 'impulse'
 
-export type SkillDef = {
-  id: SkillId
-  /** RPG-facing skill name (e.g. "Shooting"). */
+export type UnitDef = {
+  id: UnitId
+  /** Soccer-flavoured unit name (e.g. "Shooting" for the kinematics drill). */
   name: string
-  /** In-match action this skill unlocks (e.g. "Take a shot"). */
+  /** In-match action this drill is themed around (e.g. "Take a shot"). */
   action: string
   /** Representative concept tag used when generating an in-match question. */
   primaryConceptTag: string
 }
 
-/** Player skill ratings, 50 (start) .. 99 (max). */
+/**
+ * The six upgradable attributes of an OUTFIELD player in your 3D FIFA-style club.
+ * These are their own statistic (stored per user, spent with skill points) and
+ * have NOTHING to do with which learning unit earned the points.
+ */
+export type SkillId =
+  | 'shooting'
+  | 'passing'
+  | 'dribbling'
+  | 'heading'
+  | 'defending'
+  | 'stamina'
+
+/** Outfield attribute ratings, 50 (start) .. 99 (max). */
 export type PlayerSkills = Record<SkillId, number>
+
+/** A goalkeeper has three of his own attributes instead of the six outfield ones. */
+export type GkStatId = 'diving' | 'handling' | 'reflexes'
+export type GkSkills = Record<GkStatId, number>
+
+/** Squad positions on your 8-a-side club (1 GK, 2 DEF, 3 MID, 2 FWD). */
+export type SquadRole = 'GK' | 'DEF' | 'MID' | 'FWD'
+
+/**
+ * One member of YOUR club. Like FIFA Ultimate Team, every player is rated
+ * separately and those ratings drive how they play in the 3D match (whether
+ * AI-controlled or the one you're steering). The GK is discriminated by role so
+ * it carries its three keeper stats; everyone else carries the six outfield stats.
+ */
+export type OutfieldPlayerCard = {
+  id: string
+  role: 'DEF' | 'MID' | 'FWD'
+  name: string
+  num: number
+  /** This player's physical look — reflected on the card AND in the 3D match. */
+  appearance: Appearance
+  /** Equipped boots cosmetic id (per player). */
+  cleats: string
+  stats: PlayerSkills
+}
+export type GkPlayerCard = {
+  id: string
+  role: 'GK'
+  name: string
+  num: number
+  appearance: Appearance
+  cleats: string
+  gk: GkSkills
+}
+export type SquadPlayer = OutfieldPlayerCard | GkPlayerCard
+
+/** Your full club: exactly 8 players, ordered GK, DEF×2, MID×3, FWD×2. */
+export type Squad = SquadPlayer[]
 
 export type CosmeticKind = 'jersey' | 'cleats'
 export type CosmeticRarity = 'starter' | 'common' | 'rare' | 'epic'
@@ -282,7 +372,7 @@ export type Cosmetic = {
 
 /** YOUR PLAYER's physical look. Palette ids resolved in lib/appearance.ts. Flows
  *  globally (card, locker model, every drill) just like the equipped loadout does. */
-export type Appearance = { skin: string; hair: string }
+export type Appearance = { skin: string; hair: string; hairStyle: string }
 
 /** Badge silhouette + physics motif used by the procedural club emblem. */
 export type EmblemShape = 'shield' | 'classic' | 'hex' | 'roundel'
@@ -307,10 +397,18 @@ export type EmblemConfig = {
 export type ClubIdentity = {
   name: string
   emblem: EmblemConfig
+  /**
+   * Broadcast 3-letter abbreviation shown on the matchday scorecard (e.g. "PHY").
+   * Generated once by the AI abbreviation Edge Function (cheapest model) from the
+   * club name and cached here / persisted to the cloud. Falls back to a local
+   * derivation (lib/teams clubCode) until the AI returns one.
+   */
+  abbr?: string
 }
 
 export type PlayerProfile = {
-  skills: PlayerSkills
+  /** Your whole club — 8 individually-rated players (FIFA-Ultimate-Team style). */
+  squad: Squad
   coins: number
   /** Unspent skill points earned from passing the test. */
   skillPoints: number
@@ -326,7 +424,7 @@ export type PlayerProfile = {
 /** Fine-grained, per-concept competence + spaced-repetition state. */
 export type ConceptProficiency = {
   conceptTag: string
-  unitId: SkillId
+  unitId: UnitId
   attempts: number
   correct: number
   /** Recency-weighted score, 0..100. */
@@ -344,7 +442,7 @@ export type ConceptProficiency = {
 export type ProficiencyMap = Record<string, ConceptProficiency>
 
 export type UnitProficiency = {
-  unitId: SkillId
+  unitId: UnitId
   proficiency: number
   accuracy: number
   attempts: number
@@ -355,7 +453,7 @@ export type AttemptSource = 'test' | 'match' | 'review' | 'lesson'
 
 export type AttemptInput = {
   conceptTag: string
-  unitId: SkillId
+  unitId: UnitId
   isCorrect: boolean
   timeMs: number
   source: AttemptSource
@@ -408,7 +506,7 @@ export type QuestionDiagram = {
  * (5 units × 100, difficulty 1–5). */
 export type BankQuestion = {
   id: string
-  unitId: SkillId
+  unitId: UnitId
   conceptTag: string
   difficulty: 1 | 2 | 3 | 4 | 5
   prompt: string
@@ -439,7 +537,7 @@ export type ReviewQuestion = BankQuestion & { source: 'ai-review' }
  * from a model.
  */
 export type SkillQuestion = {
-  unitId: SkillId
+  unitId: UnitId
   conceptTag: string
   prompt: string
   unitLabel: string

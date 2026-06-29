@@ -31,10 +31,44 @@ export const HAIR_COLORS: HairColor[] = [
   { id: 'platinum', name: 'Platinum', base: '#cfcabc' },
 ]
 
-export const DEFAULT_APPEARANCE: Appearance = { skin: 'fair', hair: 'brown' }
+// Hair SILHOUETTE — gives each player a distinct head shape on top of skin/hair colour,
+// so they're recognisable in 3D and on the card. Rendered by both the SVG avatars and
+// the 3D rig.
+export type HairStyleId = 'short' | 'buzz' | 'curly' | 'afro' | 'bald'
+export type HairStyle = { id: HairStyleId; name: string }
+export const HAIR_STYLES: HairStyle[] = [
+  { id: 'short', name: 'Short' },
+  { id: 'buzz', name: 'Buzz cut' },
+  { id: 'curly', name: 'Curly' },
+  { id: 'afro', name: 'Afro' },
+  { id: 'bald', name: 'Bald' },
+]
+
+export const DEFAULT_APPEARANCE: Appearance = { skin: 'fair', hair: 'brown', hairStyle: 'short' }
 
 const SKIN_BY_ID = Object.fromEntries(SKIN_TONES.map((s) => [s.id, s]))
 const HAIR_BY_ID = Object.fromEntries(HAIR_COLORS.map((h) => [h.id, h]))
+const HAIRSTYLE_BY_ID = Object.fromEntries(HAIR_STYLES.map((h) => [h.id, h]))
+
+/**
+ * How a hair style is drawn in 3D: cap radius scale (around the head sphere), a
+ * vertical lift, whether any hair shows at all, and surface roughness. `bald` shows
+ * none; `afro`/`curly` puff out; `buzz` hugs the scalp.
+ */
+export function hairRig(styleId: string): { show: boolean; scale: number; lift: number; rough: number } {
+  switch (styleId) {
+    case 'bald':
+      return { show: false, scale: 1, lift: 0, rough: 1 }
+    case 'buzz':
+      return { show: true, scale: 0.93, lift: -0.01, rough: 1 }
+    case 'curly':
+      return { show: true, scale: 1.12, lift: 0.02, rough: 1 }
+    case 'afro':
+      return { show: true, scale: 1.32, lift: 0.06, rough: 1 }
+    default:
+      return { show: true, scale: 1.0, lift: 0, rough: 0.95 }
+  }
+}
 
 // Self-contained shade (no playerKit import) so this module has zero cycle risk and can
 // be used by both the SVG card renderers and the canvas sim kit builder.
@@ -68,6 +102,19 @@ export function normalizeAppearance(a?: Partial<Appearance> | null): Appearance 
   return {
     skin: a?.skin && SKIN_BY_ID[a.skin] ? a.skin : DEFAULT_APPEARANCE.skin,
     hair: a?.hair && HAIR_BY_ID[a.hair] ? a.hair : DEFAULT_APPEARANCE.hair,
+    hairStyle: a?.hairStyle && HAIRSTYLE_BY_ID[a.hairStyle] ? a.hairStyle : DEFAULT_APPEARANCE.hairStyle,
+  }
+}
+
+type Rng = () => number
+const pickId = <T extends { id: string }>(arr: T[], rng: Rng): string => arr[Math.floor(rng() * arr.length)].id
+
+/** A fully random look — independent skin tone, hair colour, and hair style. */
+export function randomAppearance(rng: Rng = Math.random): Appearance {
+  return {
+    skin: pickId(SKIN_TONES, rng),
+    hair: pickId(HAIR_COLORS, rng),
+    hairStyle: pickId(HAIR_STYLES, rng),
   }
 }
 

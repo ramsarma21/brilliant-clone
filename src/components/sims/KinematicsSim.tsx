@@ -254,7 +254,7 @@ const newGame = (dist: number): Game => ({
   sandbox: false, sandboxResetAt: 0,
 })
 
-export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
+export function KinematicsSim({ state, onChange, showGoal, onGoal, matchMode, onResolve }: SimProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [phase, setPhase] = useState<Phase>('aim')
   const [message, setMessage] = useState<Result | null>(null)
@@ -321,6 +321,12 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const sceneRef = useRef({ onChange, state, showGoal })
   sceneRef.current = { onChange, state, showGoal }
   const onGoalRef = useRef(onGoal); onGoalRef.current = onGoal
+  // MATCH MODE — the sim is one "moment" inside a live match. Live refs so the rAF
+  // loop / action closures always see the current props, plus a one-shot guard so the
+  // single attempt reports its outcome to the orchestrator AT MOST once per mount.
+  const onResolveRef = useRef(onResolve); onResolveRef.current = onResolve
+  const matchModeRef = useRef(matchMode); matchModeRef.current = matchMode
+  const resolvedOnceRef = useRef(false)
   const goalSignaledRef = useRef(false)
   const inputsRef = useRef({ answer })
   inputsRef.current = { answer }
@@ -370,24 +376,37 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
     if (res.kind === 'goal') {
       g.netShake = 14
       if (soundRef.current) { sfx.current.net(); sfx.current.cheer() }
-      const s = sceneRef.current
-      const next = (Number(s.state.goals) || 0) + 1
-      s.onChange({ ...s.state, power: gameRef.current.force, angle: gameRef.current.launchAngle, goals: next })
-      setGoals((p) => p + 1)
-      // Signal lesson-level goal completion after the celebration. `showGoal`
-      // only controls the small Goals 0/1 HUD; callers can still listen quietly.
-      if (onGoalRef.current && !goalSignaledRef.current) {
-        goalSignaledRef.current = true
-        onGoalRef.current()
+      if (matchModeRef.current) {
+        // MATCH MODE: this single shot scored → report success ONCE and freeze on the
+        // celebration frame. No high-score persistence, no onChange, no onGoal, no reset.
+        if (!resolvedOnceRef.current) { resolvedOnceRef.current = true; onResolveRef.current?.(true) }
+      } else {
+        const s = sceneRef.current
+        const next = (Number(s.state.goals) || 0) + 1
+        s.onChange({ ...s.state, power: gameRef.current.force, angle: gameRef.current.launchAngle, goals: next })
+        setGoals((p) => p + 1)
+        // Signal lesson-level goal completion after the celebration. `showGoal`
+        // only controls the small Goals 0/1 HUD; callers can still listen quietly.
+        if (onGoalRef.current && !goalSignaledRef.current) {
+          goalSignaledRef.current = true
+          onGoalRef.current()
+        }
       }
     } else {
-      // A save/miss breaks the streak (matches the other drills' streak/best scoring).
-      setGoals(0)
       if (soundRef.current) sfx.current.save()
+      if (matchModeRef.current) {
+        // MATCH MODE: wrong answer / save / miss / solve-clock timeout → turnover. Report
+        // failure ONCE and freeze on the save/miss frame (no streak reset, no remediation).
+        if (!resolvedOnceRef.current) { resolvedOnceRef.current = true; onResolveRef.current?.(false) }
+      } else {
+        // A save/miss breaks the streak (matches the other drills' streak/best scoring).
+        setGoals(0)
+      }
     }
     setMessage(res); setPhase('result')
-    // Goals auto-advance after the celebration; saves/misses wait for a click.
-    if (res.kind === 'goal') scheduleReset(2400)
+    // Goals auto-advance after the celebration; saves/misses wait for a click. In match
+    // mode nothing auto-advances — the orchestrator owns the dwell + transition.
+    if (res.kind === 'goal' && !matchModeRef.current) scheduleReset(2400)
   }, [scheduleReset])
 
   // Lock the chosen target spot → start the power meter. placeDiff is fixed here from
@@ -467,7 +486,9 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
     // First attempt (showGoal): a correct shot scores with 100% certainty (no luck roll,
     // never an "unlucky save") so RNG can't block the teaching gate. The unlimited sim
     // rolls the keeper save chance from total difficulty D — truly random, power-independent.
-    if (impKind === 'goal' && !sceneRef.current.showGoal) {
+    // Match mode is GATED like the first attempt: a correct answer is a guaranteed goal
+    // (no luck roll) so the question result maps 1:1 to the on-field success/failure.
+    if (impKind === 'goal' && !sceneRef.current.showGoal && !matchModeRef.current) {
       const scoreChance = 1 - saveProbFor(g.diff)
       g.luckFail = !(Math.random() < scoreChance)
     }
@@ -775,7 +796,7 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
     ctx.textAlign = 'left'
     // Streak (top-left) + best (top-right) only appear in the unlimited practice runs,
     // matching the other drills. The first-run challenge shows just the "Goals 0/1" pill.
-    const unlimited = !sceneRef.current.showGoal
+    const unlimited = !sceneRef.current.showGoal && !matchModeRef.current
     if (unlimited) {
       ctx.fillStyle = 'rgba(8,12,28,0.8)'; roundRect(ctx, 12, 12, 150, 40, 12); ctx.fill()
       ctx.fillStyle = '#ffd166'; ctx.font = '800 14px Plus Jakarta Sans, sans-serif'
@@ -1045,7 +1066,7 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
         )}
         {phase === 'solve' && showCalc && <Calculator onClose={() => setShowCalc(false)} />}
 
-        {phase === 'result' && message && message.kind !== 'goal' && (
+        {phase === 'result' && message && message.kind !== 'goal' && !matchMode && (
           review && shotInfo ? (
             <Remediation review={review} shotInfo={shotInfo} kind={message.kind} onDone={restartRun} setPreview={setPreview} onShoot={(v) => actionsRef.current.sandboxShoot(v)} sandboxBusy={sandboxBusy} sandboxResult={sandboxResult} />
           ) : (
@@ -1124,7 +1145,7 @@ export function KinematicsSim({ state, onChange, showGoal, onGoal }: SimProps) {
           {phase === 'meter' && <button type="button" className="btn btn--primary" onClick={lockMeter}>Lock it (Space)</button>}
           {phase === 'solve' && <button type="button" className="btn btn--primary" onClick={shoot} disabled={!answerStr}>Strike</button>}
           {(phase === 'aim' || phase === 'fly' || phase === 'result') && <button type="button" className="btn btn--primary" disabled>{phase === 'aim' ? 'Pick a spot…' : phase === 'fly' ? 'Ball in flight…' : '…'}</button>}
-          <button type="button" className="btn btn--ghost" onClick={restartRun}>↻ Restart</button>
+          {!matchMode && <button type="button" className="btn btn--ghost" onClick={restartRun}>↻ Restart</button>}
         </div>
       </div>
       </div>

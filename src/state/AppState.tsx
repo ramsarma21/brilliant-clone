@@ -9,7 +9,6 @@ import {
   type ReactNode,
 } from 'react'
 import type {
-  LeagueStanding,
   LessonProgress,
   SimState,
   StepAnswer,
@@ -232,8 +231,6 @@ type AppContextValue = {
   visitedToday: boolean
   /** Whether this session was the account's first visit of the day. */
   firstVisitToday: boolean
-  /** Whether the daily wheel hasn't been spun yet today. */
-  wheelAvailable: boolean
   login: (username: string, password: string) => Promise<AuthOutcome>
   signup: (username: string, password: string) => Promise<AuthOutcome>
   logout: () => void
@@ -247,12 +244,41 @@ type AppContextValue = {
   skipAllLessons: () => void
   /** Record a played Quantum League match (advances the league ladder by one). */
   playQuantumMatch: () => void
-  /** Persist a simulated final league table (or null to clear it). */
-  setLeagueTable: (table: LeagueStanding[] | null) => void
-  /** Mark the daily wheel as spun + collected for today (hides it until tomorrow). */
-  claimDailyWheel: () => void
-  /** Testing only: force the daily wheel back even if it was already spun today. */
-  resetDailyWheel: () => void
+  /**
+   * Record the FINAL scoreline of an interactive matchday the player just played. Advances
+   * the league ladder to that matchday and stores the result so the standings + schedule
+   * reflect how the game actually went (overriding the seed-derived score for that fixture).
+   */
+  recordMatchResult: (
+    matchday: number,
+    gf: number,
+    ga: number,
+    challenge?: { id: string; done: boolean },
+  ) => void
+  /** Consume the free opening matchday (onboarding carrot). */
+  consumeFirstMatch: () => void
+  /** Mark the rigged guaranteed first Coin Farm run as done. */
+  markFirstFarmDone: () => void
+  /** Mark a training-ground drill's mastery set as fully cleared (persisted). */
+  markDrillMastered: (unitId: string) => void
+  /** Claim a lesson's one-off mastery coin grant. Returns true only the first time. */
+  claimLessonReward: (lessonId: string) => boolean
+  /** Mark the opening story + first match (underdog intro) as completed. */
+  markIntroDone: () => void
+  /** True once `progress` is hydrated (device cache or cloud) and safe to gate the intro on. */
+  progressHydrated: boolean
+  /** Mark the one-time dashboard economy tutorial as seen. */
+  markTutorialSeen: () => void
+  /** Set the running mastery streak (mastered learning sessions in a row). */
+  setPerfectStreak: (n: number) => void
+  /** Earn a match by mastering learning — the reward to be played from the dashboard. */
+  unlockMatch: () => void
+  /** Consume an earned match when the player starts playing it. */
+  consumeMatchUnlock: () => void
+  /** Mark a (unit + difficulty) as mastered (answered right once) — enables spaced-rep review. */
+  markUnitDiffMastered: (unitId: string, difficulty: number) => void
+  /** Remember the coins paid by the latest perfect farm run (dashboard "last payout"). */
+  setLastFarmPayout: (n: number) => void
   /** True when today's once-a-day practice coin bonus hasn't been claimed yet. */
   practiceBonusAvailable: boolean
   /** Mark today's practice coin bonus as claimed (hides it until tomorrow). */
@@ -287,6 +313,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [progress, setProgress] = useState<UserProgress>(
     () => loadProgress() ?? createInitialProgress(),
   )
+  // True once `progress` is safe to act on. The device cache only counts when it actually
+  // belongs to the signed-in account — otherwise we wait for the per-user cloud hydrate so a
+  // brand-new account never inherits a previous user's `introDone` (and the intro shows). This
+  // also stops the intro flashing for a returning player on a fresh device.
+  const [progressHydrated, setProgressHydrated] = useState<boolean>(() => {
+    const cached = loadProgress()
+    return cached != null && cached.userId === profile.id
+  })
 
   // True when the signed-in account's first visit of the current day was this
   // session (a daily-rollover signal; not a streak). Recomputed on each hydrate.
@@ -320,6 +354,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const user = profile.username
     let alive = true
     hydratedUser.current = null
+    // If the cached progress isn't this account's, hold the intro gate closed until the
+    // cloud load resolves (prevents a wrong-user dashboard/intro flash on account switch).
+    if (progressRef.current.userId !== profile.id) setProgressHydrated(false)
     void (async () => {
       // Make the user's single profiles row up front so every later save updates
       // it instead of lazily spawning a row on first write.
@@ -346,6 +383,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         })
       }
       hydratedUser.current = user
+      setProgressHydrated(true)
     })()
     return () => {
       alive = false
@@ -595,29 +633,84 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }))
   }, [update])
 
-  // Store a freshly-simulated final league table (the sim itself runs in the Dashboard,
-  // which can safely import lib/league; AppState only persists the result). A simmed season
-  // also marks all 50 matches as played; passing null clears both. Saved to the cloud with
-  // the rest of `progress`.
-  const setLeagueTable = useCallback((table: LeagueStanding[] | null) => {
-    update((p) => ({
-      ...p,
-      leagueTable: table,
-      quantumMatchesPlayed: table && table.length > 0 ? SEASON_GAMES : 0,
-    }))
+  const recordMatchResult = useCallback(
+    (matchday: number, gf: number, ga: number, challenge?: { id: string; done: boolean }) => {
+      const md = Math.max(1, Math.min(SEASON_GAMES, Math.floor(matchday)))
+      update((p) => ({
+        ...p,
+        quantumMatchesPlayed: Math.min(SEASON_GAMES, Math.max(p.quantumMatchesPlayed ?? 0, md)),
+        matchResults: {
+          ...(p.matchResults ?? {}),
+          [md]: { gf, ga, challengeId: challenge?.id, challengeDone: challenge?.done },
+        },
+      }))
+    },
+    [update],
+  )
+
+  const consumeFirstMatch = useCallback(() => {
+    update((p) => (p.firstMatchUsed ? p : { ...p, firstMatchUsed: true }))
   }, [update])
 
-  const claimDailyWheel = useCallback(() => {
-    update((p) => ({ ...p, lastWheelSpinDate: todayKey() }))
+  const markFirstFarmDone = useCallback(() => {
+    update((p) => (p.firstFarmDone ? p : { ...p, firstFarmDone: true }))
   }, [update])
 
-  // Testing hook: stamp the wheel as "spun yesterday" so it reappears immediately.
-  const resetDailyWheel = useCallback(() => {
-    update((p) => ({ ...p, lastWheelSpinDate: '' }))
+  const markDrillMastered = useCallback((unitId: string) => {
+    update((p) =>
+      p.drillsMastered?.[unitId]
+        ? p
+        : { ...p, drillsMastered: { ...(p.drillsMastered ?? {}), [unitId]: true } },
+    )
   }, [update])
 
-  // Same once-a-day pattern as the daily wheel: stamp today's date when the practice coin
-  // bonus is collected so it can't be claimed again until tomorrow.
+  // Claim a lesson's one-off mastery coin grant. Returns true only the FIRST time
+  // (so the caller pays out exactly once); later calls are no-ops returning false.
+  const claimLessonReward = useCallback((lessonId: string): boolean => {
+    if (progressRef.current.lessonRewarded?.[lessonId]) return false
+    update((p) =>
+      p.lessonRewarded?.[lessonId]
+        ? p
+        : { ...p, lessonRewarded: { ...(p.lessonRewarded ?? {}), [lessonId]: true } },
+    )
+    return true
+  }, [update])
+
+  const markIntroDone = useCallback(() => {
+    update((p) => (p.introDone ? p : { ...p, introDone: true }))
+  }, [update])
+
+  const markTutorialSeen = useCallback(() => {
+    update((p) => (p.tutorialSeen ? p : { ...p, tutorialSeen: true }))
+  }, [update])
+
+  const setPerfectStreak = useCallback((n: number) => {
+    update((p) => ({ ...p, perfectStreak: Math.max(0, Math.floor(n)) }))
+  }, [update])
+
+  const unlockMatch = useCallback(() => {
+    update((p) => (p.matchUnlocked ? p : { ...p, matchUnlocked: true }))
+  }, [update])
+
+  const consumeMatchUnlock = useCallback(() => {
+    update((p) => (p.matchUnlocked ? { ...p, matchUnlocked: false } : p))
+  }, [update])
+
+  const markUnitDiffMastered = useCallback((unitId: string, difficulty: number) => {
+    const key = `${unitId}:${Math.round(difficulty)}`
+    update((p) =>
+      p.masteredUnitDiff?.[key]
+        ? p
+        : { ...p, masteredUnitDiff: { ...(p.masteredUnitDiff ?? {}), [key]: true } },
+    )
+  }, [update])
+
+  const setLastFarmPayout = useCallback((n: number) => {
+    update((p) => ({ ...p, lastFarmPayout: Math.max(0, Math.floor(n)) }))
+  }, [update])
+
+  // Once-a-day pattern: stamp today's date when the practice coin bonus is collected so it
+  // can't be claimed again until tomorrow.
   const claimPracticeBonus = useCallback(() => {
     update((p) => ({ ...p, lastPracticeBonusDate: todayKey() }))
   }, [update])
@@ -646,7 +739,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       lastVisitDate: progress.lastActiveDate,
       visitedToday: progress.lastActiveDate === todayKey(),
       firstVisitToday,
-      wheelAvailable: (progress.lastWheelSpinDate ?? '') !== todayKey(),
       practiceBonusAvailable: (progress.lastPracticeBonusDate ?? '') !== todayKey(),
       login,
       signup,
@@ -660,9 +752,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       resetProgress,
       skipAllLessons,
       playQuantumMatch,
-      setLeagueTable,
-      claimDailyWheel,
-      resetDailyWheel,
+      recordMatchResult,
+      consumeFirstMatch,
+      markFirstFarmDone,
+      markDrillMastered,
+      claimLessonReward,
+      markIntroDone,
+      markTutorialSeen,
+      progressHydrated,
+      setPerfectStreak,
+      unlockMatch,
+      consumeMatchUnlock,
+      markUnitDiffMastered,
+      setLastFarmPayout,
       claimPracticeBonus,
       rollPointsWheel,
     }),
@@ -685,9 +787,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       resetProgress,
       skipAllLessons,
       playQuantumMatch,
-      setLeagueTable,
-      claimDailyWheel,
-      resetDailyWheel,
+      recordMatchResult,
+      consumeFirstMatch,
+      markFirstFarmDone,
+      markDrillMastered,
+      claimLessonReward,
+      markIntroDone,
+      markTutorialSeen,
+      progressHydrated,
+      setPerfectStreak,
+      unlockMatch,
+      consumeMatchUnlock,
+      markUnitDiffMastered,
+      setLastFarmPayout,
       claimPracticeBonus,
       rollPointsWheel,
     ],

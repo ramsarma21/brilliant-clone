@@ -1,4 +1,4 @@
-import type { SkillId, SkillQuestion } from '../../types'
+import type { UnitId, SkillQuestion } from '../../types'
 
 // In-match "execute the move" questions. These mirror the existing sim solve
 // style (random whole-ish values, single-step algebra) and are generated
@@ -26,7 +26,7 @@ const ANGLES = [
 
 type Generator = (rng: () => number) => SkillQuestion
 
-const generators: Record<SkillId, Generator> = {
+const generators: Record<UnitId, Generator> = {
   // Shooting: vertical launch component vy = v*sinθ.
   kinematics: (rng) => {
     const v = randInt(rng, 16, 34)
@@ -117,7 +117,7 @@ const generators: Record<SkillId, Generator> = {
 }
 
 export function generateSkillQuestion(
-  unitId: SkillId,
+  unitId: UnitId,
   rng: () => number = Math.random,
 ): SkillQuestion {
   return generators[unitId](rng)

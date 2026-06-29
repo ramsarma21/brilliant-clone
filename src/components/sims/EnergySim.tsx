@@ -642,7 +642,7 @@ function lostScene(headerId: HeaderId, crossSide: number, markZ: number, scenari
   }
 }
 
-export function EnergySim({ state, onChange, showGoal, onGoal }: SimProps) {
+export function EnergySim({ state, onChange, showGoal, onGoal, matchMode, onResolve }: SimProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [phase, setPhase] = useState<Phase>('menu')
   const [answerStr, setAnswerStr] = useState('')
@@ -678,6 +678,15 @@ export function EnergySim({ state, onChange, showGoal, onGoal }: SimProps) {
   const sceneRef = useRef({ onChange, state, onGoal, showGoal })
   sceneRef.current = { onChange, state, onGoal, showGoal }
   const goalFiredRef = useRef(false)
+  // MATCH MODE — when mounted inside the live match (components/match/MatchGame)
+  // this drill is ONE header attempt. It plays the SAME scene + question(s) but
+  // behaves as GATED (a correct answer guarantees the header finds the net), and
+  // reports the single outcome via onResolve EXACTLY ONCE instead of firing
+  // onGoal / persisting a high score / looping. Live refs so the loop + actions
+  // always see the latest props without re-subscribing.
+  const onResolveRef = useRef(onResolve); onResolveRef.current = onResolve
+  const matchModeRef = useRef(matchMode); matchModeRef.current = matchMode
+  const resolvedOnceRef = useRef(false)
   // UNIVERSAL KIT: the player the user controls (the header-winner) and his
   // teammates wear the LIVE kit derived from the equipped jersey + cleats, so a
   // loadout change on the player card updates this drill instantly. usePlayerKit
@@ -746,7 +755,7 @@ export function EnergySim({ state, onChange, showGoal, onGoal }: SimProps) {
     // leap so the challenge can never be blocked by RNG/scenario. Only the
     // unlimited replay reads the box.
     if (!correct) g.fate = 'lost'
-    else if (sceneRef.current.showGoal) g.fate = 'goal'
+    else if (sceneRef.current.showGoal || matchModeRef.current) g.fate = 'goal'
     else g.fate = fateFor(g.scenario, p.header.id)
     g.ballResult = g.fate === 'lost' ? 'goal' : g.fate
     g.t = 0; g.resolved = false; g.scored = false; g.celebrate = 0
@@ -776,18 +785,24 @@ export function EnergySim({ state, onChange, showGoal, onGoal }: SimProps) {
       const sc = flyScene(p.header.id, g.fate, g.crossSide, g.markZ, g.scenario, 1)
       spawnConfetti(g, project(sc.ball.x, 1.0, sc.ball.z))
       if (soundRef.current) { sfx.current.thud(); sfx.current.cheer() }
-      const s = streakRef.current + 1
-      setStreak(s)
-      if (s > bestRef.current) { setBest(s); void saveHighScore('energy', s) }
-      const sceneNow = sceneRef.current
-      sceneNow.onChange({ ...sceneNow.state, connections: Number(sceneNow.state.connections ?? 0) + 1 })
-      // Tick this header type off; only finish the drill once all three are in.
-      const already = wonTypesRef.current
-      const next = already.includes(p.header.id) ? already : [...already, p.header.id]
-      if (!already.includes(p.header.id)) setWonTypes(next)
-      if (next.length >= HEADERS.length && !goalFiredRef.current) {
-        goalFiredRef.current = true
-        sceneNow.onGoal?.()
+      if (matchModeRef.current) {
+        // MATCH MODE: a single buried header IS the moment's success. Report it
+        // once; do NOT fire onGoal, persist a high score, or touch lesson state.
+        if (!resolvedOnceRef.current) { resolvedOnceRef.current = true; onResolveRef.current?.(true) }
+      } else {
+        const s = streakRef.current + 1
+        setStreak(s)
+        if (s > bestRef.current) { setBest(s); void saveHighScore('energy', s) }
+        const sceneNow = sceneRef.current
+        sceneNow.onChange({ ...sceneNow.state, connections: Number(sceneNow.state.connections ?? 0) + 1 })
+        // Tick this header type off; only finish the drill once all three are in.
+        const already = wonTypesRef.current
+        const next = already.includes(p.header.id) ? already : [...already, p.header.id]
+        if (!already.includes(p.header.id)) setWonTypes(next)
+        if (next.length >= HEADERS.length && !goalFiredRef.current) {
+          goalFiredRef.current = true
+          sceneNow.onGoal?.()
+        }
       }
     } else if (clean && p) {
       // RIGHT physics, WRONG read (unlimited only): you won the duel, but the
@@ -799,8 +814,14 @@ export function EnergySim({ state, onChange, showGoal, onGoal }: SimProps) {
       // Wrong physics: you mistimed the leap. Open the animated worked-solution
       // lesson (explanation slides) for this energy problem; continue from there.
       if (soundRef.current) { sfx.current.clear(); sfx.current.miss() }
-      setStreak(0)
-      setShowLesson(true)
+      if (matchModeRef.current) {
+        // MATCH MODE: a wrong answer is the moment's failure. Report once and hold
+        // the frame — no remediation lesson.
+        if (!resolvedOnceRef.current) { resolvedOnceRef.current = true; onResolveRef.current?.(false) }
+      } else {
+        setStreak(0)
+        setShowLesson(true)
+      }
     }
     setPhase('result')
   }, [project])
@@ -817,6 +838,10 @@ export function EnergySim({ state, onChange, showGoal, onGoal }: SimProps) {
     setStreak(0)
     setRobbed(true)
     setPhase('robbed')
+    // MATCH MODE: running the solve clock down is the moment's failure (turnover).
+    if (matchModeRef.current && !resolvedOnceRef.current) {
+      resolvedOnceRef.current = true; onResolveRef.current?.(false)
+    }
   }, [])
 
   const endRobbery = useCallback(() => {
@@ -1035,7 +1060,9 @@ export function EnergySim({ state, onChange, showGoal, onGoal }: SimProps) {
     }
 
     // ---- HUD ----
-    const unlimited = !sceneRef.current.showGoal
+    // matchMode behaves as GATED (no streak/best HUD), even though the orchestrator
+    // does not pass showGoal.
+    const unlimited = !(sceneRef.current.showGoal || matchModeRef.current)
     if (unlimited) {
       ctx.fillStyle = 'rgba(8,12,28,0.8)'; roundRect(ctx, 12, 12, 150, 40, 12); ctx.fill()
       ctx.fillStyle = '#ffd166'; ctx.font = '800 14px Plus Jakarta Sans, sans-serif'; ctx.textAlign = 'left'
@@ -1108,10 +1135,13 @@ export function EnergySim({ state, onChange, showGoal, onGoal }: SimProps) {
   const outcome = g.outcome
   // While the wrong-answer lesson is up, the lesson's own buttons continue;
   // a stray background click must not skip it.
-  const canClickContinue = phase === 'result' && !showLesson
+  // In matchMode the single attempt FREEZES on its final frame — no click-to-
+  // advance, no restart; the match orchestrator drives what happens next.
+  const canClickContinue = phase === 'result' && !showLesson && !matchMode
   // Only the gated first run tracks "score all 3"; the unlimited sim is free play
   // (any header, any number of times) so it shows no completed/green state.
-  const unlimited = !showGoal
+  // matchMode is gated too (single attempt), so it is never "unlimited".
+  const unlimited = !(showGoal || matchMode)
   const wonCount = wonTypes.length
   const allWon = !unlimited && wonCount >= HEADERS.length
   const headerName = (id: HeaderId) => HEADERS.find((hd) => hd.id === id)?.name ?? ''
@@ -1163,28 +1193,28 @@ export function EnergySim({ state, onChange, showGoal, onGoal }: SimProps) {
           </div>
         )}
 
-        {phase === 'result' && outcome === 'beat' && g.fate === 'goal' && (
+        {phase === 'result' && !matchMode && outcome === 'beat' && g.fate === 'goal' && (
           <div className="soccer__banner soccer__banner--goal">
             <strong>{allWon ? 'ALL THREE BURIED! 🎉' : 'GOAL! 🥅'}</strong>
             <span>{allWon ? 'Near post, back post and towering — drill complete.' : unlimited ? `${p?.header.name} — buried! Click anywhere for the next corner.` : `${p?.header.name} scored. ${wonCount}/3 header types. Click anywhere for the next corner.`}</span>
           </div>
         )}
 
-        {phase === 'result' && outcome === 'beat' && g.fate === 'saved' && (
+        {phase === 'result' && !matchMode && outcome === 'beat' && g.fate === 'saved' && (
           <div className="soccer__banner soccer__banner--save">
             <strong>SAVED! 🧤</strong>
             <span>Your physics was perfect, but the keeper was on that post. Read where he is. Click anywhere for the next corner.</span>
           </div>
         )}
 
-        {phase === 'result' && outcome === 'beat' && g.fate === 'deflected' && (
+        {phase === 'result' && !matchMode && outcome === 'beat' && g.fate === 'deflected' && (
           <div className="soccer__banner soccer__banner--save">
             <strong>HEADED CLEAR! 🧱</strong>
             <span>Right leap, but the box was packed and a defender blocked it. Go aerial with the towering header. Click anywhere for the next corner.</span>
           </div>
         )}
 
-        {phase === 'result' && outcome === 'lost' && !showLesson && (
+        {phase === 'result' && !matchMode && outcome === 'lost' && !showLesson && (
           <div className="soccer__banner soccer__banner--save">
             <strong>BEATEN IN THE AIR! 🤿</strong>
             <span>He climbed above you and headed it clear. Click anywhere for the next corner.</span>
@@ -1192,11 +1222,11 @@ export function EnergySim({ state, onChange, showGoal, onGoal }: SimProps) {
         )}
 
         {/* WRONG-ANSWER LESSON — animated worked-solution explanation slides. */}
-        {phase === 'result' && outcome === 'lost' && showLesson && p && (
+        {phase === 'result' && !matchMode && outcome === 'lost' && showLesson && p && (
           <HeaderLesson problem={p} played={g.played} onDone={nextRun} />
         )}
 
-        {phase === 'result' && robbed && (
+        {phase === 'result' && !matchMode && robbed && (
           <div className="soccer__banner soccer__banner--save">
             <strong>TOO SLOW ⛔</strong>
             <span>The cross was cleared. Click anywhere to try again.</span>
@@ -1210,7 +1240,9 @@ export function EnergySim({ state, onChange, showGoal, onGoal }: SimProps) {
       <div className="soccer__side">
         {phase === 'menu' && (
           <div className="soccer__givens">
-            {unlimited
+            {matchMode
+              ? <div className="is-key"><span>Win the cross</span><strong>Head it home</strong></div>
+              : unlimited
               ? <div className="is-key"><span>Free play</span><strong>Any header, any time</strong></div>
               : <div className="is-key"><span>Score all 3</span><strong>{wonCount} / 3 headers</strong></div>}
             <div><span>Gravity</span><strong>g = {GRAV} m/s²</strong></div>
@@ -1253,20 +1285,20 @@ export function EnergySim({ state, onChange, showGoal, onGoal }: SimProps) {
           </>
         )}
 
-        {phase === 'result' && outcome === 'beat' && g.fate === 'goal' && p && (
+        {phase === 'result' && !matchMode && outcome === 'beat' && g.fate === 'goal' && p && (
           <p className="soccer__tip">
             Energy checks out: {p.dir === 'findV' ? `v = √(2gh) = √(2·${p.g}·${p.h}) = ${round1(p.v)} m/s` : `h = v²/2g = ${p.v}²/${2 * p.g} = ${round1(p.h)} m`} got you up to bury the {p.header.name.toLowerCase()}.
             {unlimited ? '' : allWon ? ' Hat-trick of header types!' : ` Still to score: ${HEADERS.filter((hd) => !wonTypes.includes(hd.id)).map((hd) => headerName(hd.id)).join(', ')}.`}
           </p>
         )}
 
-        {phase === 'result' && outcome === 'beat' && g.fate !== 'goal' && p && (
+        {phase === 'result' && !matchMode && outcome === 'beat' && g.fate !== 'goal' && p && (
           <p className="soccer__tip">
             Energy was spot on ({p.dir === 'findV' ? `v = √(2gh) = ${round1(p.v)} m/s` : `h = v²/2g = ${round1(p.h)} m`}), so you won the header. {g.scenario.read} Pick the header the box leaves open.
           </p>
         )}
 
-        {phase === 'result' && outcome === 'lost' && p && (
+        {phase === 'result' && !matchMode && outcome === 'lost' && p && (
           <p className="soccer__tip">{missText(p, g.played)}</p>
         )}
 
@@ -1275,8 +1307,8 @@ export function EnergySim({ state, onChange, showGoal, onGoal }: SimProps) {
             {phase === 'menu' && <button type="button" className="btn btn--primary" disabled>Pick a header ▸</button>}
             {phase === 'solve' && <button type="button" className="btn btn--primary" onClick={playHeader} disabled={!answerStr}>Go up for it ⚽</button>}
             {phase === 'fly' && <button type="button" className="btn btn--primary" disabled>In the air…</button>}
-            {phase === 'result' && <button type="button" className="btn btn--primary" onClick={nextRun}>Next corner →</button>}
-            <button type="button" className="btn btn--ghost" onClick={nextRun}>↻ Restart</button>
+            {phase === 'result' && !matchMode && <button type="button" className="btn btn--primary" onClick={nextRun}>Next corner →</button>}
+            {!matchMode && <button type="button" className="btn btn--ghost" onClick={nextRun}>↻ Restart</button>}
           </div>
         </div>
       </div>

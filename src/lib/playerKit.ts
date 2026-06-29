@@ -123,9 +123,10 @@ export function usePlayerKit<T extends object>(base: T): T {
   const cleatsId = profile.equipped.cleats
   const skin = profile.appearance?.skin
   const hair = profile.appearance?.hair
+  const hairStyle = profile.appearance?.hairStyle
   return useMemo(
-    () => applyLoadout(base, jerseyId, cleatsId, { skin: skin ?? '', hair: hair ?? '' }),
-    [base, jerseyId, cleatsId, skin, hair],
+    () => applyLoadout(base, jerseyId, cleatsId, { skin: skin ?? '', hair: hair ?? '', hairStyle: hairStyle ?? 'short' }),
+    [base, jerseyId, cleatsId, skin, hair, hairStyle],
   )
 }
 

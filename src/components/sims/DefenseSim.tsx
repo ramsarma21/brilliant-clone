@@ -399,7 +399,7 @@ function lostScene(moveId: MoveId, openSide: number, attZ: number, u: number): S
   return { ball, att, you, contact: 0, contactPt: null }
 }
 
-export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
+export function DefenseSim({ state, onChange, showGoal, onGoal, matchMode, onResolve }: SimProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [phase, setPhase] = useState<Phase>('menu')
   const [answerStr, setAnswerStr] = useState('')
@@ -438,6 +438,11 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const sceneRef = useRef({ onChange, state, onGoal, showGoal })
   sceneRef.current = { onChange, state, onGoal, showGoal }
   const goalFiredRef = useRef(false)
+  // MATCH MODE — live refs so the rAF/draw loop and resolve branches read the
+  // latest props, and a one-shot guard so onResolve fires AT MOST once per mount.
+  const onResolveRef = useRef(onResolve); onResolveRef.current = onResolve
+  const matchModeRef = useRef(matchMode); matchModeRef.current = matchMode
+  const resolvedOnceRef = useRef(false)
   const answerRef = useRef(answerStr); answerRef.current = answerStr
   const streakRef = useRef(streak); streakRef.current = streak
   const bestRef = useRef(best); bestRef.current = best
@@ -504,6 +509,13 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
       if (soundRef.current) { sfx.current.tackle(); sfx.current.cheer() }
       const s = streakRef.current + 1
       setStreak(s)
+      // matchMode: a single won challenge = success. Report once, and never
+      // persist a high score or fire onGoal (the orchestrator owns what's next).
+      if (matchModeRef.current) {
+        if (!resolvedOnceRef.current) { resolvedOnceRef.current = true; onResolveRef.current?.(true) }
+        setPhase('result')
+        return
+      }
       if (s > bestRef.current) { setBest(s); void saveHighScore('momentum', s) }
       const sceneNow = sceneRef.current
       sceneNow.onChange({ ...sceneNow.state, connections: Number(sceneNow.state.connections ?? 0) + 1 })
@@ -526,6 +538,8 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
       // result banner states the correct answer before the next round.
       if (soundRef.current) { sfx.current.beaten(); sfx.current.miss() }
       setStreak(0)
+      // matchMode: a beaten attempt is a turnover — report failure once.
+      if (matchModeRef.current && !resolvedOnceRef.current) { resolvedOnceRef.current = true; onResolveRef.current?.(false) }
     }
     setPhase('result')
   }, [project])
@@ -540,6 +554,8 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
     setStreak(0)
     setRobbed(true)
     setPhase('robbed')
+    // matchMode: the solve clock ran out — turnover, report failure once.
+    if (matchModeRef.current && !resolvedOnceRef.current) { resolvedOnceRef.current = true; onResolveRef.current?.(false) }
   }, [])
 
   const endRobbery = useCallback(() => {
@@ -701,8 +717,9 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
     }
 
     // ---- HUD ----
+    // matchMode hides the streak/best HUD entirely (the match owns scoring).
     const unlimited = !sceneRef.current.showGoal
-    if (unlimited) {
+    if (unlimited && !matchModeRef.current) {
       ctx.fillStyle = 'rgba(8,12,28,0.8)'; roundRect(ctx, 12, 12, 150, 40, 12); ctx.fill()
       ctx.fillStyle = '#ffd166'; ctx.font = '800 14px Plus Jakarta Sans, sans-serif'; ctx.textAlign = 'left'
       ctx.fillText(`🔥 Streak: ${streakRef.current}`, 24, 38)
@@ -772,7 +789,8 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
   // A wrong answer now opens the worked-solution lesson (its own navigation /
   // "Next attacker" continues the run), so it is intentionally excluded from the
   // click-anywhere-to-continue shortcut — otherwise the first click would skip it.
-  const canClickContinue = phase === 'result' && (robbed || outcome === 'beat')
+  // matchMode is a single frozen attempt: no click-to-continue / restart.
+  const canClickContinue = !matchMode && phase === 'result' && (robbed || outcome === 'beat')
 
   return (
     <div
@@ -820,7 +838,7 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
           </div>
         )}
 
-        {phase === 'result' && outcome === 'beat' && (
+        {!matchMode && phase === 'result' && outcome === 'beat' && (
           <div className="soccer__banner soccer__banner--goal">
             <strong>WON THE BALL! 🛡️</strong>
             <span>
@@ -834,7 +852,7 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
           </div>
         )}
 
-        {phase === 'result' && outcome === 'lost' && !robbed && (
+        {!matchMode && phase === 'result' && outcome === 'lost' && !robbed && (
           <div className="soccer__banner soccer__banner--save">
             <strong>BEATEN 😖</strong>
             <span>{missText(p, g.played)} Click anywhere to continue.</span>
@@ -843,11 +861,11 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
 
         {/* Wrong answer → animated, multi-step worked-solution lesson (replaces the
             brief miss banner above, which it covers). No try-yourself sandbox. */}
-        {phase === 'result' && outcome === 'lost' && !robbed && p && (
+        {!matchMode && phase === 'result' && outcome === 'lost' && !robbed && p && (
           <DefenseLesson p={p} used={g.played} onDone={nextRun} />
         )}
 
-        {phase === 'result' && robbed && (
+        {!matchMode && phase === 'result' && robbed && (
           <div className="soccer__banner soccer__banner--save">
             <strong>TOO SLOW ⛔</strong>
             <span>He knocked it past you and went. Click anywhere to try again.</span>
@@ -907,11 +925,11 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
           </>
         )}
 
-        {phase === 'result' && outcome === 'beat' && p && (
+        {!matchMode && phase === 'result' && outcome === 'beat' && p && (
           <p className="soccer__tip">Momentum checks out: {solvedText(p)} — you read it and timed the {p.move.name.toLowerCase()}. <b>Streak {streak}</b> · best {best}.</p>
         )}
 
-        {phase === 'result' && outcome === 'lost' && !robbed && p && (
+        {!matchMode && phase === 'result' && outcome === 'lost' && !robbed && p && (
           <p className="soccer__tip">He beat you — {solvedText(p)}. <b>Streak reset.</b> Click the pitch or “Next attacker” to go again.</p>
         )}
 
@@ -920,8 +938,9 @@ export function DefenseSim({ state, onChange, showGoal, onGoal }: SimProps) {
             {phase === 'menu' && <button type="button" className="btn btn--primary" disabled>Pick a challenge ▸</button>}
             {phase === 'solve' && <button type="button" className="btn btn--primary" onClick={playMove} disabled={!answerStr}>Make the challenge 🛡️</button>}
             {phase === 'fly' && <button type="button" className="btn btn--primary" disabled>Going in…</button>}
-            {phase === 'result' && <button type="button" className="btn btn--primary" onClick={nextRun}>Next attacker →</button>}
-            <button type="button" className="btn btn--ghost" onClick={nextRun}>↻ Restart</button>
+            {/* matchMode hides post-attempt navigation (Next/Restart): one frozen attempt. */}
+            {!matchMode && phase === 'result' && <button type="button" className="btn btn--primary" onClick={nextRun}>Next attacker →</button>}
+            {!matchMode && <button type="button" className="btn btn--ghost" onClick={nextRun}>↻ Restart</button>}
           </div>
         </div>
       </div>

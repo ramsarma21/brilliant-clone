@@ -29,21 +29,21 @@ import { Calculator } from './Calculator'
 // ---- Camera / canvas: BEHIND the goal, looking downfield. The goal frame is
 // nearest the camera (drawn last, on top), the keeper stands in the mouth, and
 // the striker runs up from up-pitch. ----
-const W = 900
-const H = 560
-const HORIZON = H * 0.45
-const EYE_Y = 1.3
-const FOCAL = 560
-const CAM_BACK = 5.5
+export const W = 900
+export const H = 560
+export const HORIZON = H * 0.45
+export const EYE_Y = 1.3
+export const FOCAL = 560
+export const CAM_BACK = 5.5
 
 // ---- World (metres) ----
-const BALL_R = 0.13
-const GOAL_HW = 3.66 // half goal width
-const CROSSBAR = 2.44 // goal height
-const GOAL_Z = 0.35 // the goal-line plane (nearest)
-const KEEP_Z = 1.7 // where the keeper ("you") stands, just off the line
-const RUN_FROM = 12.6 // striker's depth while you read it
-const SHOOT_Z = 10.8 // where he plants and strikes
+export const BALL_R = 0.13
+export const GOAL_HW = 3.66 // half goal width
+export const CROSSBAR = 2.44 // goal height
+export const GOAL_Z = 0.35 // the goal-line plane (nearest)
+export const KEEP_Z = 1.7 // where the keeper ("you") stands, just off the line
+export const RUN_FROM = 12.6 // striker's depth while you read it
+export const SHOOT_Z = 10.8 // where he plants and strikes
 
 const BEST_KEY = 'physics-goalie-best'
 
@@ -53,8 +53,8 @@ const SOLVE_WARN_MS = 10000
 const CALC_DRAIN = 1.25
 
 // ---- Save animation ----
-const FLY_DUR = 2.0
-const CONTACT_FRAC = 0.34 // when the striker's boot meets the ball
+export const FLY_DUR = 2.0
+export const CONTACT_FRAC = 0.34 // when the striker's boot meets the ball
 
 // ---- Timeout (the "too slow" — he buries it in an empty net) ----
 const ROB_CLOSE_S = 0.95
@@ -64,11 +64,11 @@ const ROB_DUR_S = 1.9
 const BALL_M = 0.43 // kg (regulation ball)
 const DT = 0.1 // s (gloves' contact time)
 
-type P2 = { sx: number; sy: number; scale: number }
-const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v))
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+export type P2 = { sx: number; sy: number; scale: number }
+export const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v))
+export const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 const round1 = (x: number) => Math.round(x * 10) / 10
-const easeOut = (u: number) => 1 - (1 - u) * (1 - u)
+export const easeOut = (u: number) => 1 - (1 - u) * (1 - u)
 const easeInOut = (u: number) => (u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2)
 const parseNum = (s: string): number => { const v = parseFloat(s); return Number.isFinite(v) ? v : 0 }
 
@@ -186,7 +186,7 @@ function givenList(p: Problem): { label: string; val: string; key?: boolean }[] 
 const randSide = (): -1 | 0 | 1 => ([-1, 0, 1] as const)[Math.floor(Math.random() * 3)]
 
 // ---- minimal sound (same toolkit as the other sims) ----
-class Sfx {
+export class Sfx {
   ctx: AudioContext | null = null
   noise: AudioBuffer | null = null
   ensure() {
@@ -228,7 +228,7 @@ type Particle = { x: number; y: number; vx: number; vy: number; life: number; ma
 
 type Phase = 'menu' | 'solve' | 'fly' | 'robbed' | 'result'
 type Outcome = 'beat' | 'lost'
-type Fate = 'save' | 'goal'
+export type Fate = 'save' | 'goal'
 
 type Game = {
   phase: Phase
@@ -258,10 +258,10 @@ const newGame = (problems: Problem[]): Game => ({
 // The save scene: where the striker, the ball and the keeper's dive are at
 // progress u ∈ [0,1].
 // ============================================================================
-type V3 = { x: number; y: number; z: number }
+export type V3 = { x: number; y: number; z: number }
 type Striker = { x: number; z: number; running: boolean; foot: V3 | null; lean: number }
-type KeeperDive = { t: number; reach: V3; beaten: boolean }
-type Scene = {
+export type KeeperDive = { t: number; reach: V3; beaten: boolean }
+export type Scene = {
   ball: V3
   striker: Striker
   keeper: KeeperDive | null // null → idle ready stance
@@ -273,7 +273,7 @@ type Scene = {
 
 const pulse = (u: number, c: number, w: number) => Math.max(0, 1 - Math.abs(u - c) / w)
 
-function saveScene(side: number, shotDir: number, fate: Fate, yTarget: number, u: number): Scene {
+export function saveScene(side: number, shotDir: number, fate: Fate, yTarget: number, u: number): Scene {
   const cF = CONTACT_FRAC
   const targetX = shotDir * 2.7
 
@@ -323,7 +323,7 @@ function saveScene(side: number, shotDir: number, fate: Fate, yTarget: number, u
   return { ball, striker: strikerAt(u), keeper, contact, netBulge, netAt, caught }
 }
 
-export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
+export function GoalieSim({ state, onChange, showGoal, onGoal, matchMode, onResolve }: SimProps) {
   // The goalkeeper keeps his own keeper kit (not driven by the outfield loadout).
   const keeperKit: GkKit = GK_KIT
 
@@ -357,6 +357,17 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const bestRef = useRef(best); bestRef.current = best
   // latest keeper kit, read by the canvas draw loop (so loadout changes apply live)
   const keeperKitRef = useRef(keeperKit); keeperKitRef.current = keeperKit
+  // ---- MATCH MODE: this drill is ONE save attempt inside a live match. Live refs
+  // so the loop/actions read the latest props, and a once-guard so onResolve fires
+  // AT MOST once per mount. ----
+  const matchModeRef = useRef(matchMode); matchModeRef.current = matchMode
+  const onResolveRef = useRef(onResolve); onResolveRef.current = onResolve
+  const resolvedOnceRef = useRef(false)
+  const resolveMatch = useCallback((success: boolean) => {
+    if (resolvedOnceRef.current) return
+    resolvedOnceRef.current = true
+    onResolveRef.current?.(success)
+  }, [])
 
   const project = useCallback((x: number, y: number, z: number): P2 => {
     const cz = Math.max(0.05, z + CAM_BACK)
@@ -392,7 +403,7 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
     g.outcome = correct ? 'beat' : 'lost'
     // GATED first run guarantees the shot goes to your committed side (so a correct
     // impulse always saves). UNLIMITED practice picks a truly random shot direction.
-    const guaranteed = !!sceneRef.current.showGoal
+    const guaranteed = !!sceneRef.current.showGoal || !!matchModeRef.current
     g.shotDir = guaranteed ? p.move.side : randSide()
     const sideMatch = g.shotDir === p.move.side
     g.fate = correct && (guaranteed || sideMatch) ? 'save' : 'goal'
@@ -421,15 +432,25 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
       const sc = saveScene(p.move.side, g.shotDir, 'save', yTargetRef.current, 1)
       spawnConfetti(g, project(sc.ball.x, sc.ball.y + 0.3, sc.ball.z))
       if (soundRef.current) { sfx.current.save(); sfx.current.cheer() }
-      const s = streakRef.current + 1
-      setStreak(s)
-      if (s > bestRef.current) { setBest(s); try { localStorage.setItem(BEST_KEY, String(s)) } catch { /* ignore */ } }
-      const sceneNow = sceneRef.current
-      sceneNow.onChange({ ...sceneNow.state, connections: Number(sceneNow.state.connections ?? 0) + 1 })
-      if (!goalFiredRef.current) { goalFiredRef.current = true; sceneNow.onGoal?.() }
+      if (matchModeRef.current) {
+        // match moment: report the save once; the orchestrator owns what's next.
+        // No streak/best persistence and no onGoal in matchMode.
+        resolveMatch(true)
+      } else {
+        const s = streakRef.current + 1
+        setStreak(s)
+        if (s > bestRef.current) { setBest(s); try { localStorage.setItem(BEST_KEY, String(s)) } catch { /* ignore */ } }
+        const sceneNow = sceneRef.current
+        sceneNow.onChange({ ...sceneNow.state, connections: Number(sceneNow.state.connections ?? 0) + 1 })
+        if (!goalFiredRef.current) { goalFiredRef.current = true; sceneNow.onGoal?.() }
+      }
     } else {
       if (soundRef.current) { sfx.current.goal(); sfx.current.miss() }
-      if (g.outcome === 'beat') {
+      if (matchModeRef.current) {
+        // match moment: a conceded goal (wrong impulse OR wrong read) ends the
+        // attempt as a failure — no remediation lesson, the orchestrator continues.
+        resolveMatch(false)
+      } else if (g.outcome === 'beat') {
         // correct impulse but wrong read (only possible in unlimited): a clean
         // miss, just dust yourself off and go again.
         setStreak(0)
@@ -442,7 +463,7 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
       }
     }
     setPhase('result')
-  }, [project])
+  }, [project, resolveMatch])
 
   const dispossess = useCallback(() => {
     const g = gameRef.current
@@ -454,7 +475,9 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
     setStreak(0)
     setRobbed(true)
     setPhase('robbed')
-  }, [])
+    // match moment: running the solve clock out is a turnover → failure.
+    if (matchModeRef.current) resolveMatch(false)
+  }, [resolveMatch])
 
   const endRobbery = useCallback(() => {
     const g = gameRef.current
@@ -612,7 +635,8 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
     }
 
     // ---- HUD ----
-    const unlimited = !sceneRef.current.showGoal
+    // In matchMode the orchestrator owns scoring, so the streak/best HUD is hidden.
+    const unlimited = !sceneRef.current.showGoal && !matchModeRef.current
     if (unlimited) {
       ctx.fillStyle = 'rgba(8,12,28,0.8)'; roundRect(ctx, 12, 12, 150, 40, 12); ctx.fill()
       ctx.fillStyle = '#ffd166'; ctx.font = '800 14px Plus Jakarta Sans, sans-serif'; ctx.textAlign = 'left'
@@ -675,8 +699,9 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const fate = g.fate
   const unlimited = !showGoal
   // while the worked-solution lesson is up, it owns its own navigation — a stray
-  // click must NOT skip straight to the next shot.
-  const canClickContinue = phase === 'result' && !lesson
+  // click must NOT skip straight to the next shot. In matchMode there is no
+  // click-to-continue: the attempt freezes on its final frame for the orchestrator.
+  const canClickContinue = phase === 'result' && !lesson && !matchMode
 
   return (
     <div
@@ -721,25 +746,25 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
           </div>
         )}
 
-        {phase === 'result' && fate === 'save' && (
+        {!matchMode && phase === 'result' && fate === 'save' && (
           <div className="soccer__banner soccer__banner--goal">
             <strong>SAVED IT! 🧤</strong>
             <span>{p?.move.name} timed perfectly — you took the shot’s momentum away. Click anywhere to continue.</span>
           </div>
         )}
 
-        {phase === 'result' && wrongWay && (
+        {!matchMode && phase === 'result' && wrongWay && (
           <div className="soccer__banner soccer__banner--save">
             <strong>WRONG WAY! 😖</strong>
             <span>Your impulse was right, but he shot the other side. Read it next time — click to go again.</span>
           </div>
         )}
 
-        {phase === 'result' && lesson && (
+        {!matchMode && phase === 'result' && lesson && (
           <SolveLesson p={lesson.p} used={lesson.used} onDone={nextRun} />
         )}
 
-        {phase === 'result' && robbed && (
+        {!matchMode && phase === 'result' && robbed && (
           <div className="soccer__banner soccer__banner--save">
             <strong>TOO SLOW ⛔</strong>
             <span>He buried it in an empty net. Click anywhere to try again.</span>
@@ -794,7 +819,7 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
           </>
         )}
 
-        {phase === 'result' && fate === 'save' && p && (
+        {!matchMode && phase === 'result' && fate === 'save' && p && (
           <p className="soccer__tip">Maths checks out: {workedSolution(p)} — you read the shot and held it. <b>Streak {streak}</b> · best {best}.</p>
         )}
 
@@ -803,8 +828,8 @@ export function GoalieSim({ state, onChange, showGoal, onGoal }: SimProps) {
             {phase === 'menu' && <button type="button" className="btn btn--primary" disabled>Pick a side ▸</button>}
             {phase === 'solve' && <button type="button" className="btn btn--primary" onClick={playMove} disabled={!answerStr}>Make the save 🧤</button>}
             {phase === 'fly' && <button type="button" className="btn btn--primary" disabled>Here it comes…</button>}
-            {phase === 'result' && <button type="button" className="btn btn--primary" onClick={nextRun}>Next shot →</button>}
-            <button type="button" className="btn btn--ghost" onClick={nextRun}>↻ Restart</button>
+            {!matchMode && phase === 'result' && <button type="button" className="btn btn--primary" onClick={nextRun}>Next shot →</button>}
+            {!matchMode && <button type="button" className="btn btn--ghost" onClick={nextRun}>↻ Restart</button>}
           </div>
         </div>
       </div>
@@ -1069,22 +1094,22 @@ function SolveLesson({ p, used, onDone }: { p: Problem; used: number; onDone: ()
 // head (false). The striker drives the ball toward the goal (= toward this
 // behind-the-net camera) so we see his face; the keeper faces downfield, so the
 // camera sees the back of his head.
-const FOE_KIT = {
+export const FOE_KIT = {
   jersey: '#ef4444', jerseyDark: '#b91c1c', jerseyHi: '#fca5a5', collar: '#7f1010',
   shorts: '#3a0d0d', shortsDark: '#250707', sock: '#ef4444', sockBand: '#ffe8e8',
   boot: '#15171f', number: '#ffffff', num: 9, skin: '#b87a45', skinDark: '#915d31',
   hair: '#1a130c', hairStyle: 3, faceCamera: true,
 }
-type Kit = typeof FOE_KIT
+export type Kit = typeof FOE_KIT
 
 // Keeper kit (amber GK jersey + padded gloves). Lighter skin + browner hair so he
 // reads as a DIFFERENT person from the striker; he faces away from the camera.
-const GK_KIT = {
+export const GK_KIT = {
   jersey: '#f4b942', jerseyDark: '#c4880f', jerseyHi: '#ffd479', collar: '#7a4d06',
   shorts: '#15171f', sock: '#f4b942', sockBand: '#1b1f2a', boot: '#0e0f15',
   skin: '#e8b48a', skinDark: '#c2895f', glove: '#f4f6fa', gloveCuff: '#ef4444', hair: '#3a2a1a',
 }
-type GkKit = typeof GK_KIT
+export type GkKit = typeof GK_KIT
 
 function drawHair(ctx: CanvasRenderingContext2D, cx: number, headY: number, headR: number, style: number, color: string) {
   ctx.fillStyle = color
@@ -1264,9 +1289,9 @@ function spawnConfetti(g: Game, at: P2) {
   }
 }
 
-type PlayerAction = { footX: number | null; footY: number; lean: number }
+export type PlayerAction = { footX: number | null; footY: number; lean: number }
 
-function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit, now: number, running: boolean, hasBall: boolean, action?: PlayerAction) {
+export function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit, now: number, running: boolean, hasBall: boolean, action?: PlayerAction) {
   const scale = feet.scale
   if (scale < 4 || scale > 360) return
   const ph = now / 80
@@ -1368,7 +1393,7 @@ function drawPlayer(ctx: CanvasRenderingContext2D, feet: P2, head: P2, kit: Kit,
 // (anticipation load → eased leap) that rotates the body toward horizontal so the
 // gloves land on the save point. On a goal he commits but comes up short/low so
 // the ball beats his outstretched gloves. Adapted from the KinematicsSim keeper.
-function drawKeeper(ctx: CanvasRenderingContext2D, project: (x: number, y: number, z: number) => P2, homeX: number, homeZ: number, dive: KeeperDive | null, now: number, kit: GkKit) {
+export function drawKeeper(ctx: CanvasRenderingContext2D, project: (x: number, y: number, z: number) => P2, homeX: number, homeZ: number, dive: KeeperDive | null, now: number, kit: GkKit) {
   const baseFeet = project(homeX, 0, homeZ)
   const scale = baseFeet.scale
   if (scale < 4) return
@@ -1569,7 +1594,7 @@ function drawKeeper(ctx: CanvasRenderingContext2D, project: (x: number, y: numbe
 
 // The goal: a net mesh + bright white frame at the goal-line plane. Drawn LAST so
 // (from the behind-goal camera) we look through the netting at the keeper.
-function drawGoalNet(ctx: CanvasRenderingContext2D, project: (x: number, y: number, z: number) => P2, bulge: number, bx: number | null, by: number | null) {
+export function drawGoalNet(ctx: CanvasRenderingContext2D, project: (x: number, y: number, z: number) => P2, bulge: number, bx: number | null, by: number | null) {
   const tl = project(-GOAL_HW, CROSSBAR, GOAL_Z), tr = project(GOAL_HW, CROSSBAR, GOAL_Z)
   const bl = project(-GOAL_HW, 0, GOAL_Z), br = project(GOAL_HW, 0, GOAL_Z)
   const lp = (a: P2, b: P2, t: number) => ({ sx: a.sx + (b.sx - a.sx) * t, sy: a.sy + (b.sy - a.sy) * t })
@@ -1589,7 +1614,7 @@ function drawGoalNet(ctx: CanvasRenderingContext2D, project: (x: number, y: numb
   ctx.lineCap = 'butt'
 }
 
-function drawBall(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, spin: number, squash = 0) {
+export function drawBall(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, spin: number, squash = 0) {
   ctx.save(); ctx.translate(cx, cy + r * squash * 0.5); ctx.rotate(spin * 0.2)
   ctx.scale(1 + squash * 0.5, 1 - squash * 0.5)
   const g = ctx.createRadialGradient(-r * 0.35, -r * 0.4, r * 0.15, 0, 0, r)
@@ -1634,13 +1659,13 @@ function drawTimer(ctx: CanvasRenderingContext2D, left: number, total: number, l
   ctx.textAlign = 'left'
 }
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+export function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath(); ctx.moveTo(x + r, y)
   ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r)
   ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath()
 }
 
-function buildStaticBackground(): HTMLCanvasElement {
+export function buildStaticBackground(): HTMLCanvasElement {
   const ss = 2
   const c = document.createElement('canvas'); c.width = W * ss; c.height = H * ss
   const x = c.getContext('2d')!

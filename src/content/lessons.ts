@@ -5,7 +5,7 @@ export const UNITS: Unit[] = [
     id: 'kinematics',
     index: 0,
     name: 'Kinematics',
-    blurb: 'Penalty Physics: Score the Goal',
+    blurb: 'Free-Kick Physics: Score the Goal',
     lessonId: 'lesson-projectile',
   },
   {
@@ -56,11 +56,11 @@ export const LESSONS: Record<string, Lesson> = {
   'lesson-projectile': {
     id: 'lesson-projectile',
     unitId: 'kinematics',
-    title: 'Penalty Physics: Score the Goal',
+    title: 'Free-Kick Physics: Score the Goal',
     estimatedMinutes: 7,
-    sim: 'soccer',
-    defaultSimState: { power: 22, angle: 18, goals: 0 },
-    challengeGoal: (s) => num(s, 'goals') >= 1,
+    sim: 'freekick',
+    defaultSimState: { speed: 18, angle: 20, scored: 0 },
+    challengeGoal: (s) => num(s, 'scored') >= 1,
     steps: [
       {
         id: 'proj-concept',
@@ -71,7 +71,7 @@ export const LESSONS: Record<string, Lesson> = {
       {
         id: 'proj-sandbox',
         kind: 'sandbox',
-        prompt: 'Step up to the penalty spot: pick a spot in the goal, lock the power meter, then solve the strike.',
+        prompt: 'Explore the strike: drag the launch speed and angle, watch the arc bend toward the goal, then take the shot. Get a feel for how speed trades off against angle, and bury one in the top corner to move on.',
         body: '',
       },
       {
@@ -115,14 +115,14 @@ export const LESSONS: Record<string, Lesson> = {
       {
         id: 'proj-challenge',
         kind: 'challenge',
-        prompt: 'Score the penalty. Pick a spot in the goal, lock the meter, then solve the strike.',
-        goalDescription: 'Score 1 goal: land the ball in the glowing ring.',
+        prompt: 'Now apply it on purpose: set the speed and angle so the ball passes through the target ring up in the corner, and take the shot.',
+        goalDescription: 'Score 1 goal: pass the ball through the glowing target ring.',
         conceptTags: ['projectile-range', 'projectile-time-of-flight'],
         feedbackCorrect:
-          'Top corner! With one value locked on the meter, you found the one value of the other that put the ball at the right height after distance d, landing it right in your ring. Projectile motion, applied.',
+          'Top corner! You found a speed and angle that put the ball at the right height exactly when it reached the goal, distance d away. Projectile motion, applied.',
         feedbackIncorrect:
-          'Keep going. Compute the height your ball reaches at the goal, y = h₀ + vy·t − ½g·t², and make it match your spot’s h: overshoot sails over, undershoot drops short, and either way the keeper saves it.',
-        hint: 'One value is locked by the meter, so work out the other by hand so y ≈ h at distance d. vx = v·cosθ, t = d/vx, then y = h₀ + vy·t − ½g·t². Use the on-screen calculator if you need it.',
+          'Keep going. The ball needs the right height at the goal line: vx = v·cosθ sets the time to arrive, t = d/vx, and y = vy·t − ½g·t² is the height when it gets there. Overshoot sails over, undershoot drops short.',
+        hint: 'Read the live values: vx = v·cosθ drives it forward, vy = v·sinθ lifts it. Raise the angle for more height, add speed for more reach. Watch the "height at goal" readout move toward the ring.',
       },
       {
         id: 'proj-quiz',

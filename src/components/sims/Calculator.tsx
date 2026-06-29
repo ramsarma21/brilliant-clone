@@ -216,9 +216,16 @@ export function Calculator({ onClose, floating = false }: { onClose: () => void;
     return () => window.removeEventListener('keydown', onKey)
   }, [insert, equals, del, clear, onClose])
 
+  // Grab focus when the calc opens so the physical keyboard types into IT (not the
+  // answer box). Clicking the answer field hands focus — and the keyboard — back.
+  const rootRef = useRef<HTMLDivElement>(null)
+  useEffect(() => { rootRef.current?.focus({ preventScroll: true }) }, [])
+
   const draggable = floating
   return (
     <div
+      ref={rootRef}
+      tabIndex={-1}
       className={`calc${draggable ? ' calc--floating' : ''}`}
       style={pos ? { position: 'fixed', left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' } : undefined}
     >

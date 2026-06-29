@@ -14,31 +14,28 @@ import type {
   BankQuestion,
   EmblemConfig,
   PlayerProfile,
-  PlayerSkills,
+  GkStatId,
   ProficiencyMap,
   SkillId,
   TestAttempt,
+  UnitId,
   UnitProficiency,
 } from '../types'
 import { DEFAULT_APPEARANCE, normalizeAppearance } from '../lib/appearance'
 import { defaultClubIdentity, normalizeClub } from '../lib/club'
-import {
-  MAX_RATING,
-  SKILL_IDS,
-  STARTING_RATING,
-  defaultSkills,
-  overallRating,
-  spendSkillPoints,
-} from '../lib/skills'
+import { SKILL_IDS } from '../lib/skills'
+import { defaultSquad, migrateSquad, setSquadCleats, teamOverall, upgradeSquadStat } from '../lib/squad'
 import { COSMETICS_BY_ID, STARTER_CLEATS, STARTER_JERSEY, STARTER_INVENTORY } from '../content/cosmetics'
 import {
   addCoins as addCoinsTo,
   equipCosmetic,
   purchaseCosmetic,
+  spendCoins as spendCoinsFrom,
+  STARTER_COINS,
   type PurchaseResult,
 } from '../lib/economy'
 import { recordAttempt, unitProficiencies, weakestConcepts } from '../lib/proficiency'
-import { POINTS_FOR_70, POINTS_FOR_90, pointsForScore } from '../lib/questionBank'
+import { pointsForScore } from '../lib/questionBank'
 import { RESET_GAME_EVENT, useApp } from './AppState'
 import {
   loadPlayerProfile,
@@ -52,8 +49,8 @@ import { loadCloudPlayer, saveCloudPlayer } from '../lib/cloudSync'
 
 function freshProfile(): PlayerProfile {
   return {
-    skills: defaultSkills(),
-    coins: 0,
+    squad: defaultSquad(),
+    coins: STARTER_COINS,
     skillPoints: 0,
     equipped: { jersey: STARTER_JERSEY, cleats: STARTER_CLEATS },
     appearance: { ...DEFAULT_APPEARANCE },
@@ -64,61 +61,17 @@ function freshProfile(): PlayerProfile {
 
 /** Backfill any missing fields (e.g. appearance/club) on a profile loaded from an older cache. */
 function withProfileDefaults(p: PlayerProfile): PlayerProfile {
-  return { ...p, appearance: normalizeAppearance(p.appearance), club: normalizeClub(p.club) }
+  // Older caches may carry a single `skills` block instead of a squad — migrate it.
+  const legacy = (p as unknown as { skills?: Record<string, number> }).skills
+  return {
+    ...p,
+    squad: migrateSquad(p.squad, legacy),
+    appearance: normalizeAppearance(p.appearance),
+    club: normalizeClub(p.club),
+  }
 }
 
 const randInt = (min: number, max: number) => min + Math.floor(Math.random() * (max - min + 1))
-
-// ---- Season-sim synthetic career ----------------------------------------------------
-// Simming the league also fabricates a full season's worth of player metadata so the
-// dashboard isn't a hardcoded shell: a random per-unit proficiency rollup, a random skills
-// spread, and `count` finished assessments. It's all random (different on each sim) and all
-// stored in the cloud via the normal player sync — and wiped on reset like everything else.
-
-/** Random per-unit proficiency (one synthetic concept per offered unit). */
-function buildSimProficiency(): ProficiencyMap {
-  const now = new Date().toISOString()
-  const map: ProficiencyMap = {}
-  for (const unitId of SKILL_IDS) {
-    const attempts = randInt(28, 64)
-    const accuracy = 0.55 + Math.random() * 0.4
-    map[`${unitId}-season-sim`] = {
-      conceptTag: `${unitId}-season-sim`,
-      unitId,
-      attempts,
-      correct: Math.round(attempts * accuracy),
-      proficiency: Math.round((52 + Math.random() * 43) * 10) / 10,
-      avgTimeMs: randInt(11000, 26000),
-      missStreak: 0,
-      srBox: randInt(2, 4),
-      nextDue: now,
-      lastSeen: now,
-    }
-  }
-  return map
-}
-
-/**
- * Spend `points` banked over the season across the five skills (each from the 50 base up
- * to the 99 cap), one point at a time into a random skill that still has headroom. Returns
- * the final spread and how many points were actually absorbed — any remainder (you can't
- * spend past a maxed-out card) is the caller's to convert to coins.
- */
-function buildSimSkills(points: number): { skills: PlayerSkills; spent: number } {
-  const ratings = SKILL_IDS.map(() => STARTING_RATING)
-  let remaining = points
-  let spent = 0
-  while (remaining > 0) {
-    const open = ratings.map((v, i) => ({ v, i })).filter((x) => x.v < MAX_RATING)
-    if (open.length === 0) break
-    ratings[open[Math.floor(Math.random() * open.length)].i]++
-    remaining--
-    spent++
-  }
-  const skills = {} as PlayerSkills
-  SKILL_IDS.forEach((id, i) => (skills[id] = ratings[i]))
-  return { skills, spent }
-}
 
 /** Randomly split `score` correct answers across `units` buckets, each capped at `cap`. */
 function splitCorrect(score: number, units: number, cap: number): number[] {
@@ -131,41 +84,6 @@ function splitCorrect(score: number, units: number, cap: number): number[] {
     remaining--
   }
   return arr
-}
-
-/**
- * `count` PASSED assessments (every one ≥70%, some ≥90%), newest first. Each season rolls a
- * random "form" — how many of the assessments were ≥90% — so the total points earned spans
- * the full band (count×3 up to count×5) and the resulting overall differs noticeably every
- * sim, instead of clustering at the average like independent per-assessment rolls would.
- */
-function buildSimHistory(count: number): TestAttempt[] {
-  const out: TestAttempt[] = []
-  const perUnitTotal = 4
-  const total = SKILL_IDS.length * perUnitTotal // 20
-  const ninetyCount = randInt(0, count) // this season's form
-  for (let i = 0; i < count; i++) {
-    const elite = i < ninetyCount // ≥90% assessment
-    const score = elite ? randInt(18, total) : randInt(14, 17)
-    const split = splitCorrect(score, SKILL_IDS.length, perUnitTotal)
-    const perUnit: Record<string, { correct: number; total: number; avgTimeMs: number }> = {}
-    SKILL_IDS.forEach((unitId, idx) => {
-      perUnit[unitId] = { correct: split[idx], total: perUnitTotal, avgTimeMs: randInt(11000, 25000) }
-    })
-    const pct = score / total
-    out.push({
-      id: `sim-${Date.now()}-${i}`,
-      takenAt: new Date(Date.now() - i * 36e5).toISOString(),
-      score,
-      total,
-      passed70: pct >= 0.7,
-      passed90: pct >= 0.9,
-      pointsAwarded: elite ? POINTS_FOR_90 : POINTS_FOR_70,
-      perUnit,
-      reviewComplete: true,
-    })
-  }
-  return out
 }
 
 /** Coin cost to skip a failed exam's retake and auto-pass it (no skill points awarded). */
@@ -209,7 +127,7 @@ type PlayerContextValue = {
   profile: PlayerProfile
   overall: number
   proficiency: ProficiencyMap
-  unitProficiency: Record<SkillId, UnitProficiency>
+  unitProficiency: Record<UnitId, UnitProficiency>
   testHistory: TestAttempt[]
   /** Fold one solved/missed question into proficiency + spaced repetition. */
   recordAttempt: (input: AttemptInput) => void
@@ -218,22 +136,27 @@ type PlayerContextValue = {
   recordTestResult: (input: TestResultInput) => { pointsAwarded: number; attemptId: string }
   /** Mark a recorded attempt's guided Skills review as finished. */
   completeReview: (attemptId: string) => void
-  spendPoint: (skillId: SkillId, points: number) => void
+  /** Spend skill points to raise one stat on one squad player. */
+  upgradePlayer: (playerId: string, statId: SkillId | GkStatId, points: number) => void
   /** Adjust unspent skill points by a signed delta (floored at 0). */
   adjustSkillPoints: (delta: number) => void
   buyCosmetic: (itemId: string) => PurchaseResult
   equip: (itemId: string) => void
+  /** Equip a boots cosmetic on a single squad player. */
+  equipPlayerCleats: (playerId: string, cleatsId: string) => void
   /** Grant + equip a cosmetic for free (no coin cost). */
   grantCosmetic: (itemId: string) => void
   /** Update the player's physical look (skin tone / hair colour). */
   customizeAppearance: (patch: Partial<Appearance>) => void
   /** Rename your club (FC name). */
   renameClub: (name: string) => void
+  /** Cache the 3-letter broadcast abbreviation for the club name. */
+  setClubAbbr: (abbr: string) => void
   /** Update your club crest (shape / motif / colour overrides). */
   setEmblem: (patch: Partial<EmblemConfig>) => void
   addCoins: (amount: number) => void
-  /** Fabricate a finished-season career (random skills, proficiency + `count` assessments). */
-  simSeasonStats: (assessments: number) => void
+  /** Spend coins if affordable (e.g. match entry). Returns whether the spend succeeded. */
+  spendCoins: (amount: number) => boolean
   /** Spend AUTO_PASS_COST coins to auto-pass a failed exam (no skill points). Returns success. */
   autoPassAssessment: () => boolean
   weakConcepts: (limit: number) => ReturnType<typeof weakestConcepts>
@@ -280,18 +203,30 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       const res = await loadCloudPlayer(username)
       if (!alive) return
       if (res.status === 'ok') {
-        const fresh = freshProfile()
-        setProfile({
-          skills: res.data.skills ?? fresh.skills,
-          coins: res.data.coins ?? 0,
-          skillPoints: res.data.skillPoints ?? 0,
-          equipped: {
-            jersey: res.data.equippedJersey ?? fresh.equipped.jersey,
-            cleats: res.data.equippedCleats ?? fresh.equipped.cleats,
-          },
-          appearance: normalizeAppearance(res.data.appearance),
-          inventory: res.data.inventory ?? fresh.inventory,
-          club: normalizeClub(res.data.club),
+        setProfile((prev) => {
+          const fresh = freshProfile()
+          // The squad (names, looks, ratings, boots) must only ever change on a CAREER
+          // RESET — never on a refresh. So only (re)build it from a squad we actually
+          // have: if the cloud row has a stored squad, use it; otherwise KEEP the squad
+          // we already loaded from the local cache (`prev`) instead of generating a new
+          // random team. (A genuinely new user with no cache keeps the one fresh squad
+          // made at init, which then persists.)
+          const hasCloudSquad = Array.isArray(res.data.squad) && res.data.squad.length > 0
+          const squad = hasCloudSquad
+            ? migrateSquad(res.data.squad, res.data.skills)
+            : prev.squad
+          return {
+            squad,
+            coins: res.data.coins ?? 0,
+            skillPoints: res.data.skillPoints ?? 0,
+            equipped: {
+              jersey: res.data.equippedJersey ?? fresh.equipped.jersey,
+              cleats: res.data.equippedCleats ?? fresh.equipped.cleats,
+            },
+            appearance: normalizeAppearance(res.data.appearance),
+            inventory: res.data.inventory ?? fresh.inventory,
+            club: normalizeClub(res.data.club),
+          }
         })
         setProficiency(res.data.proficiency ?? {})
         setTestHistory(res.data.testHistory ?? [])
@@ -376,15 +311,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setProfile((p) => ({ ...p, skillPoints: Math.max(0, p.skillPoints + delta) }))
   }, [])
 
-  const spendPoint = useCallback((skillId: SkillId, points: number) => {
-    setProfile((p) => {
-      const budget = Math.min(points, p.skillPoints)
-      if (budget <= 0) return p
-      const { skills, used } = spendSkillPoints(p.skills, skillId, budget)
-      if (used === 0) return p
-      return { ...p, skills, skillPoints: p.skillPoints - used }
-    })
-  }, [])
+  const upgradePlayer = useCallback(
+    (playerId: string, statId: SkillId | GkStatId, points: number) => {
+      setProfile((p) => {
+        const budget = Math.min(points, p.skillPoints)
+        if (budget <= 0) return p
+        const { squad, used } = upgradeSquadStat(p.squad, playerId, statId, budget)
+        if (used === 0) return p
+        return { ...p, squad, skillPoints: p.skillPoints - used }
+      })
+    },
+    [],
+  )
 
   const buyCosmetic = useCallback((itemId: string): PurchaseResult => {
     const result = purchaseCosmetic(profile, itemId)
@@ -394,6 +332,17 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const equip = useCallback((itemId: string) => {
     setProfile((p) => equipCosmetic(p, itemId))
+  }, [])
+
+  // Equip a boots cosmetic on ONE squad player (boots are per-player). Grants ownership
+  // so any boot can be assigned; the shared inventory still tracks what you've unlocked.
+  const equipPlayerCleats = useCallback((playerId: string, cleatsId: string) => {
+    setProfile((p) => {
+      const item = COSMETICS_BY_ID[cleatsId]
+      if (!item || item.kind !== 'cleats') return p
+      const inventory = p.inventory.includes(cleatsId) ? p.inventory : [...p.inventory, cleatsId]
+      return { ...p, inventory, squad: setSquadCleats(p.squad, playerId, cleatsId) }
+    })
   }, [])
 
   // Grant + equip a cosmetic for FREE (no coin cost). Used by the free-testing path in
@@ -413,9 +362,15 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setProfile((p) => ({ ...p, appearance: normalizeAppearance({ ...p.appearance, ...patch }) }))
   }, [])
 
-  // Rename your club. Persists + syncs like any other profile change.
+  // Rename your club. Persists + syncs like any other profile change. The broadcast
+  // abbreviation is cleared so it regenerates for the new name on the next matchday.
   const renameClub = useCallback((name: string) => {
-    setProfile((p) => ({ ...p, club: normalizeClub({ ...p.club, name }) }))
+    setProfile((p) => ({ ...p, club: normalizeClub({ ...p.club, name, abbr: undefined }) }))
+  }, [])
+
+  // Cache the AI-generated (or locally-derived) 3-letter scorecard abbreviation.
+  const setClubAbbr = useCallback((abbr: string) => {
+    setProfile((p) => (p.club.abbr === abbr ? p : { ...p, club: normalizeClub({ ...p.club, abbr }) }))
   }, [])
 
   // Patch your crest (shape / motif / colour overrides).
@@ -430,24 +385,16 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setProfile((p) => addCoinsTo(p, amount))
   }, [])
 
-  const simSeasonStats = useCallback((assessments: number) => {
-    // A finished season = `assessments` passes, each banking POINTS_FOR_70 (≥70%) or
-    // POINTS_FOR_90 (≥90%). Those points get spent across the five skills; anything that
-    // can't fit (you're already a 99 overall) becomes 5 coins per leftover point. Nothing
-    // is left dangling as unspent skill points.
-    const history = buildSimHistory(assessments)
-    const earned = history.reduce((sum, a) => sum + a.pointsAwarded, 0)
-    const { skills, spent } = buildSimSkills(earned)
-    const overflowCoins = (earned - spent) * 5
-    setProfile((p) => ({
-      ...p,
-      skills,
-      skillPoints: 0,
-      coins: p.coins + overflowCoins,
-    }))
-    setProficiency(buildSimProficiency())
-    setTestHistory(history)
-  }, [])
+  // Spend coins if affordable. Reads the live coin balance synchronously so the caller
+  // (e.g. a match-entry click) gets an immediate yes/no, then commits the deduction.
+  const spendCoins = useCallback(
+    (amount: number): boolean => {
+      const { ok } = spendCoinsFrom(profile, amount)
+      if (ok) setProfile((p) => spendCoinsFrom(p, amount).profile)
+      return ok
+    },
+    [profile],
+  )
 
   const weakConcepts = useCallback(
     (limit: number) => weakestConcepts(proficiency, limit),
@@ -470,23 +417,25 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
   const value = useMemo<PlayerContextValue>(
     () => ({
       profile,
-      overall: overallRating(profile.skills),
+      overall: teamOverall(profile.squad),
       proficiency,
       unitProficiency: unitProficiencies(proficiency),
       testHistory,
       recordAttempt: recordAttemptCb,
       recordTestResult,
       completeReview,
-      spendPoint,
+      upgradePlayer,
       adjustSkillPoints,
       buyCosmetic,
       equip,
+      equipPlayerCleats,
       grantCosmetic,
       customizeAppearance,
       renameClub,
+      setClubAbbr,
       setEmblem,
       addCoins,
-      simSeasonStats,
+      spendCoins,
       autoPassAssessment,
       weakConcepts,
       resetPlayer,
@@ -498,16 +447,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       recordAttemptCb,
       recordTestResult,
       completeReview,
-      spendPoint,
+      upgradePlayer,
       adjustSkillPoints,
       buyCosmetic,
       equip,
+      equipPlayerCleats,
       grantCosmetic,
       customizeAppearance,
       renameClub,
+      setClubAbbr,
       setEmblem,
       addCoins,
-      simSeasonStats,
+      spendCoins,
       autoPassAssessment,
       weakConcepts,
       resetPlayer,

@@ -1,4 +1,4 @@
-import type { BankQuestion, ConceptProficiency, ProficiencyMap, QuestionDiagram, SkillId } from '../types'
+import type { BankQuestion, ConceptProficiency, ProficiencyMap, QuestionDiagram, UnitId } from '../types'
 import { SKILL_IDS } from './skills'
 import { conceptAbility, retrievability, targetDifficulty, weakestConcepts } from './proficiency'
 import { supabase, isSupabaseConfigured } from './supabase'
@@ -42,7 +42,7 @@ type DbRow = {
 function rowToQuestion(r: DbRow): BankQuestion {
   return {
     id: r.id,
-    unitId: r.unit_id as SkillId,
+    unitId: r.unit_id as UnitId,
     conceptTag: r.concept_tag,
     difficulty: Math.min(5, Math.max(1, r.difficulty)) as 1 | 2 | 3 | 4 | 5,
     prompt: r.prompt,
@@ -280,7 +280,7 @@ export function pointsForScore(score: number, total: number): number {
  */
 export async function nextPracticeQuestion(
   bank: BankQuestion[],
-  base: { unitId: SkillId; conceptTag: string; difficulty: 1 | 2 | 3 | 4 | 5 },
+  base: { unitId: UnitId; conceptTag: string; difficulty: 1 | 2 | 3 | 4 | 5 },
   excludeIds: Set<string>,
   rng: () => number = Math.random,
 ): Promise<BankQuestion | null> {

@@ -131,6 +131,42 @@ const TEAM_PRIMARY: Record<string, string> = {
   'Vortex City': '#0ea5e9', // azure
 }
 
+// A short "vibe" tagline per club so the fixture list reads like a real division
+// with personalities (chaotic red, icy precision, etc.). Falls back to a generic
+// line for any unmapped name.
+const TEAM_VIBE: Record<string, string> = {
+  'Atlético Entropy': 'Chaotic red, all-out attack',
+  'Real Relativity': 'Patient, time-bending passing',
+  'Inertia City': 'Hard to get going, harder to stop',
+  'Quantum Rovers': 'Unpredictable, here and there at once',
+  'Photon FC': 'Lightning-fast on the break',
+  'Electron United': 'Negative, restless, always pressing',
+  'Sporting Gravitas': 'Heavy, grinding, inevitable',
+  'Dynamo Tesla': 'High-voltage end-to-end football',
+  'Inter Friction': 'Niggly, physical, slows you down',
+  'Vector Wanderers': 'Direct, straight for the throat',
+  'Newton North End': 'Every action, an equal reaction',
+  'Joule Town': 'Energetic runners, never tire',
+  'Watt Albion': 'Powerful, surging forward',
+  'Plasma Rangers': 'Superheated, volatile attack',
+  'Fusion Athletic': 'Two halves that click as one',
+  'Neutron County': 'Quietly solid, hard to break down',
+  'Graviton FC': 'They pull every game their way',
+  'Boson Hotspur': 'Heavyweights with real mass',
+  'Quark City': 'Tiny, sharp, everywhere at once',
+  'Terminal Velocity FC': 'Relentless once they get going',
+  'Torque United': 'Twist and turn, hard to mark',
+  'Amplitude Athletic': 'Big swings, thrillers every week',
+  'Resonance Rovers': 'Build momentum, then overwhelm',
+  'Pendulum FC': 'Swing between brilliant and brittle',
+  'Vortex City': 'Suck you in, spin you out',
+}
+
+/** A short opponent "vibe" tagline for the fixture card / schedule. */
+export function teamVibe(name: string): string {
+  return TEAM_VIBE[name] ?? 'A tricky test on their day'
+}
+
 /** Pick a readable crest/number accent (dark on light primaries, white on dark ones). */
 function autoAccent(primary: string): string {
   const [r, g, b] = hexToRgb(primary)

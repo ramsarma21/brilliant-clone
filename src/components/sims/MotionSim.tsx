@@ -440,7 +440,7 @@ const newGame = (play: Play, problem: Problem): Game => ({
   aimGX: 0, aimGZ: 11, commitAt: 0,
 })
 
-export function MotionSim({ state, onChange, showGoal, onGoal }: SimProps) {
+export function MotionSim({ state, onChange, showGoal, onGoal, matchMode, onResolve }: SimProps) {
   // UNIVERSAL APPEARANCE: the passer in the foreground (the player the user
   // controls) is drawn from the live equipped loadout, so changing the kit on the
   // player card updates this drill globally. We keep the latest kit in a ref the
@@ -497,6 +497,16 @@ export function MotionSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const answerRef = useRef(answerStr); answerRef.current = answerStr
   const streakRef = useRef(streak); streakRef.current = streak
   const bestRef = useRef(best); bestRef.current = best
+  // ---- MATCH MODE: one pass attempt reported once via onResolve (see SimProps).
+  const onResolveRef = useRef(onResolve); onResolveRef.current = onResolve
+  const matchModeRef = useRef(matchMode); matchModeRef.current = matchMode
+  const resolvedOnceRef = useRef(false)
+  // Report the single attempt's outcome AT MOST once (no-op outside match mode).
+  const resolveMatch = useCallback((success: boolean) => {
+    if (!matchModeRef.current || resolvedOnceRef.current) return
+    resolvedOnceRef.current = true
+    onResolveRef.current?.(success)
+  }, [])
 
   // ---- projection ----
   const project = useCallback((x: number, y: number, z: number): P2 => {
@@ -618,11 +628,12 @@ export function MotionSim({ state, onChange, showGoal, onGoal }: SimProps) {
     const p = g.play
     g.phase = 'result'
     if (g.badPass) {
-      // Objective turnover: no score, no teaching lesson.
+      // Objective turnover: no score, no teaching lesson. (Intercepted → match miss.)
       if (soundRef.current) { sfx.current.steal(); sfx.current.miss() }
       setStreak(0)
       setBadPass(true)
       setPhase('result')
+      resolveMatch(false)
       return
     }
     const clean = g.outcome === 'connected'
@@ -630,14 +641,20 @@ export function MotionSim({ state, onChange, showGoal, onGoal }: SimProps) {
       g.scored = true; g.celebrate = 1
       spawnConfetti(g, project(p.sx, 1.0, p.sz))
       if (soundRef.current) { sfx.current.pass(); sfx.current.cheer() }
-      const s = streakRef.current + 1
-      setStreak(s)
-      if (s > bestRef.current) { setBest(s); void saveHighScore('motion-graphs', s) }
-      if (!goalFiredRef.current) {
-        goalFiredRef.current = true
-        const sc = sceneRef.current
-        sc.onChange({ ...sc.state, connections: Number(sc.state.connections ?? 0) + 1 })
-        sc.onGoal?.()
+      if (matchModeRef.current) {
+        // Match moment: the pass connects → positive outcome, reported once. No
+        // streak/high-score persistence and no onGoal (the orchestrator advances).
+        resolveMatch(true)
+      } else {
+        const s = streakRef.current + 1
+        setStreak(s)
+        if (s > bestRef.current) { setBest(s); void saveHighScore('motion-graphs', s) }
+        if (!goalFiredRef.current) {
+          goalFiredRef.current = true
+          const sc = sceneRef.current
+          sc.onChange({ ...sc.state, connections: Number(sc.state.connections ?? 0) + 1 })
+          sc.onGoal?.()
+        }
       }
     } else {
       // Wrong answer: the defender cuts it out (the existing miss animation) and a
@@ -645,12 +662,13 @@ export function MotionSim({ state, onChange, showGoal, onGoal }: SimProps) {
       if (soundRef.current) { sfx.current.steal(); sfx.current.miss() }
       setStreak(0)
       setMissMsg(missText(g.problem, g.played))
+      resolveMatch(false)
     }
     setPhase('result')
-  }, [project])
+  }, [project, resolveMatch])
 
   // Timeout: the solve clock expired with no pass played. The lurking defender
-  // steps up and robs the ball off your feet — a non-lesson turnover.
+  // steps up and robs the ball off your feet — a non-lesson turnover (match miss).
   const dispossess = useCallback(() => {
     const g = gameRef.current
     if (g.phase !== 'solve') return
@@ -661,7 +679,8 @@ export function MotionSim({ state, onChange, showGoal, onGoal }: SimProps) {
     setStreak(0)
     setRobbed(true)
     setPhase('robbed')
-  }, [])
+    resolveMatch(false)
+  }, [resolveMatch])
 
   const endRobbery = useCallback(() => {
     const g = gameRef.current
@@ -956,7 +975,7 @@ export function MotionSim({ state, onChange, showGoal, onGoal }: SimProps) {
     }
 
     // ---- HUD ----
-    const unlimited = !sceneRef.current.showGoal
+    const unlimited = !sceneRef.current.showGoal && !matchModeRef.current
     if (unlimited) {
       ctx.fillStyle = 'rgba(8,12,28,0.8)'; roundRect(ctx, 12, 12, 150, 40, 12); ctx.fill()
       ctx.fillStyle = '#ffd166'; ctx.font = '800 14px Plus Jakarta Sans, sans-serif'; ctx.textAlign = 'left'
@@ -1036,8 +1055,10 @@ export function MotionSim({ state, onChange, showGoal, onGoal }: SimProps) {
   // over the stage). While it is up the lesson owns its own continue/skip buttons,
   // so the click-anywhere-to-continue capture must stand down (only the connected /
   // bad-pass / robbed results keep the click-to-continue flow).
-  const showLesson = phase === 'result' && !!missMsg && !badPass && !robbed
-  const canClickContinue = phase === 'result' && !showLesson
+  // In match mode the orchestrator owns the celebration dwell + transition, so we
+  // freeze on the final frame: no remediation lesson and no click-to-continue.
+  const showLesson = phase === 'result' && !!missMsg && !badPass && !robbed && !matchMode
+  const canClickContinue = phase === 'result' && !showLesson && !matchMode
 
   return (
     <div
@@ -1059,7 +1080,7 @@ export function MotionSim({ state, onChange, showGoal, onGoal }: SimProps) {
         />
         <button type="button" className="soccer__sound" onClick={toggleSound} aria-label="Toggle sound">{sound ? '🔊' : '🔈'}</button>
 
-        {phase === 'result' && outcome === 'connected' && !badPass && (
+        {phase === 'result' && outcome === 'connected' && !badPass && !matchMode && (
           <div className="soccer__banner soccer__banner--goal">
             <strong>CONNECTED!</strong>
             <span>Threaded. Click anywhere to continue.</span>
@@ -1070,14 +1091,14 @@ export function MotionSim({ state, onChange, showGoal, onGoal }: SimProps) {
           <PassLesson prob={g.problem} used={g.played} onDone={nextRun} />
         )}
 
-        {phase === 'result' && badPass && (
+        {phase === 'result' && badPass && !matchMode && (
           <div className="soccer__banner soccer__banner--miss">
             <strong>Bad pass</strong>
             <span>Through balls lead your teammate into space. Click anywhere to try again.</span>
           </div>
         )}
 
-        {phase === 'result' && robbed && (
+        {phase === 'result' && robbed && !matchMode && (
           <div className="soccer__banner soccer__banner--save">
             <strong>TOO SLOW ⛔</strong>
             <span>He checked his run. Dispossessed. Click anywhere to try again.</span>
@@ -1121,7 +1142,7 @@ export function MotionSim({ state, onChange, showGoal, onGoal }: SimProps) {
         </>
       )}
 
-        {phase === 'result' && outcome === 'connected' && !badPass && (
+        {phase === 'result' && outcome === 'connected' && !badPass && !matchMode && (
           <p className="soccer__tip">Threaded it: your diagonal pass reached the spot just as he ran onto it. <b>Streak {streak}</b> · best {best}.</p>
         )}
 
@@ -1130,8 +1151,8 @@ export function MotionSim({ state, onChange, showGoal, onGoal }: SimProps) {
             {phase === 'aim' && <button type="button" className="btn btn--primary" onClick={placePass}>Play the pass ▸</button>}
             {phase === 'solve' && <button type="button" className="btn btn--primary" onClick={playPass} disabled={!answerStr}>Play the pass ⚽</button>}
             {phase === 'fly' && <button type="button" className="btn btn--primary" disabled>Pass in flight…</button>}
-            {phase === 'result' && <button type="button" className="btn btn--primary" onClick={nextRun}>Next run →</button>}
-            <button type="button" className="btn btn--ghost" onClick={nextRun}>↻ Restart</button>
+            {phase === 'result' && !matchMode && <button type="button" className="btn btn--primary" onClick={nextRun}>Next run →</button>}
+            {!matchMode && <button type="button" className="btn btn--ghost" onClick={nextRun}>↻ Restart</button>}
           </div>
           </div>
       </div>

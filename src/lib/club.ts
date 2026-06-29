@@ -81,8 +81,10 @@ export function normalizeClub(c?: Partial<ClubIdentity> | null): ClubIdentity {
   const e = c?.emblem
   const shape = e && EMBLEM_SHAPES.includes(e.shape) ? e.shape : DEFAULT_EMBLEM.shape
   const motif = e && EMBLEM_MOTIFS.includes(e.motif) ? e.motif : DEFAULT_EMBLEM.motif
+  const abbr = (c?.abbr ?? '').trim().toUpperCase().slice(0, 3) || undefined
   return {
     name: name.slice(0, MAX_CLUB_NAME),
     emblem: { shape, motif, primary: e?.primary, secondary: e?.secondary, accent: e?.accent },
+    abbr,
   }
 }

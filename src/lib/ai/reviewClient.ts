@@ -1,4 +1,4 @@
-import type { ReviewQuestion, SkillId } from '../../types'
+import type { ReviewQuestion, UnitId } from '../../types'
 import { SUPABASE_URL, SUPABASE_KEY, isSupabaseConfigured } from '../supabase'
 
 // Client for the ONE live-AI feature: the optional post-game review that targets
@@ -8,7 +8,7 @@ import { SUPABASE_URL, SUPABASE_KEY, isSupabaseConfigured } from '../supabase'
 
 export type WeakConceptRequest = {
   conceptTag: string
-  unitId: SkillId
+  unitId: UnitId
   difficulty: 1 | 2 | 3 | 4 | 5
   /** Plain-language description of what the learner keeps getting wrong. */
   note?: string
@@ -43,7 +43,7 @@ function isValid(q: RawQuestion): boolean {
 function normalize(q: RawQuestion): ReviewQuestion {
   return {
     id: `review-${q.conceptTag}-${Math.random().toString(36).slice(2, 8)}`,
-    unitId: q.unitId as SkillId,
+    unitId: q.unitId as UnitId,
     conceptTag: q.conceptTag as string,
     difficulty: (Math.min(5, Math.max(1, q.difficulty ?? 2)) as 1 | 2 | 3 | 4 | 5),
     prompt: q.prompt as string,

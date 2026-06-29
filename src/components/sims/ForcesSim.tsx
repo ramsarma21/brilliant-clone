@@ -457,7 +457,20 @@ function lostScene(moveId: MoveId, openSide: number, defZ: number, u: number): S
   return { ball, def, you, contact, contactPt }
 }
 
-export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
+export function ForcesSim({ state, onChange, showGoal, onGoal, matchMode, onResolve }: SimProps) {
+  // ---- Match-mode wiring (see SimProps) -----------------------------------
+  // When matchMode is true this drill is ONE moment inside a live match: the
+  // player still sees the scene and answers the SAME question, but the attempt
+  // resolves exactly once (via onResolve) and then freezes on its final frame.
+  // It does NOT loop, restart, persist scores, fire onGoal, or show the
+  // remediation lesson / streak HUD. A correct answer is treated as a guaranteed
+  // beat-your-man (gated semantics) so the question maps 1:1 to success/failure.
+  // Live refs keep the loop + callbacks reading the latest props; resolvedOnceRef
+  // makes onResolve fire AT MOST once per mount.
+  const onResolveRef = useRef(onResolve); onResolveRef.current = onResolve
+  const matchModeRef = useRef(matchMode); matchModeRef.current = matchMode
+  const resolvedOnceRef = useRef(false)
+
   // Universal appearance: the dribbler the user controls is drawn from the LIVE
   // equipped loadout, so changing the player card updates this drill globally.
   // We keep the kit in a ref so the canvas draw loop reads the latest value.
@@ -494,8 +507,8 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
   const rafRef = useRef<number | null>(null)
   const bgRef = useRef<HTMLCanvasElement | null>(null)
   const gradRef = useRef<{ grass: CanvasGradient; vignette: CanvasGradient } | null>(null)
-  const sceneRef = useRef({ onChange, state, onGoal, showGoal })
-  sceneRef.current = { onChange, state, onGoal, showGoal }
+  const sceneRef = useRef({ onChange, state, onGoal, showGoal, matchMode })
+  sceneRef.current = { onChange, state, onGoal, showGoal, matchMode }
   const goalFiredRef = useRef(false)
   const answerRef = useRef(answerStr); answerRef.current = answerStr
   const streakRef = useRef(streak); streakRef.current = streak
@@ -565,29 +578,38 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
       const sc = flyScene(p.move.id, 'beat', g.openSide, g.defZ, 1)
       spawnConfetti(g, project(sc.ball.x, 1.0, sc.ball.z))
       if (soundRef.current) { sfx.current.knock(); sfx.current.cheer() }
-      const s = streakRef.current + 1
-      setStreak(s)
-      if (s > bestRef.current) { setBest(s); void saveHighScore('forces', s) }
-      const sceneNow = sceneRef.current
-      sceneNow.onChange({ ...sceneNow.state, connections: Number(sceneNow.state.connections ?? 0) + 1 })
-      if (sceneNow.showGoal) {
-        // gated first run: tick this move off; only finish once all three moves
-        // have beaten your man
-        const already = wonTypesRef.current
-        const next = already.includes(p.move.id) ? already : [...already, p.move.id]
-        if (!already.includes(p.move.id)) setWonTypes(next)
-        if (next.length >= MOVES.length && !goalFiredRef.current) {
+      if (matchModeRef.current) {
+        // MATCH MOMENT: a single successful move IS the win (no all-three gate, no
+        // onGoal, no high-score persistence). Report success once; the celebration
+        // keeps playing and the frame freezes for the orchestrator to take over.
+        if (!resolvedOnceRef.current) { resolvedOnceRef.current = true; onResolveRef.current?.(true) }
+      } else {
+        const s = streakRef.current + 1
+        setStreak(s)
+        if (s > bestRef.current) { setBest(s); void saveHighScore('forces', s) }
+        const sceneNow = sceneRef.current
+        sceneNow.onChange({ ...sceneNow.state, connections: Number(sceneNow.state.connections ?? 0) + 1 })
+        if (sceneNow.showGoal) {
+          // gated first run: tick this move off; only finish once all three moves
+          // have beaten your man
+          const already = wonTypesRef.current
+          const next = already.includes(p.move.id) ? already : [...already, p.move.id]
+          if (!already.includes(p.move.id)) setWonTypes(next)
+          if (next.length >= MOVES.length && !goalFiredRef.current) {
+            goalFiredRef.current = true
+            sceneNow.onGoal?.()
+          }
+        } else if (!goalFiredRef.current) {
           goalFiredRef.current = true
           sceneNow.onGoal?.()
         }
-      } else if (!goalFiredRef.current) {
-        goalFiredRef.current = true
-        sceneNow.onGoal?.()
       }
     } else {
       // wrong answer: play the miss, reset the streak, show the brief result text
       if (soundRef.current) { sfx.current.steal(); sfx.current.miss() }
       setStreak(0)
+      // MATCH MOMENT: a mis-hit is a failed moment — report it once.
+      if (matchModeRef.current && !resolvedOnceRef.current) { resolvedOnceRef.current = true; onResolveRef.current?.(false) }
     }
     setPhase('result')
   }, [project])
@@ -604,6 +626,8 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
     setStreak(0)
     setRobbed(true)
     setPhase('robbed')
+    // MATCH MOMENT: running the solve clock out is a turnover — report failure once.
+    if (matchModeRef.current && !resolvedOnceRef.current) { resolvedOnceRef.current = true; onResolveRef.current?.(false) }
   }, [])
 
   const endRobbery = useCallback(() => {
@@ -776,7 +800,8 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
 
     // ---- HUD ----
     const unlimited = !sceneRef.current.showGoal
-    if (unlimited) {
+    // In a match moment the streak/best HUD is hidden (the orchestrator owns the score).
+    if (unlimited && !sceneRef.current.matchMode) {
       ctx.fillStyle = 'rgba(8,12,28,0.8)'; roundRect(ctx, 12, 12, 150, 40, 12); ctx.fill()
       ctx.fillStyle = '#ffd166'; ctx.font = '800 14px Plus Jakarta Sans, sans-serif'; ctx.textAlign = 'left'
       ctx.fillText(`🔥 Streak: ${streakRef.current}`, 24, 38)
@@ -845,9 +870,11 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
   // A wrong answer to a picked move raises the animated worked-solution lesson
   // (modeled on KinematicsSim). It owns its own "next run" flow, so the
   // click-anywhere-to-continue handler must stand down while it is showing.
-  const showLesson = phase === 'result' && outcome === 'lost' && !robbed && p != null
-  // any settled result (beat or robbed) continues on click; the lost lesson does not
-  const canClickContinue = phase === 'result' && !showLesson
+  const showLesson = phase === 'result' && outcome === 'lost' && !robbed && p != null && !matchMode
+  // any settled result (beat or robbed) continues on click; the lost lesson does not.
+  // In a match moment the sim FREEZES on its final frame (no click-to-continue) and
+  // the orchestrator decides what happens next.
+  const canClickContinue = phase === 'result' && !showLesson && !matchMode
 
   return (
     <div
@@ -895,7 +922,7 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
           </div>
         )}
 
-        {phase === 'result' && outcome === 'beat' && (
+        {phase === 'result' && outcome === 'beat' && !matchMode && (
           <div className="soccer__banner soccer__banner--goal">
             <strong>BEAT YOUR MAN!</strong>
             <span>
@@ -913,7 +940,7 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
           <DribbleLesson problem={p} played={g.played} onDone={nextRun} />
         )}
 
-        {phase === 'result' && robbed && (
+        {phase === 'result' && robbed && !matchMode && (
           <div className="soccer__banner soccer__banner--save">
             <strong>TOO SLOW ⛔</strong>
             <span>He closed you down. Dispossessed. Click anywhere to try again.</span>
@@ -970,11 +997,11 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
           </>
         )}
 
-        {phase === 'result' && outcome === 'beat' && p && (
+        {phase === 'result' && outcome === 'beat' && p && !matchMode && (
           <p className="soccer__tip">Newton checks out: {p.dir === 'findF' ? `F = m·a = ${p.m}·${p.a} = ${p.F} N` : `a = F/m = ${p.F}/${p.m} = ${p.a} m/s²`} put the perfect weight on the {p.move.name.toLowerCase()}. <b>Streak {streak}</b> · best {best}.</p>
         )}
 
-        {phase === 'result' && outcome === 'lost' && !robbed && p && (
+        {phase === 'result' && outcome === 'lost' && !robbed && p && !matchMode && (
           <p className="soccer__tip">Not quite. {p.dir === 'findF' ? `F = m·a = ${p.m}·${p.a} = ${p.F} N` : `a = F/m = ${p.F}/${p.m} = ${p.a} m/s²`} was the answer. <b>Streak reset.</b></p>
         )}
 
@@ -983,8 +1010,8 @@ export function ForcesSim({ state, onChange, showGoal, onGoal }: SimProps) {
             {phase === 'menu' && <button type="button" className="btn btn--primary" disabled>Pick a move ▸</button>}
             {phase === 'solve' && <button type="button" className="btn btn--primary" onClick={playMove} disabled={!answerStr}>Do the move ⚽</button>}
             {phase === 'fly' && <button type="button" className="btn btn--primary" disabled>On the move…</button>}
-            {phase === 'result' && <button type="button" className="btn btn--primary" onClick={nextRun}>Next run →</button>}
-            <button type="button" className="btn btn--ghost" onClick={nextRun}>↻ Restart</button>
+            {phase === 'result' && !matchMode && <button type="button" className="btn btn--primary" onClick={nextRun}>Next run →</button>}
+            {!matchMode && <button type="button" className="btn btn--ghost" onClick={nextRun}>↻ Restart</button>}
           </div>
         </div>
       </div>

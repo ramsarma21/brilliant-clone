@@ -3,22 +3,22 @@ import type { JerseyPattern, SkillId } from '../types'
 import { COSMETICS_BY_ID } from '../content/cosmetics'
 import { faceColors, type FaceColors } from '../lib/appearance'
 
-// FIFA-style attribute abbreviation + a position per signature skill.
+// FIFA-style attribute abbreviation + a position per signature game skill.
 export const ATTR_ABBR: Record<SkillId, string> = {
-  kinematics: 'SHO',
-  'motion-graphs': 'PAS',
-  forces: 'DRI',
-  energy: 'HEA',
-  momentum: 'DEF',
-  impulse: 'GK',
+  shooting: 'SHO',
+  passing: 'PAS',
+  dribbling: 'DRI',
+  heading: 'HEA',
+  defending: 'DEF',
+  stamina: 'STA',
 }
 export const POSITION: Record<SkillId, string> = {
-  kinematics: 'ST',
-  'motion-graphs': 'CM',
-  forces: 'CAM',
-  energy: 'CF',
-  momentum: 'CB',
-  impulse: 'GK',
+  shooting: 'ST',
+  passing: 'CM',
+  dribbling: 'CAM',
+  heading: 'CF',
+  defending: 'CB',
+  stamina: 'CDM',
 }
 
 export type AvatarKit = {
@@ -44,6 +44,12 @@ const DEFAULT_KIT: AvatarKit = {
   pattern: 'plain',
 }
 const DEFAULT_CLEATS: AvatarCleats = { primary: '#2b2f37', secondary: '#15171f', accent: '#5a606b' }
+
+// How much to scale the SVG hair around the head centre per style (0 = bald, hide it).
+const HAIR_SVG_SCALE: Record<string, number> = { short: 1, buzz: 0.9, curly: 1.13, afro: 1.28, bald: 0 }
+function hairScale(style?: string): number {
+  return HAIR_SVG_SCALE[style ?? 'short'] ?? 1
+}
 
 /** Build the avatar kit from an equipped jersey cosmetic id. */
 export function kitFor(jerseyId: string): AvatarKit {
@@ -131,14 +137,17 @@ export function CardPlayer({
   jersey = DEFAULT_KIT,
   cleats = DEFAULT_CLEATS,
   face = DEFAULT_FACE,
+  hairStyle = 'short',
   className = 'fut__player',
 }: {
   jersey?: AvatarKit
   cleats?: AvatarCleats
   face?: FaceColors
+  hairStyle?: string
   className?: string
 }) {
   const uid = useId()
+  const hs = hairScale(hairStyle)
   const clipId = `torso-${uid}`
   const gradId = `galaxy-${uid}`
   const pattern: JerseyPattern = jersey.pattern ?? 'plain'
@@ -256,18 +265,23 @@ export function CardPlayer({
       <ellipse cx={CXC + 5} cy="24.5" rx="2.4" ry="1.6" fill={SKIN_HI} opacity="0.5" />
       <ellipse cx={CXC} cy="17.5" rx="6.5" ry="3" fill={SKIN_HI} opacity="0.32" />
 
-      {/* hair — modern textured quiff with temple fades + a side sweep highlight */}
-      <path
-        d={`M${CXC - 10} 23 C${CXC - 11.5} 14 ${CXC - 5.5} 9 ${CXC} 9
-            C${CXC + 5.5} 9 ${CXC + 11.5} 14 ${CXC + 10} 23
-            C${CXC + 10} 18.5 ${CXC + 8} 17 ${CXC + 6} 17.5
-            C${CXC + 7} 14.5 ${CXC + 4.5} 13.5 ${CXC + 2.5} 14.5
-            C${CXC + 1.5} 12.5 ${CXC - 1.5} 12.5 ${CXC - 2.5} 14.5
-            C${CXC - 4.5} 13.5 ${CXC - 7} 14.5 ${CXC - 6} 17.5
-            C${CXC - 8} 17 ${CXC - 10} 18.5 ${CXC - 10} 23 Z`}
-        fill={HAIR}
-      />
-      <path d={`M${CXC - 5.5} 11.5 C${CXC - 3} 10 ${CXC + 3} 10 ${CXC + 5.5} 11.5 C${CXC + 2} 10.5 ${CXC - 2} 10.5 ${CXC - 5.5} 13 Z`} fill={HAIR_HI} opacity="0.7" />
+      {/* hair — modern textured quiff with temple fades + a side sweep highlight.
+          Scaled around the crown by hair style (bald hides it entirely). */}
+      {hs > 0 && (
+        <g transform={`translate(${CXC} 16) scale(${hs}) translate(${-CXC} -16)`}>
+          <path
+            d={`M${CXC - 10} 23 C${CXC - 11.5} 14 ${CXC - 5.5} 9 ${CXC} 9
+                C${CXC + 5.5} 9 ${CXC + 11.5} 14 ${CXC + 10} 23
+                C${CXC + 10} 18.5 ${CXC + 8} 17 ${CXC + 6} 17.5
+                C${CXC + 7} 14.5 ${CXC + 4.5} 13.5 ${CXC + 2.5} 14.5
+                C${CXC + 1.5} 12.5 ${CXC - 1.5} 12.5 ${CXC - 2.5} 14.5
+                C${CXC - 4.5} 13.5 ${CXC - 7} 14.5 ${CXC - 6} 17.5
+                C${CXC - 8} 17 ${CXC - 10} 18.5 ${CXC - 10} 23 Z`}
+            fill={HAIR}
+          />
+          <path d={`M${CXC - 5.5} 11.5 C${CXC - 3} 10 ${CXC + 3} 10 ${CXC + 5.5} 11.5 C${CXC + 2} 10.5 ${CXC - 2} 10.5 ${CXC - 5.5} 13 Z`} fill={HAIR_HI} opacity="0.7" />
+        </g>
+      )}
 
       {/* eyebrows — angled, fuller at the inner edge */}
       <path d={`M${CXC - 6.6} 20.4 C${CXC - 4.6} 19 ${CXC - 2.4} 19.1 ${CXC - 1.2} 20.1 L${CXC - 1.4} 21.1 C${CXC - 2.6} 20.3 ${CXC - 4.6} 20.3 ${CXC - 6.2} 21.5 Z`} fill={HAIR} />
@@ -302,13 +316,16 @@ export function CardPlayer({
 export function CardFace({
   jersey = DEFAULT_KIT,
   face = DEFAULT_FACE,
+  hairStyle = 'short',
   className = 'fut__player',
 }: {
   jersey?: AvatarKit
   face?: FaceColors
+  hairStyle?: string
   className?: string
 }) {
   const FX = 52 // face centre x
+  const hs = hairScale(hairStyle)
   const accent = jersey.accent
   const { skin: SKIN, skinShade: SKIN_SHADE, skinHi: SKIN_HI, hair: HAIR, hairHi: HAIR_HI } = face
 
@@ -348,15 +365,19 @@ export function CardFace({
       {/* forehead light */}
       <ellipse cx="52" cy="28" rx="13" ry="6" fill={SKIN_HI} opacity="0.35" />
 
-      {/* hair — modern textured quiff with temple fades + a side sweep */}
-      <path
-        d="M30 43 C27 24 39 13 52 13 C65 13 77 24 74 43
-           C74 34 70 31 66 32 C68 27 63 25 59 27
-           C57 23 52 24 52 27 C52 24 47 23 45 27
-           C41 25 36 27 38 32 C34 31 30 35 30 43 Z"
-        fill={HAIR}
-      />
-      <path d="M40 18 C45 14 56 14 62 18 C56 16 46 16 40 22 Z" fill={HAIR_HI} opacity="0.7" />
+      {/* hair — modern textured quiff, scaled around the crown by style (bald hides it) */}
+      {hs > 0 && (
+        <g transform={`translate(52 26) scale(${hs}) translate(-52 -26)`}>
+          <path
+            d="M30 43 C27 24 39 13 52 13 C65 13 77 24 74 43
+               C74 34 70 31 66 32 C68 27 63 25 59 27
+               C57 23 52 24 52 27 C52 24 47 23 45 27
+               C41 25 36 27 38 32 C34 31 30 35 30 43 Z"
+            fill={HAIR}
+          />
+          <path d="M40 18 C45 14 56 14 62 18 C56 16 46 16 40 22 Z" fill={HAIR_HI} opacity="0.7" />
+        </g>
+      )}
 
       {/* eyebrows — angled, fuller at the inner edge (striking, masculine) */}
       <path d="M38 34.5 C42 31.6 47 31.8 49.6 33.8 L49.2 36 C46.6 34.4 42 34.4 38.8 36.8 Z" fill={HAIR} />

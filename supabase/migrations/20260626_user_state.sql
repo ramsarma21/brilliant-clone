@@ -6,7 +6,8 @@
 -- *_high_score columns / the *_mastered flags already live on `profiles`; this
 -- adds the remaining structured state as jsonb so NOTHING is hard-coded:
 --
---   skills        -> { kinematics:50, 'motion-graphs':50, forces:50, energy:50, momentum:50 }
+--   skills        -> { shooting:50, passing:50, dribbling:50, heading:50, defending:50, stamina:50 }
+--                    (see 20260628_game_skills.sql — legacy unit-keyed values are remapped)
 --   inventory     -> ["starter-jersey","starter-cleats", ...owned cosmetic ids]
 --   proficiency   -> ProficiencyMap (per-concept competence + spaced-repetition)
 --   test_history  -> TestAttempt[] (gating-test results that personalize the next test)

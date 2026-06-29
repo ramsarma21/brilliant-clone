@@ -1,11 +1,12 @@
 import { supabase, isSupabaseConfigured } from './supabase'
-import { overallRating } from './skills'
+import { teamOverall } from './squad'
 import type {
   Appearance,
   ClubIdentity,
   PlayerProfile,
   PlayerSkills,
   ProficiencyMap,
+  Squad,
   TestAttempt,
   UserProgress,
 } from '../types'
@@ -54,6 +55,9 @@ export type CloudPlayerData = {
   equippedCleats: string | null
   appearance: Appearance | null
   club: ClubIdentity | null
+  /** The current per-player club roster. */
+  squad: Squad | null
+  /** Legacy single skill block (pre-squad) — read only so it can be migrated to a squad. */
   skills: PlayerSkills | null
   inventory: string[] | null
   proficiency: ProficiencyMap | null
@@ -87,6 +91,7 @@ export async function loadCloudPlayer(username: string): Promise<CloudResult<Clo
         equippedCleats: (d.equipped_cleats as string | null) ?? null,
         appearance: (d.appearance as Appearance | null) ?? null,
         club: (d.club_identity as ClubIdentity | null) ?? null,
+        squad: (d.squad as Squad | null) ?? null,
         skills: (d.skills as PlayerSkills | null) ?? null,
         inventory: (d.inventory as string[] | null) ?? null,
         proficiency: (d.proficiency as ProficiencyMap | null) ?? null,
@@ -117,10 +122,9 @@ export async function saveCloudPlayer(
         username,
         coins: profile.coins,
         skill_points: profile.skillPoints,
-        overall: overallRating(profile.skills),
+        overall: teamOverall(profile.squad),
         equipped_jersey: profile.equipped.jersey,
         equipped_cleats: profile.equipped.cleats,
-        skills: profile.skills,
         inventory: profile.inventory,
         proficiency,
         test_history: testHistory,
@@ -133,10 +137,28 @@ export async function saveCloudPlayer(
     console.warn('[cloudSync] saveCloudPlayer (core) threw:', e)
   }
 
-  // NEWER optional columns (appearance: 20260627_appearance, club_identity:
-  // 20260627_club_identity). Saved best-effort in a SEPARATE upsert so that if those
-  // migrations haven't been run against this database, the failure is isolated here
-  // and the core save above (jersey/cleats/coins/etc.) still succeeds.
+  // The SQUAD (names, looks, ratings, boots of all 8 players) is your team and MUST
+  // persist so it never re-randomizes on refresh. It gets its OWN upsert so that a
+  // missing/older optional column elsewhere (appearance / club_identity) can never
+  // block the team from saving. Requires the 20260628_squad.sql migration.
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .upsert({ username, squad: profile.squad, updated_at: stamp }, { onConflict: 'username' })
+    if (error) {
+      console.warn(
+        '[cloudSync] squad not saved — run the 20260628_squad.sql migration in Supabase ' +
+          '(your team will fall back to the per-device cache until then):',
+        error.message,
+      )
+    }
+  } catch (e) {
+    console.warn('[cloudSync] saveCloudPlayer (squad) threw:', e)
+  }
+
+  // NEWER optional cosmetic columns (appearance: 20260627_appearance, club_identity:
+  // 20260627_club_identity). Best-effort in their own upsert so a not-yet-applied
+  // migration here can't block the core save above OR the squad save.
   try {
     const { error } = await supabase.from('profiles').upsert(
       {
